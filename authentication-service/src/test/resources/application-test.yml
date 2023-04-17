@@ -1,0 +1,11 @@
+db:
+  username: test
+  password: test
+
+spring:
+  datasource:
+    username: test
+    password: test
+  jpa:
+    properties.hibernate:
+      ddl-auto: update
