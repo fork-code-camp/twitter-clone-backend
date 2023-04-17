@@ -1,7 +1,7 @@
 package com.example.authentication.config;
 
 import com.example.authentication.repository.AccountRepository;
-import com.example.authentication.service.CustomUserDetailsService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,12 +31,13 @@ public class ApplicationConfig {
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
-        return configuration.getAuthenticationManager();
+        return configuration.getAuthenticationManager(); // default spring implementation
     }
 
     @Bean
     public UserDetailsService userDetailsService() {
-        return new CustomUserDetailsService(accountRepository);
+        return username -> accountRepository.findByEmail(username)
+                .orElseThrow(() -> new EntityNotFoundException("Entity not found: " + username));
     }
 
     @Bean

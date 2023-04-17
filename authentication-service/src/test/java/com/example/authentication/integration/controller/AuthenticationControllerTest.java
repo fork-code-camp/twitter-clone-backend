@@ -12,7 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @AutoConfigureMockMvc
 @RequiredArgsConstructor
-public class AuthControllerTest extends IntegrationTestBase {
+public class AuthenticationControllerTest extends IntegrationTestBase {
 
     private static final String TEST_JSON = "{\"email\": \"test@gmail.com\", \"password\": \"test\"}";
     private static final String UNIQUE_JSON = "{\"email\": \"unique@gmail.com\", \"password\": \"test\"}";
