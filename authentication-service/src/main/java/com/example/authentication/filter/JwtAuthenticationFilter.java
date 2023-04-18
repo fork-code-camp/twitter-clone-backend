@@ -1,4 +1,4 @@
-package com.example.authentication.config;
+package com.example.authentication.filter;
 
 import com.example.authentication.repository.TokenRepository;
 import com.example.authentication.service.JwtService;
@@ -33,16 +33,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
         String authHeader = request.getHeader("Authorization");
-        String jwt;
-        String userEmail;
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        jwt = authHeader.substring(7);
-        userEmail = jwtService.extractUsername(jwt);
+        String jwt = authHeader.substring(7);
+        String userEmail = jwtService.extractUsername(jwt);
 
         if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) { // null = user not connected yet
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
