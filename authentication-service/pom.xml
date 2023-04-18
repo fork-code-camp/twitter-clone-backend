@@ -63,6 +63,19 @@
             <optional>true</optional>
         </dependency>
 
+        <dependency> <!-- ? -->
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-validator</artifactId>
+            <version>8.0.0.Final</version>
+        </dependency>
+
+        <!-- *** SWAGGER *** -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>2.0.4</version>
+        </dependency>
+
         <!-- *** JWT *** -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
@@ -109,6 +122,7 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>3.0.4</version>
                 <configuration>
                     <excludes>
                         <exclude>
