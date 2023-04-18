@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: ${PORT:8080}
 
 spring:
   datasource:
@@ -7,16 +7,12 @@ spring:
     username: ${POSTGRES_USERNAME}
     password: ${POSTGRES_PASSWORD}
     driver-class-name: org.postgresql.Driver
-
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: true
     properties:
       hibernate:
+        show_sql: true
         format_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
-
-  mvc:
-    pathmatch:
-      matching-strategy: ant_path_matcher
