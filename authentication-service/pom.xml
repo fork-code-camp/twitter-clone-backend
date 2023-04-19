@@ -69,6 +69,16 @@
             <version>8.0.0.Final</version>
         </dependency>
 
+        <!-- *** MAIL *** -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-freemarker</artifactId>
+        </dependency>
+
         <!-- *** SWAGGER *** -->
         <dependency>
             <groupId>org.springdoc</groupId>

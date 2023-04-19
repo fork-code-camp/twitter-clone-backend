@@ -1,6 +1,8 @@
 package com.example.authentication.integration.controller;
 
+import com.example.authentication.entity.ActivationCode;
 import com.example.authentication.integration.IntegrationTestBase;
+import com.example.authentication.repository.ActivationCodeRepository;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -23,9 +25,11 @@ public class AuthenticationControllerTest extends IntegrationTestBase {
     private static final String REGISTER_URL = "/api/v1/auth/register";
     private static final String AUTHENTICATE_URL = "/api/v1/auth/authenticate";
     private static final String LOGOUT_URL = "/api/v1/auth/logout";
+    private static final String ACTIVATION_URL = "/api/v1/auth/activate";
     private static final String TEST_URL = "/api/v1/test";
 
     private final MockMvc mockMvc;
+    private final ActivationCodeRepository activationCodeRepository;
 
     @Test
     void registerSuccess() throws Exception {
@@ -34,12 +38,34 @@ public class AuthenticationControllerTest extends IntegrationTestBase {
                         .contentType(APPLICATION_JSON))
                 .andExpectAll(
                         status().isOk(),
-                        jsonPath("$.token").exists(),
-                        jsonPath("$.token").isString()
+                        jsonPath("$.message").exists(),
+                        jsonPath("$.message").isString(),
+                        jsonPath("$.message").value("Activation code's been sent to your email!")
+                );
+
+        mockMvc.perform(post(AUTHENTICATE_URL)
+                        .content(UNIQUE_ACC)
+                        .contentType(APPLICATION_JSON))
+                .andExpectAll(
+                        status().isForbidden(),
+                        jsonPath("$.message").exists(),
+                        jsonPath("$.message").isString(),
+                        jsonPath("$.message").value("Account not activated!")
                 );
 
         // avoid: duplicate key value violates unique constraint
         Thread.sleep(1500L);
+
+        ActivationCode activationCode = activationCodeRepository.findActivationCodeByAccount_Email("unique@gmail.com").orElseThrow();
+
+        mockMvc.perform(get(ACTIVATION_URL)
+                        .param("activationCode", activationCode.getKey()))
+                .andExpectAll(
+                        status().isOk(),
+                        jsonPath("$.message").exists(),
+                        jsonPath("$.message").isString(),
+                        jsonPath("$.message").value("Account successfully activated!")
+                );
 
         ResultActions result = mockMvc.perform(post(AUTHENTICATE_URL)
                         .content(UNIQUE_ACC)
@@ -73,7 +99,7 @@ public class AuthenticationControllerTest extends IntegrationTestBase {
                         .content(EXISTING_ACC)
                         .contentType(APPLICATION_JSON))
                 .andExpectAll(
-                        status().isBadRequest(),
+                        status().is4xxClientError(),
                         jsonPath("$.message").value("Account already exists: test@gmail.com")
                 );
 
@@ -87,7 +113,28 @@ public class AuthenticationControllerTest extends IntegrationTestBase {
 
     @Test
     void logoutTest() throws Exception {
-        ResultActions result = mockMvc.perform(post(REGISTER_URL)
+        mockMvc.perform(post(REGISTER_URL)
+                        .content(UNIQUE_ACC)
+                        .contentType(APPLICATION_JSON))
+                .andExpectAll(
+                        status().isOk(),
+                        jsonPath("$.message").exists(),
+                        jsonPath("$.message").isString(),
+                        jsonPath("$.message").value("Activation code's been sent to your email!")
+                );
+
+        ActivationCode activationCode = activationCodeRepository.findActivationCodeByAccount_Email("unique@gmail.com").orElseThrow();
+
+        mockMvc.perform(get(ACTIVATION_URL)
+                        .param("activationCode", activationCode.getKey()))
+                .andExpectAll(
+                        status().isOk(),
+                        jsonPath("$.message").exists(),
+                        jsonPath("$.message").isString(),
+                        jsonPath("$.message").value("Account successfully activated!")
+                );
+
+        ResultActions result = mockMvc.perform(post(AUTHENTICATE_URL)
                         .content(UNIQUE_ACC)
                         .contentType(APPLICATION_JSON))
                 .andExpectAll(

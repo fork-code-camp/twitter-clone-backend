@@ -1,4 +1,4 @@
-package com.example.authentication.controller.dto;
+package com.example.authentication.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,8 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class RegisterRequest {
+public class ActivationCodeResponse {
 
-    String email;
-    String password;
+    String message;
 }
