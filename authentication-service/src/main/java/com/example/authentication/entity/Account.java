@@ -1,5 +1,6 @@
-package com.example.authentication.model;
+package com.example.authentication.entity;
 
+import com.example.authentication.model.Role;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,7 +19,7 @@ import java.util.Collections;
 @AllArgsConstructor
 @Entity
 @Table(name = "accounts")
-public class Account implements UserDetails {
+public class Account implements UserDetails, BaseEntity<Long> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

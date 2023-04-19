@@ -1,12 +1,18 @@
 package com.example.authentication.service;
 
-import com.example.authentication.controller.dto.AuthenticationRequest;
-import com.example.authentication.controller.dto.AuthenticationResponse;
-import com.example.authentication.controller.dto.RegisterRequest;
-import com.example.authentication.model.Account;
-import com.example.authentication.model.Token;
+import com.example.authentication.dto.ActivationCodeResponse;
+import com.example.authentication.dto.AuthenticationRequest;
+import com.example.authentication.dto.AuthenticationResponse;
+import com.example.authentication.dto.RegisterRequest;
+import com.example.authentication.entity.Account;
+import com.example.authentication.entity.ActivationCode;
+import com.example.authentication.entity.Token;
+import com.example.authentication.exception.AccountNotActivatedException;
+import com.example.authentication.exception.ActivationCodeExpiredException;
+import com.example.authentication.exception.ActivationCodeNotFoundException;
 import com.example.authentication.model.TokenType;
 import com.example.authentication.repository.AccountRepository;
+import com.example.authentication.repository.ActivationCodeRepository;
 import com.example.authentication.repository.TokenRepository;
 import jakarta.persistence.EntityExistsException;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +20,10 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.UUID;
 
 import static com.example.authentication.model.Role.USER;
 
@@ -23,11 +33,13 @@ public class AuthenticationService {
 
     private final AccountRepository accountRepository;
     private final TokenRepository tokenRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final ActivationCodeRepository activationCodeRepository;
     private final JwtService jwtService;
+    private final EmailService emailService;
+    private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
 
-    public AuthenticationResponse register(RegisterRequest request) {
+    public ActivationCodeResponse register(RegisterRequest request) {
         accountRepository.findByEmail(request.getEmail())
                 .ifPresent(account -> {
                     throw new EntityExistsException("Account already exists: " + account.getEmail());
@@ -39,29 +51,26 @@ public class AuthenticationService {
                 .isAccountNonLocked(true)
                 .isAccountNonExpired(true)
                 .isCredentialsNonExpired(true)
-                .isEnabled(true)
+                .isEnabled(false)
                 .role(USER)
                 .build();
 
         var savedUser = accountRepository.save(newAccount);
-        var jwtToken = jwtService.generateToken(newAccount);
-        saveAccountToken(savedUser, jwtToken);
+        sendNewActivationCode(newAccount);
 
-        return AuthenticationResponse.builder()
-                .token(jwtToken)
+        return ActivationCodeResponse.builder()
+                .message("Activation code's been sent to your email!")
                 .build();
     }
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getEmail(),
-                        request.getPassword()
-                )
-        ); // in case the email/password isn't correct -> exception will be thrown
-
         var account = accountRepository.findByEmail(request.getEmail())
                 .orElseThrow();
+
+        if (!account.isEnabled()) {
+            throw new AccountNotActivatedException("Account not activated!");
+        }
+
         var jwtToken = jwtService.generateToken(account);
 
         revokeAllAccountTokens(account);
@@ -69,6 +78,20 @@ public class AuthenticationService {
 
         return AuthenticationResponse.builder()
                 .token(jwtToken)
+                .build();
+    }
+
+    public ActivationCodeResponse activate(String key) {
+        ActivationCode activationCode = activationCodeRepository.findActivationCodeByKey(key)
+                .orElseThrow(() -> new ActivationCodeNotFoundException("Activation code not found: " + key));
+
+        checkActivationCodeExpiration(activationCode);
+
+        activationCode.getAccount().setEnabled(true);
+        activationCodeRepository.deleteById(activationCode.getId());
+
+        return ActivationCodeResponse.builder()
+                .message("Account successfully activated!")
                 .build();
     }
 
@@ -92,5 +115,27 @@ public class AuthenticationService {
             token.setRevoked(true);
         });
         tokenRepository.saveAll(validAccountTokens);
+    }
+
+    private void checkActivationCodeExpiration(ActivationCode activationCode) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime expirationTime = activationCode.getExpirationTime();
+        if (expirationTime.isBefore(now)) {
+            activationCodeRepository.deleteById(activationCode.getId());
+            sendNewActivationCode(activationCode.getAccount());
+            long minutes = ChronoUnit.MINUTES.between(expirationTime, now);
+            throw new ActivationCodeExpiredException(String.format("Activation code %s expired %d minutes ago. New activation code has been sent.", activationCode.getKey(), minutes));
+        }
+    }
+
+    private void sendNewActivationCode(Account account) {
+        ActivationCode activationCode = ActivationCode.builder()
+                .account(account)
+                .key(UUID.randomUUID().toString())
+                .expirationTime(LocalDateTime.now().plusHours(2L))
+                .build();
+
+        emailService.sendActivationCode(activationCode);
+        activationCodeRepository.save(activationCode);
     }
 }

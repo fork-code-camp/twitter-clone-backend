@@ -1,4 +1,4 @@
-package com.example.authentication.controller.dto;
+package com.example.authentication.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -1,5 +1,6 @@
-package com.example.authentication.model;
+package com.example.authentication.entity;
 
+import com.example.authentication.model.TokenType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,22 +12,23 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-public class Token {
+@Table(name = "tokens")
+public class Token implements BaseEntity<Long> {
 
     @Id
     @GeneratedValue
-    public Integer id;
-
-    @Column(unique = true)
-    public String token;
-
-    @Enumerated(EnumType.STRING)
-    public TokenType tokenType = TokenType.BEARER;
-
-    public boolean revoked;
-    public boolean expired;
+    public Long id;
 
     @ManyToOne
     @JoinColumn(name = "account_id")
     public Account account;
+
+    @Enumerated(EnumType.STRING)
+    public TokenType tokenType = TokenType.BEARER;
+
+    @Column(unique = true)
+    public String token;
+
+    public boolean revoked;
+    public boolean expired;
 }

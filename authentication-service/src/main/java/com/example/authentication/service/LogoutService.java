@@ -22,11 +22,12 @@ public class LogoutService implements LogoutHandler {
             Authentication authentication
     ) {
         String authHeader = request.getHeader("Authorization");
-        String jwt;
+
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             return;
         }
-        jwt = authHeader.substring(7);
+
+        String jwt = authHeader.substring(7);
         var storedToken = tokenRepository.findByToken(jwt)
                 .orElse(null);
         if (storedToken != null) {

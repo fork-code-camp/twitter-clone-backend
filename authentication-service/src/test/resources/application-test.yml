@@ -9,3 +9,4 @@ spring:
   jpa:
     properties.hibernate:
       ddl-auto: update
+    show-sql: true
