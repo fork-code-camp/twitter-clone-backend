@@ -1,4 +1,4 @@
-package com.example.authentication.controller.dto;
+package com.example.authentication.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,7 +9,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AuthenticationResponse {
+public class RegisterRequest {
 
-    private String token;
+    String email;
+    String password;
 }

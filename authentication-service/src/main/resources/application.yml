@@ -16,3 +16,15 @@ spring:
         show_sql: true
         format_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
+  mail:
+    default-encoding: UTF-8
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME:twitter.clone.sender@gmail.com}
+    password: ${MAIL_PASSWORD:vdivkongfzakzpup}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls.enable: true
+          ssl.trust: smtp.gmail.com

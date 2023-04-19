@@ -1,15 +1,13 @@
 package com.example.authentication.controller;
 
-import com.example.authentication.controller.dto.AuthenticationRequest;
-import com.example.authentication.controller.dto.AuthenticationResponse;
-import com.example.authentication.controller.dto.RegisterRequest;
+import com.example.authentication.dto.ActivationCodeResponse;
+import com.example.authentication.dto.AuthenticationRequest;
+import com.example.authentication.dto.AuthenticationResponse;
+import com.example.authentication.dto.RegisterRequest;
 import com.example.authentication.service.AuthenticationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -19,12 +17,17 @@ public class AuthenticationController {
     private final AuthenticationService authenticationService;
 
     @PostMapping("/register")
-    public ResponseEntity<AuthenticationResponse> register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<ActivationCodeResponse> register(@RequestBody RegisterRequest request) {
         return ResponseEntity.ok(authenticationService.register(request));
     }
 
     @PostMapping("/authenticate")
     public ResponseEntity<AuthenticationResponse> authenticate(@RequestBody AuthenticationRequest request) {
         return ResponseEntity.ok(authenticationService.authenticate(request));
+    }
+
+    @GetMapping("/activate")
+    public ResponseEntity<ActivationCodeResponse> activate(@RequestParam String activationCode) {
+        return ResponseEntity.ok(authenticationService.activate(activationCode));
     }
 }
