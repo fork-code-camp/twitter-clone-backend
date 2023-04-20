@@ -1,6 +1,7 @@
 package com.example.authentication.config;
 
 import com.example.authentication.repository.AccountRepository;
+import com.example.authentication.service.MessageSourceService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -18,6 +19,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 public class ApplicationConfig {
 
     private final AccountRepository accountRepository;
+    private final MessageSourceService messageService;
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
@@ -37,7 +39,7 @@ public class ApplicationConfig {
     @Bean
     public UserDetailsService userDetailsService() {
         return username -> accountRepository.findByEmail(username)
-                .orElseThrow(() -> new EntityNotFoundException("Entity not found: " + username));
+                .orElseThrow(() -> new EntityNotFoundException(messageService.generateMessage("error.entity.not_found", username)));
     }
 
     @Bean

@@ -19,7 +19,7 @@ public class Token implements BaseEntity<Long> {
     @GeneratedValue
     public Long id;
 
-    @ManyToOne
+    @OneToOne
     @JoinColumn(name = "account_id")
     public Account account;
 

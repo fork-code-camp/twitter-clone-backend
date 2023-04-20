@@ -24,6 +24,7 @@ public class EmailService {
 
     private final JavaMailSender sender;
     private final Configuration config;
+    private final MessageSourceService messageService;
 
     @Value("${spring.mail.username}")
     private String senderEmail;
@@ -39,7 +40,7 @@ public class EmailService {
         map.put("code", activationCode.getKey());
         String html = FreeMarkerTemplateUtils.processTemplateIntoString(template, map);
 
-        helper.setSubject("Activation code");
+        helper.setSubject(messageService.generateMessage("email.subject"));
         helper.setFrom(senderEmail);
         helper.setTo(activationCode.getAccount().getEmail());
         helper.setText(html, true);

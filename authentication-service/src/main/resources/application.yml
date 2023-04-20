@@ -21,7 +21,7 @@ spring:
     host: smtp.gmail.com
     port: 587
     username: ${MAIL_USERNAME:twitter.clone.sender@gmail.com}
-    password: ${MAIL_PASSWORD:vdivkongfzakzpup}
+    password: ${MAIL_PASSWORD}
     properties:
       mail:
         smtp:
