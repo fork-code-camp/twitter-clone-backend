@@ -3,6 +3,7 @@ package com.example.authentication.integration.controller;
 import com.example.authentication.entity.ActivationCode;
 import com.example.authentication.integration.IntegrationTestBase;
 import com.example.authentication.repository.ActivationCodeRepository;
+import com.example.authentication.service.MessageSourceService;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -19,8 +20,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RequiredArgsConstructor
 public class AuthenticationControllerTest extends IntegrationTestBase {
 
-    private static final String EXISTING_ACC = "{\"email\": \"test@gmail.com\", \"password\": \"test\"}";
-    private static final String UNIQUE_ACC = "{\"email\": \"unique@gmail.com\", \"password\": \"test\"}";
+    private static final String AUTH_REQ_PATTERN = "{\"email\": \"%s\", \"password\": \"test\"}";
+
+    private static final String EXISTENT_ACCOUNT_EMAIL = "test@gmail.com";
+    private static final String EXISTENT_ACCOUNT_JSON = AUTH_REQ_PATTERN.formatted(EXISTENT_ACCOUNT_EMAIL);
+
+    private static final String NEW_ACCOUNT_EMAIL = "new_account@gmail.com";
+    private static final String NEW_ACCOUNT_JSON = AUTH_REQ_PATTERN.formatted(NEW_ACCOUNT_EMAIL);
 
     private static final String REGISTER_URL = "/api/v1/auth/register";
     private static final String AUTHENTICATE_URL = "/api/v1/auth/authenticate";
@@ -30,143 +36,105 @@ public class AuthenticationControllerTest extends IntegrationTestBase {
 
     private final MockMvc mockMvc;
     private final ActivationCodeRepository activationCodeRepository;
+    private final MessageSourceService messageService;
 
     @Test
-    void registerSuccess() throws Exception {
+    void testRegisterSuccess() throws Exception {
+        registerAccount(NEW_ACCOUNT_JSON);
+        authenticateUnactivatedAccountAndExpectForbidden(NEW_ACCOUNT_JSON, NEW_ACCOUNT_EMAIL);
+        activateAccount(NEW_ACCOUNT_EMAIL);
+        String token = authenticateAccountAndExpectToken(NEW_ACCOUNT_JSON);
+        testEndpointWithValidToken(token);
+        logout(token);
+        testEndpointWithInvalidToken(token);
+    }
+
+    @Test
+    void testRegisterFailure() throws Exception {
+        registerExistingAccountAndExpectFailure(EXISTENT_ACCOUNT_JSON, EXISTENT_ACCOUNT_EMAIL);
+    }
+
+    private void registerAccount(String account) throws Exception {
         mockMvc.perform(post(REGISTER_URL)
-                        .content(UNIQUE_ACC)
+                        .content(account)
                         .contentType(APPLICATION_JSON))
                 .andExpectAll(
                         status().isOk(),
-                        jsonPath("$.message").exists(),
-                        jsonPath("$.message").isString(),
-                        jsonPath("$.message").value("Activation code's been sent to your email!")
+                        jsonPath("$.message").value(messageService.generateMessage("activation.send.success"))
+                );
+    }
+
+    private void registerExistingAccountAndExpectFailure(String account, String email) throws Exception {
+        mockMvc.perform(post(REGISTER_URL)
+                        .content(account)
+                        .contentType(APPLICATION_JSON))
+                .andExpectAll(
+                        status().isBadRequest(),
+                        jsonPath("$.message").value(messageService.generateMessage("error.account.already_exists", email))
+                );
+    }
+
+    private void activateAccount(String email) throws Exception {
+        ActivationCode activationCode = activationCodeRepository.findActivationCodeByAccount_Email(email)
+                .orElseThrow();
+
+        mockMvc.perform(get(ACTIVATION_URL)
+                        .param("activationCode", activationCode.getKey()))
+                .andExpectAll(
+                        status().isOk(),
+                        jsonPath("$.message").value(messageService.generateMessage("account.activation.success"))
+                );
+    }
+
+    private String authenticateAccountAndExpectToken(String account) throws Exception {
+        ResultActions result = mockMvc.perform(post(AUTHENTICATE_URL)
+                        .content(account)
+                        .contentType(APPLICATION_JSON))
+                .andExpectAll(
+                        status().isOk(),
+                        jsonPath("$.token").exists()
                 );
 
+        return extractTokenFromResponse(result);
+    }
+
+    private void authenticateUnactivatedAccountAndExpectForbidden(String account, String email) throws Exception {
         mockMvc.perform(post(AUTHENTICATE_URL)
-                        .content(UNIQUE_ACC)
+                        .content(account)
                         .contentType(APPLICATION_JSON))
                 .andExpectAll(
                         status().isForbidden(),
-                        jsonPath("$.message").exists(),
-                        jsonPath("$.message").isString(),
-                        jsonPath("$.message").value("Account not activated!")
-                );
-
-        // avoid: duplicate key value violates unique constraint
-        Thread.sleep(1500L);
-
-        ActivationCode activationCode = activationCodeRepository.findActivationCodeByAccount_Email("unique@gmail.com").orElseThrow();
-
-        mockMvc.perform(get(ACTIVATION_URL)
-                        .param("activationCode", activationCode.getKey()))
-                .andExpectAll(
-                        status().isOk(),
-                        jsonPath("$.message").exists(),
-                        jsonPath("$.message").isString(),
-                        jsonPath("$.message").value("Account successfully activated!")
-                );
-
-        ResultActions result = mockMvc.perform(post(AUTHENTICATE_URL)
-                        .content(UNIQUE_ACC)
-                        .contentType(APPLICATION_JSON))
-                .andExpectAll(
-                        status().isOk(),
-                        jsonPath("$.token").exists(),
-                        jsonPath("$.token").isString()
-                );
-
-        mockMvc.perform(get(TEST_URL)
-                        .header("Authorization", "Bearer " + getToken(result)))
-                .andExpectAll(
-                        status().isOk(),
-                        content().string("Hello world!")
+                        jsonPath("$.message").value(messageService.generateMessage("error.account.not_activated", email))
                 );
     }
 
-    @Test
-    void registerFail() throws Exception {
-//        mockMvc.perform(post(AUTHENTICATE_URL) TODO
-//                        .content(EXISTING_ACC)
-//                        .contentType(APPLICATION_JSON))
-//                .andExpectAll(
-//                        status().isOk(),
-//                        jsonPath("$.token").exists(),
-//                        jsonPath("$.token").isString()
-//                );
-
-        mockMvc.perform(post(REGISTER_URL)
-                        .content(EXISTING_ACC)
-                        .contentType(APPLICATION_JSON))
-                .andExpectAll(
-                        status().is4xxClientError(),
-                        jsonPath("$.message").value("Account already exists: test@gmail.com")
-                );
-
-
-        mockMvc.perform(get(TEST_URL)
-                        .header("Authorization", "dummy token"))
-                .andExpectAll(
-                        status().isForbidden()
-                );
-    }
-
-    @Test
-    void logoutTest() throws Exception {
-        mockMvc.perform(post(REGISTER_URL)
-                        .content(UNIQUE_ACC)
-                        .contentType(APPLICATION_JSON))
-                .andExpectAll(
-                        status().isOk(),
-                        jsonPath("$.message").exists(),
-                        jsonPath("$.message").isString(),
-                        jsonPath("$.message").value("Activation code's been sent to your email!")
-                );
-
-        ActivationCode activationCode = activationCodeRepository.findActivationCodeByAccount_Email("unique@gmail.com").orElseThrow();
-
-        mockMvc.perform(get(ACTIVATION_URL)
-                        .param("activationCode", activationCode.getKey()))
-                .andExpectAll(
-                        status().isOk(),
-                        jsonPath("$.message").exists(),
-                        jsonPath("$.message").isString(),
-                        jsonPath("$.message").value("Account successfully activated!")
-                );
-
-        ResultActions result = mockMvc.perform(post(AUTHENTICATE_URL)
-                        .content(UNIQUE_ACC)
-                        .contentType(APPLICATION_JSON))
-                .andExpectAll(
-                        status().isOk(),
-                        jsonPath("$.token").exists(),
-                        jsonPath("$.token").isString()
-                );
-
-        String token = getToken(result);
-
+    private void testEndpointWithValidToken(String token) throws Exception {
         mockMvc.perform(get(TEST_URL)
                         .header("Authorization", "Bearer " + token))
                 .andExpectAll(
                         status().isOk(),
                         content().string("Hello world!")
                 );
+    }
 
+    private void testEndpointWithInvalidToken(String token) throws Exception {
+        mockMvc.perform(get(TEST_URL)
+                        .header("Authorization", "Bearer " + token))
+                .andExpectAll(
+                        status().isForbidden()
+                );
+    }
+
+    private void logout(String token) throws Exception {
         mockMvc.perform(get(LOGOUT_URL)
                         .header("Authorization", "Bearer " + token))
                 .andExpectAll(
                         status().isOk(),
                         content().string("")
                 );
-
-        mockMvc.perform(get(TEST_URL)
-                        .header("Authorization", "Bearer " + token))
-                .andExpectAll(
-                        status().isForbidden()
-                );
     }
 
-    private String getToken(ResultActions resultActions) throws Exception {
+    private String extractTokenFromResponse(ResultActions resultActions) throws Exception {
         return new ObjectMapper()
                 .readTree(
                         resultActions.andReturn()

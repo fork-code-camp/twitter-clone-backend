@@ -16,8 +16,6 @@ import com.example.authentication.repository.ActivationCodeRepository;
 import com.example.authentication.repository.TokenRepository;
 import jakarta.persistence.EntityExistsException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -37,12 +35,12 @@ public class AuthenticationService {
     private final JwtService jwtService;
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
-    private final AuthenticationManager authenticationManager;
+    private final MessageSourceService messageService;
 
     public ActivationCodeResponse register(RegisterRequest request) {
         accountRepository.findByEmail(request.getEmail())
                 .ifPresent(account -> {
-                    throw new EntityExistsException("Account already exists: " + account.getEmail());
+                    throw new EntityExistsException(messageService.generateMessage("error.account.already_exists", account.getEmail()));
                 });
 
         Account newAccount = Account.builder()
@@ -59,7 +57,7 @@ public class AuthenticationService {
         sendNewActivationCode(newAccount);
 
         return ActivationCodeResponse.builder()
-                .message("Activation code's been sent to your email!")
+                .message(messageService.generateMessage("activation.send.success"))
                 .build();
     }
 
@@ -68,12 +66,12 @@ public class AuthenticationService {
                 .orElseThrow();
 
         if (!account.isEnabled()) {
-            throw new AccountNotActivatedException("Account not activated!");
+            throw new AccountNotActivatedException(messageService.generateMessage("error.account.not_activated", account.getEmail()));
         }
 
         var jwtToken = jwtService.generateToken(account);
 
-        revokeAllAccountTokens(account);
+        removePreviousAccountToken(account);
         saveAccountToken(account, jwtToken);
 
         return AuthenticationResponse.builder()
@@ -83,7 +81,7 @@ public class AuthenticationService {
 
     public ActivationCodeResponse activate(String key) {
         ActivationCode activationCode = activationCodeRepository.findActivationCodeByKey(key)
-                .orElseThrow(() -> new ActivationCodeNotFoundException("Activation code not found: " + key));
+                .orElseThrow(() -> new ActivationCodeNotFoundException(messageService.generateMessage("error.activation_code.not_found", key)));
 
         checkActivationCodeExpiration(activationCode);
 
@@ -91,7 +89,7 @@ public class AuthenticationService {
         activationCodeRepository.deleteById(activationCode.getId());
 
         return ActivationCodeResponse.builder()
-                .message("Account successfully activated!")
+                .message(messageService.generateMessage("account.activation.success"))
                 .build();
     }
 
@@ -106,15 +104,9 @@ public class AuthenticationService {
         tokenRepository.save(token);
     }
 
-    private void revokeAllAccountTokens(Account account) {
-        var validAccountTokens = tokenRepository.findAllValidTokenByAccount(account.getId());
-        if (validAccountTokens.isEmpty())
-            return;
-        validAccountTokens.forEach(token -> {
-            token.setExpired(true);
-            token.setRevoked(true);
-        });
-        tokenRepository.saveAll(validAccountTokens);
+    private void removePreviousAccountToken(Account account) {
+        tokenRepository.findByAccount_Id(account.getId())
+                .ifPresent(tokenRepository::delete);
     }
 
     private void checkActivationCodeExpiration(ActivationCode activationCode) {
@@ -124,7 +116,7 @@ public class AuthenticationService {
             activationCodeRepository.deleteById(activationCode.getId());
             sendNewActivationCode(activationCode.getAccount());
             long minutes = ChronoUnit.MINUTES.between(expirationTime, now);
-            throw new ActivationCodeExpiredException(String.format("Activation code %s expired %d minutes ago. New activation code has been sent.", activationCode.getKey(), minutes));
+            throw new ActivationCodeExpiredException(messageService.generateMessage("error.activation_code.expired", activationCode.getKey(), minutes, activationCode.getAccount().getEmail()));
         }
     }
 
