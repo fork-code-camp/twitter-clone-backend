@@ -28,8 +28,9 @@ public class AuthenticationService {
     public ActivationCodeResponse register(RegisterRequest request) {
         accountService.findAccountByEmail(request.getEmail())
                 .ifPresent(account -> {
-                    log.error("account with {} already exists", account.getEmail());
-                    throw new EntityExistsException(messageService.generateMessage("error.account.already_exists", account.getEmail()));
+                    throw new EntityExistsException(
+                            messageService.generateMessage("error.account.already_exists", account.getEmail())
+                    );
                 });
 
         Account newAccount = accountService.createNewAccount(request.getEmail(), request.getPassword());
@@ -45,18 +46,14 @@ public class AuthenticationService {
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
         var account = accountService.findAccountByEmail(request.getEmail())
-                .orElseThrow(() -> {
-                    log.error("account by email {} not found", request.getEmail());
-                    throw new EntityNotFoundException(messageService.generateMessage(
-                            "error.entity.not_found", request.getEmail())
-                    );
-                });
+                .orElseThrow(() -> new EntityNotFoundException(messageService.generateMessage(
+                        "error.entity.not_found", request.getEmail())
+                ));
 
         if (!account.isEnabled()) {
-            log.error("account {} is not activated", account.getId());
             throw new AccountNotActivatedException(
-                    messageService.generateMessage("error.account.not_activated", account.getEmail()
-                    ));
+                    messageService.generateMessage("error.account.not_activated", account.getEmail())
+            );
         }
 
         var jwtToken = jwtService.generateToken(account);
@@ -72,12 +69,9 @@ public class AuthenticationService {
 
     public ActivationCodeResponse activate(String key) {
         ActivationCode activationCode = activationCodeService.findActivationCodeByKey(key)
-                .orElseThrow(() -> {
-                    log.error("activation code not found by key {}", key);
-                    throw new ActivationCodeNotFoundException(
-                            messageService.generateMessage("error.activation_code.not_found", key)
-                    );
-                });
+                .orElseThrow(() -> new ActivationCodeNotFoundException(
+                        messageService.generateMessage("error.activation_code.not_found", key)
+                ));
 
         activationCodeService.checkActivationCodeExpiration(activationCode);
         accountService.enableAccount(activationCode.getAccount());

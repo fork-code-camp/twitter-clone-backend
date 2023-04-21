@@ -36,12 +36,9 @@ public class LogoutService implements LogoutHandler {
         String jwt = authHeader.substring(7);
         String userEmail = jwtService.extractEmail(jwt);
         Account account = accountService.findAccountByEmail(userEmail)
-                .orElseThrow(() -> {
-                    log.error("account by email {} not found", userEmail);
-                    throw new EntityNotFoundException(messageService.generateMessage(
-                            "error.entity.not_found", userEmail
-                    ));
-                });
+                .orElseThrow(() -> new EntityNotFoundException(messageService.generateMessage(
+                "error.entity.not_found", userEmail
+        )));
 
         accountTokenService.deleteAccountToken(account);
         SecurityContextHolder.clearContext();

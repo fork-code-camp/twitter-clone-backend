@@ -5,7 +5,6 @@ import com.example.authentication.entity.ActivationCode;
 import com.example.authentication.exception.ActivationCodeExpiredException;
 import com.example.authentication.repository.ActivationCodeRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -15,7 +14,6 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class ActivationCodeService {
 
     private final ActivationCodeRepository activationCodeRepository;
@@ -38,7 +36,6 @@ public class ActivationCodeService {
             sendNewActivationCode(activationCode.getAccount());
             long minutes = ChronoUnit.MINUTES.between(expirationTime, now);
 
-            log.error("activation code expired {} minutes ago", minutes);
             throw new ActivationCodeExpiredException(
                     messageService.generateMessage("error.activation_code.expired",
                             activationCode.getKey(),
