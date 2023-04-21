@@ -9,7 +9,10 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       PGDATA: /data/postgres
     volumes:
-      - ./data/authentication-service:/data/postgres
+      - data-authentication-service:/data/postgres
     ports:
       - 5432:5432
     restart: unless-stopped
+
+volumes:
+  data-authentication-service: {}
