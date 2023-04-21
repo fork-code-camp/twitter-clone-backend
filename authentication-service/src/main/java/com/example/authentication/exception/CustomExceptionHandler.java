@@ -1,6 +1,8 @@
 package com.example.authentication.exception;
 
 import jakarta.persistence.EntityExistsException;
+import jakarta.persistence.EntityNotFoundException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -9,6 +11,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import static org.springframework.http.HttpStatus.*;
 
 @ControllerAdvice
+@Slf4j
 public class CustomExceptionHandler {
 
     @ExceptionHandler(EntityExistsException.class)
@@ -29,6 +32,11 @@ public class CustomExceptionHandler {
     @ExceptionHandler(AccountNotActivatedException.class)
     public ResponseEntity<ErrorResponse> handleException(AccountNotActivatedException e) {
         return generateDefaultErrorResponse(FORBIDDEN, e);
+    }
+
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleException(EntityNotFoundException e) {
+        return generateDefaultErrorResponse(NOT_FOUND, e);
     }
 
     private ResponseEntity<ErrorResponse> generateDefaultErrorResponse(HttpStatus status, Exception e) {
