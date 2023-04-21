@@ -11,7 +11,11 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 
-import static com.example.authentication.integration.controller.Constants.*;
+import static com.example.authentication.integration.constants.AuthConstants.EXISTENT_ACCOUNT_EMAIL;
+import static com.example.authentication.integration.constants.AuthConstants.NEW_ACCOUNT_EMAIL;
+import static com.example.authentication.integration.constants.JsonConstants.EXISTENT_ACCOUNT_JSON;
+import static com.example.authentication.integration.constants.JsonConstants.NEW_ACCOUNT_JSON;
+import static com.example.authentication.integration.constants.UrlConstants.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -27,10 +31,10 @@ public class AuthenticationControllerTest extends IntegrationTestBase {
 
     @Test
     void testRegisterSuccess() throws Exception {
-        registerAccount(NEW_ACCOUNT_JSON.constant);
-        authenticateUnactivatedAccountAndExpectForbidden(NEW_ACCOUNT_JSON.constant, NEW_ACCOUNT_EMAIL.constant);
-        activateAccount(NEW_ACCOUNT_EMAIL.constant);
-        String token = authenticateAccountAndExpectToken(NEW_ACCOUNT_JSON.constant);
+        registerAccount(NEW_ACCOUNT_JSON.getConstant());
+        authenticateUnactivatedAccountAndExpectForbidden(NEW_ACCOUNT_JSON.getConstant(), NEW_ACCOUNT_EMAIL.getConstant());
+        activateAccount(NEW_ACCOUNT_EMAIL.getConstant());
+        String token = authenticateAccountAndExpectToken(NEW_ACCOUNT_JSON.getConstant());
         testEndpointWithValidToken(token);
         logout(token);
         testEndpointWithInvalidToken(token);
@@ -38,11 +42,11 @@ public class AuthenticationControllerTest extends IntegrationTestBase {
 
     @Test
     void testRegisterFailure() throws Exception {
-        registerExistingAccountAndExpectFailure(EXISTENT_ACCOUNT_JSON.constant, EXISTENT_ACCOUNT_EMAIL.constant);
+        registerExistingAccountAndExpectFailure(EXISTENT_ACCOUNT_JSON.getConstant(), EXISTENT_ACCOUNT_EMAIL.getConstant());
     }
 
     private void registerAccount(String account) throws Exception {
-        mockMvc.perform(post(REGISTER_URL.constant)
+        mockMvc.perform(post(REGISTER_URL.getConstant())
                         .content(account)
                         .contentType(APPLICATION_JSON))
                 .andExpectAll(
@@ -52,7 +56,7 @@ public class AuthenticationControllerTest extends IntegrationTestBase {
     }
 
     private void registerExistingAccountAndExpectFailure(String account, String email) throws Exception {
-        mockMvc.perform(post(REGISTER_URL.constant)
+        mockMvc.perform(post(REGISTER_URL.getConstant())
                         .content(account)
                         .contentType(APPLICATION_JSON))
                 .andExpectAll(
@@ -65,7 +69,7 @@ public class AuthenticationControllerTest extends IntegrationTestBase {
         ActivationCode activationCode = activationCodeRepository.findActivationCodeByAccount_Email(email)
                 .orElseThrow();
 
-        mockMvc.perform(get(ACTIVATION_URL.constant)
+        mockMvc.perform(get(ACTIVATION_URL.getConstant())
                         .param("activationCode", activationCode.getKey()))
                 .andExpectAll(
                         status().isOk(),
@@ -74,7 +78,7 @@ public class AuthenticationControllerTest extends IntegrationTestBase {
     }
 
     private String authenticateAccountAndExpectToken(String account) throws Exception {
-        ResultActions result = mockMvc.perform(post(AUTHENTICATE_URL.constant)
+        ResultActions result = mockMvc.perform(post(AUTHENTICATE_URL.getConstant())
                         .content(account)
                         .contentType(APPLICATION_JSON))
                 .andExpectAll(
@@ -86,7 +90,7 @@ public class AuthenticationControllerTest extends IntegrationTestBase {
     }
 
     private void authenticateUnactivatedAccountAndExpectForbidden(String account, String email) throws Exception {
-        mockMvc.perform(post(AUTHENTICATE_URL.constant)
+        mockMvc.perform(post(AUTHENTICATE_URL.getConstant())
                         .content(account)
                         .contentType(APPLICATION_JSON))
                 .andExpectAll(
@@ -96,7 +100,7 @@ public class AuthenticationControllerTest extends IntegrationTestBase {
     }
 
     private void testEndpointWithValidToken(String token) throws Exception {
-        mockMvc.perform(get(TEST_URL.constant)
+        mockMvc.perform(get(TEST_URL.getConstant())
                         .header("Authorization", "Bearer " + token))
                 .andExpectAll(
                         status().isOk(),
@@ -105,7 +109,7 @@ public class AuthenticationControllerTest extends IntegrationTestBase {
     }
 
     private void testEndpointWithInvalidToken(String token) throws Exception {
-        mockMvc.perform(get(TEST_URL.constant)
+        mockMvc.perform(get(TEST_URL.getConstant())
                         .header("Authorization", "Bearer " + token))
                 .andExpectAll(
                         status().isForbidden()
@@ -113,7 +117,7 @@ public class AuthenticationControllerTest extends IntegrationTestBase {
     }
 
     private void logout(String token) throws Exception {
-        mockMvc.perform(get(LOGOUT_URL.constant)
+        mockMvc.perform(get(LOGOUT_URL.getConstant())
                         .header("Authorization", "Bearer " + token))
                 .andExpectAll(
                         status().isOk(),
