@@ -19,6 +19,7 @@
 
     <modules>
 
+        <module>discovery-server</module>
     </modules>
 
     <properties>
