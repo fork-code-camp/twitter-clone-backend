@@ -1,5 +1,5 @@
 server:
-  port: ${PORT:0}
+  port: 0
 
 spring:
   datasource:
@@ -13,7 +13,7 @@ spring:
     show-sql: false
     properties:
       hibernate:
-        show_sql: true
+        show_sql: false
         format_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
   mail:
