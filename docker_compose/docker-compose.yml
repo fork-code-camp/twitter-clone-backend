@@ -14,5 +14,18 @@ services:
       - 5432:5432
     restart: unless-stopped
 
+  authentication-service:
+    container_name: authentication-service
+    hostname: authentication-service
+    image: eann1s/authentication-service
+    pull_policy: missing
+    ports:
+      - 8080:8080
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-authentication-service:5432/authentication-service
+    depends_on:
+      - postgres-authentication-service
+
 volumes:
   data-authentication-service: {}
