@@ -3,13 +3,13 @@ package com.example.authentication.service;
 import com.example.authentication.entity.Account;
 import com.example.authentication.entity.ActivationCode;
 import com.example.authentication.exception.ActivationCodeExpiredException;
+import com.example.authentication.exception.ActivationCodeNotFoundException;
 import com.example.authentication.repository.ActivationCodeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -20,8 +20,11 @@ public class ActivationCodeService {
     private final EmailService emailService;
     private final MessageSourceService messageService;
 
-    public Optional<ActivationCode> findActivationCodeByKey(String key) {
-        return activationCodeRepository.findActivationCodeByKey(key);
+    public ActivationCode findActivationCodeByKey(String key) {
+        return activationCodeRepository.findActivationCodeByKey(key)
+                .orElseThrow(() -> new ActivationCodeNotFoundException(
+                        messageService.generateMessage("error.activation_code.not_found", key)
+                ));
     }
 
     public void deleteActivationCodeById(Long id) {

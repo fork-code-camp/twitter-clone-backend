@@ -12,7 +12,6 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
 
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
 import static java.nio.charset.StandardCharsets.UTF_8;

@@ -4,9 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.ToString;
 
-@AllArgsConstructor
-@ToString
 @Getter
+@ToString
+@AllArgsConstructor
 public enum AuthConstants {
     AUTH_REQ_PATTERN ("{\"email\": \"%s\", \"password\": \"test\"}"),
 
