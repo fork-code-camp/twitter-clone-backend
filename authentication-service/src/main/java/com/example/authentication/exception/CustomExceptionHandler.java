@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import static org.springframework.http.HttpStatus.*;
 
-@ControllerAdvice
 @Slf4j
+@ControllerAdvice
 public class CustomExceptionHandler {
 
     @ExceptionHandler(EntityExistsException.class)

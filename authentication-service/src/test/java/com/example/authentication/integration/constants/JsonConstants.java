@@ -6,11 +6,10 @@ import lombok.ToString;
 
 import static com.example.authentication.integration.constants.AuthConstants.*;
 
-@AllArgsConstructor
-@ToString
 @Getter
+@ToString
+@AllArgsConstructor
 public enum JsonConstants {
-
     EXISTENT_ACCOUNT_JSON (AUTH_REQ_PATTERN.getConstant().formatted(EXISTENT_ACCOUNT_EMAIL.getConstant())),
     NEW_ACCOUNT_JSON (AUTH_REQ_PATTERN.getConstant().formatted(NEW_ACCOUNT_EMAIL.getConstant()));
 

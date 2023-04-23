@@ -27,7 +27,7 @@ public class Token implements BaseEntity<Long> {
     public TokenType tokenType = TokenType.BEARER;
 
     @Column(unique = true)
-    public String token;
+    public String jwt;
 
     public boolean revoked;
     public boolean expired;
