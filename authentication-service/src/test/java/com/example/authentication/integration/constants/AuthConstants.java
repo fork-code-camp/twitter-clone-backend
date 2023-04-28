@@ -8,7 +8,7 @@ import lombok.ToString;
 @ToString
 @AllArgsConstructor
 public enum AuthConstants {
-    AUTH_REQ_PATTERN("{\"email\": \"%s\", \"password\": \"test\"}"),
+    AUTH_REQ_PATTERN("{\"email\": \"%s\", \"password\": \"test_password\", \"username\": \"test_username\"}"),
 
     EXISTENT_ACCOUNT_EMAIL("test@gmail.com"),
     NEW_ACCOUNT_EMAIL("new_account@gmail.com");

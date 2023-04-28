@@ -1,6 +1,6 @@
 package com.example.authentication.client;
 
-import com.example.authentication.dto.request.ProfileRequest;
+import com.example.authentication.client.request.ProfileRequest;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;

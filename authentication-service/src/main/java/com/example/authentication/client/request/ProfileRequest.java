@@ -1,4 +1,4 @@
-package com.example.authentication.dto.request;
+package com.example.authentication.client.request;
 
 import java.time.LocalDate;
 

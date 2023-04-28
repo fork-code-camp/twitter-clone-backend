@@ -2,7 +2,7 @@ package com.example.authentication.service;
 
 import com.example.authentication.client.ProfileServiceClient;
 import com.example.authentication.dto.request.AuthenticationRequest;
-import com.example.authentication.dto.request.ProfileRequest;
+import com.example.authentication.client.request.ProfileRequest;
 import com.example.authentication.dto.request.RegisterRequest;
 import com.example.authentication.dto.response.ActivationCodeResponse;
 import com.example.authentication.dto.response.AuthenticationResponse;

@@ -2,6 +2,7 @@ package com.example.profile.controller;
 
 import com.example.profile.dto.request.ProfileRequest;
 import com.example.profile.service.ProfileService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,7 +18,7 @@ public class ProfileController {
     private final ProfileService profileService;
 
     @PostMapping
-    public ResponseEntity<String> createProfile(@RequestBody ProfileRequest profileRequest) {
+    public ResponseEntity<String> createProfile(@Valid @RequestBody ProfileRequest profileRequest) {
         return ResponseEntity.ok(profileService.createProfile(profileRequest)); // return generated profile id
     }
 }
