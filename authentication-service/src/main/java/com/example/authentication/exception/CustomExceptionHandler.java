@@ -1,5 +1,6 @@
 package com.example.authentication.exception;
 
+import com.example.authentication.dto.response.ErrorResponse;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
@@ -40,11 +41,11 @@ public class CustomExceptionHandler {
     }
 
     private ResponseEntity<ErrorResponse> generateDefaultErrorResponse(HttpStatus status, Exception e) {
-        ErrorResponse error = new ErrorResponse();
-
-        error.setCode(status.value());
-        error.setMessage(e.getMessage());
-        error.setTimestamp(System.currentTimeMillis());
+        ErrorResponse error = ErrorResponse.builder()
+                .code(status.value())
+                .message(e.getMessage())
+                .timestamp(System.currentTimeMillis())
+                .build();
 
         return new ResponseEntity<>(error, status);
     }

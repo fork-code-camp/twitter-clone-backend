@@ -1,9 +1,11 @@
 package com.example.authentication.service;
 
-import com.example.authentication.dto.ActivationCodeResponse;
-import com.example.authentication.dto.AuthenticationRequest;
-import com.example.authentication.dto.AuthenticationResponse;
-import com.example.authentication.dto.RegisterRequest;
+import com.example.authentication.client.ProfileServiceClient;
+import com.example.authentication.dto.request.AuthenticationRequest;
+import com.example.authentication.dto.request.ProfileRequest;
+import com.example.authentication.dto.request.RegisterRequest;
+import com.example.authentication.dto.response.ActivationCodeResponse;
+import com.example.authentication.dto.response.AuthenticationResponse;
 import com.example.authentication.entity.Account;
 import com.example.authentication.entity.ActivationCode;
 import com.example.authentication.exception.AccountNotActivatedException;
@@ -11,6 +13,8 @@ import jakarta.persistence.EntityExistsException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
 
 @Slf4j
 @Service
@@ -22,16 +26,21 @@ public class AuthenticationService {
     private final AccountService accountService;
     private final TokenService tokenService;
     private final MessageSourceService messageService;
+    private final ProfileServiceClient profileServiceClient;
 
     public ActivationCodeResponse register(RegisterRequest request) {
-        if (accountService.doesAccountExists(request.getEmail())) {
+        if (accountService.doesAccountExists(request.email())) {
             throw new EntityExistsException(
-                    messageService.generateMessage("error.account.already_exists", request.getEmail())
+                    messageService.generateMessage("error.account.already_exists", request.email())
             );
         }
 
-        Account newAccount = accountService.createNewAccount(request.getEmail(), request.getPassword());
+        Account newAccount = accountService.createNewAccount(request.email(), request.password(), false);
         log.info("account {} has been created", newAccount.getId());
+
+        ProfileRequest profileRequest = new ProfileRequest(request.username(), request.email(), LocalDate.now());
+        String profileId = profileServiceClient.createProfile(profileRequest);
+        log.info("profile {} has been created", profileId);
 
         activationCodeService.sendNewActivationCode(newAccount);
         log.info("activation code has been sent to {}", newAccount.getEmail());
@@ -42,7 +51,7 @@ public class AuthenticationService {
     }
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
-        Account account = accountService.findAccountByEmail(request.getEmail());
+        Account account = accountService.findAccountByEmail(request.email());
 
         if (!account.isEnabled()) {
             throw new AccountNotActivatedException(
@@ -57,7 +66,7 @@ public class AuthenticationService {
         log.info("jwt was generated {}", jwt);
 
         return AuthenticationResponse.builder()
-                .token(jwt)
+                .jwt(jwt)
                 .build();
     }
 

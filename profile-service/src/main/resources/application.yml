@@ -1,0 +1,15 @@
+server:
+  port: 8081
+
+spring:
+  data:
+    mongodb:
+      username: ${MONGO_USERNAME}
+      password: ${MONGO_PASSWORD}
+      host: localhost
+      port: 27017
+      database: Profile
+      authentication-database: admin
+
+  application:
+    name: profile-service

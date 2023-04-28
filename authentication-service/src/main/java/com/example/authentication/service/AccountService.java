@@ -2,7 +2,6 @@ package com.example.authentication.service;
 
 import com.example.authentication.entity.Account;
 import com.example.authentication.repository.AccountRepository;
-import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -25,7 +24,7 @@ public class AccountService {
                 ));
     }
 
-    public Account createNewAccount(String email, String password) {
+    public Account createNewAccount(String email, String password, boolean isEnabled) {
         return accountRepository.saveAndFlush(
                 Account.builder()
                         .email(email)
@@ -33,7 +32,7 @@ public class AccountService {
                         .isAccountNonLocked(true)
                         .isAccountNonExpired(true)
                         .isCredentialsNonExpired(true)
-                        .isEnabled(false)
+                        .isEnabled(isEnabled)
                         .role(USER)
                         .build()
         );

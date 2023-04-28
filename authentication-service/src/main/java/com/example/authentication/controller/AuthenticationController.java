@@ -1,9 +1,9 @@
 package com.example.authentication.controller;
 
-import com.example.authentication.dto.ActivationCodeResponse;
-import com.example.authentication.dto.AuthenticationRequest;
-import com.example.authentication.dto.AuthenticationResponse;
-import com.example.authentication.dto.RegisterRequest;
+import com.example.authentication.dto.response.ActivationCodeResponse;
+import com.example.authentication.dto.request.AuthenticationRequest;
+import com.example.authentication.dto.response.AuthenticationResponse;
+import com.example.authentication.dto.request.RegisterRequest;
 import com.example.authentication.service.AuthenticationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
