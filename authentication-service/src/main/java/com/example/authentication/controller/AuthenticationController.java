@@ -5,6 +5,7 @@ import com.example.authentication.dto.AuthenticationRequest;
 import com.example.authentication.dto.AuthenticationResponse;
 import com.example.authentication.dto.RegisterRequest;
 import com.example.authentication.service.AuthenticationService;
+import com.example.authentication.service.TokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuthenticationController {
 
     private final AuthenticationService authenticationService;
+    private final TokenService tokenService;
 
     @PostMapping("/register")
     public ResponseEntity<ActivationCodeResponse> register(@RequestBody RegisterRequest request) {
@@ -29,5 +31,10 @@ public class AuthenticationController {
     @GetMapping("/activate")
     public ResponseEntity<ActivationCodeResponse> activate(@RequestParam String activationCode) {
         return ResponseEntity.ok(authenticationService.activate(activationCode));
+    }
+
+    @GetMapping("/validate/{jwt}")
+    public ResponseEntity<Boolean> validateJwt(@PathVariable String jwt) {
+        return ResponseEntity.ok(tokenService.isTokenValid(jwt));
     }
 }

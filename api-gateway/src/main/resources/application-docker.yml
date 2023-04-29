@@ -1,10 +1,6 @@
 server:
   port: 8080
 
-spring:
-  datasource:
-    url: jdbc:postgresql://postgres-authentication-service:5432/authentication-service
-
 eureka:
   client:
     service-url:
