@@ -1,24 +1,29 @@
 package com.example.profile.controller;
 
-import com.example.profile.dto.request.ProfileRequest;
+import com.example.profile.dto.request.CreateProfileRequest;
+import com.example.profile.dto.request.UpdateProfileRequest;
+import com.example.profile.dto.response.ProfileResponse;
 import com.example.profile.service.ProfileService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/profile")
+@RequestMapping("/api/v1/profiles")
 public class ProfileController {
 
     private final ProfileService profileService;
 
     @PostMapping
-    public ResponseEntity<String> createProfile(@Valid @RequestBody ProfileRequest profileRequest) {
-        return ResponseEntity.ok(profileService.createProfile(profileRequest)); // return generated profile id
+    public ResponseEntity<String> createProfile(@Valid @RequestBody CreateProfileRequest request) {
+        return ResponseEntity.ok(profileService.createProfile(request));
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<ProfileResponse> updateProfile(@Valid @RequestBody UpdateProfileRequest request,
+                                                         @PathVariable String id) {
+        return ResponseEntity.ok(profileService.updateProfile(id, request));
     }
 }
