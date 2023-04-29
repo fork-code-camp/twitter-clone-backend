@@ -2,9 +2,12 @@ package com.example.authentication.integration.controller;
 
 import com.example.authentication.entity.ActivationCode;
 import com.example.authentication.integration.IntegrationTestBase;
+import com.example.authentication.integration.mocks.ProfileMock;
 import com.example.authentication.repository.ActivationCodeRepository;
 import com.example.authentication.service.MessageSourceService;
+import com.github.tomakehurst.wiremock.WireMockServer;
 import lombok.RequiredArgsConstructor;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.test.web.servlet.MockMvc;
@@ -28,6 +31,12 @@ public class AuthenticationControllerTest extends IntegrationTestBase {
     private final MockMvc mockMvc;
     private final ActivationCodeRepository activationCodeRepository;
     private final MessageSourceService messageService;
+    private final WireMockServer mockProfileService;
+
+    @BeforeEach
+    void setUp() {
+        ProfileMock.setupMockProfileResponse(mockProfileService);
+    }
 
     @Test
     void testRegisterSuccess() throws Exception {
@@ -83,7 +92,7 @@ public class AuthenticationControllerTest extends IntegrationTestBase {
                         .contentType(APPLICATION_JSON))
                 .andExpectAll(
                         status().isOk(),
-                        jsonPath("$.token").exists()
+                        jsonPath("$.jwt").exists()
                 );
 
         return extractTokenFromResponse(result);
@@ -104,7 +113,7 @@ public class AuthenticationControllerTest extends IntegrationTestBase {
                         .header("Authorization", "Bearer " + token))
                 .andExpectAll(
                         status().isOk(),
-                        content().string("Hello world!")
+                        content().string("Hello from secure endpoint!")
                 );
     }
 
@@ -132,7 +141,7 @@ public class AuthenticationControllerTest extends IntegrationTestBase {
                                 .getResponse()
                                 .getContentAsString()
                 )
-                .at("/token")
+                .at("/jwt")
                 .asText();
     }
 }

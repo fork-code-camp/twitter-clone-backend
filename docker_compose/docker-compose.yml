@@ -3,6 +3,9 @@ services:
     container_name: postgres-authentication-service
     hostname: postgres-authentication-service
     image: postgres:alpine3.17
+    restart: unless-stopped
+    ports:
+      - 5432:5432
     environment:
       POSTGRES_DB: authentication-service
       POSTGRES_USER: ${POSTGRES_USERNAME}
@@ -10,9 +13,6 @@ services:
       PGDATA: /data/postgres
     volumes:
       - data-authentication-service:/data/postgres
-    ports:
-      - 5432:5432
-    restart: unless-stopped
 
   authentication-service:
     container_name: authentication-service
@@ -27,5 +27,57 @@ services:
     depends_on:
       - postgres-authentication-service
 
+#  mongodb-profile-service:
+#    container_name: mongodb-profile-service # Name of the final container for this service
+#    hostname: mongodb-profile-service #Tells docker that this service has the hostname equal to mongo within the network among our services.
+#    image: mongo:4.4.3 # Name of the image to pull from
+#    restart: unless-stopped # If something bad internally happens in the container, restart it, unless some user stops the container manually
+#    ports:
+#      - 27017:27017
+#    environment:
+#      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
+#      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+#      MONGO_INITDB_DATABASE: ${MONGO_DB}
+#      MONGO_DB_USERNAME: ${MONGO_DB_USERNAME}
+#      MONGO_DB_PASSWORD: ${MONGO_DB_PASSWORD}
+
+  mongo:
+    container_name: mongo
+    hostname: mongo
+    image: mongo:jammy
+    restart: unless-stopped
+    ports:
+      - 27017:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+    volumes:
+      - mongo:/data/db
+
+#  profile-service: # This service needs a Dockerfile be present for building the docker image.
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+#    container_name: profile-service
+#    hostname: profile-service
+#    image: profile-service
+#    restart: on-failure
+#    ports:
+#      - 8081:8081
+#    environment:
+#      SERVER_PORT: 8081 # The port to start the server inside the container
+#      SPRING_PROFILES_ACTIVE: docker # Active profile of our app
+#      SPRING_APPLICATION_NAME: profile-service
+#      SPRING_DATA_MONGODB_AUTHENTICATION_DATABASE: ${MONGO_DB}
+#      SPRING_DATA_MONGODB_AUTO_INDEX_CREATION: ${MONGO_AUTO_INDEX_CREATION}
+#      SPRING_DATA_MONGODB_HOST: mongodb-profile-service
+#      SPRING_DATA_MONGODB_PORT: 27017
+#      SPRING_DATA_MONGODB_USERNAME: ${MONGO_DB_USERNAME}
+#      SPRING_DATA_MONGODB_PASSWORD: ${MONGO_DB_PASSWORD}
+#      SPRING_DATA_MONGODB_DATABASE: ${MONGO_DB}
+#    depends_on: # This service depends on mongo service to be started
+#      - mongodb-profile-service
+
 volumes:
   data-authentication-service: {}
+  mongo: {}

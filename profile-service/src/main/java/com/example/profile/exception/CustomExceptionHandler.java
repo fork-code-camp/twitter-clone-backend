@@ -1,10 +1,6 @@
-package com.example.authentication.exception;
+package com.example.profile.exception;
 
-import com.example.authentication.dto.response.ErrorResponse;
-import jakarta.persistence.EntityExistsException;
-import jakarta.persistence.EntityNotFoundException;
-import jakarta.validation.ConstraintViolationException;
-import lombok.extern.slf4j.Slf4j;
+import com.example.profile.dto.response.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -15,9 +11,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.springframework.http.HttpStatus.*;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
-@Slf4j
 @ControllerAdvice
 public class CustomExceptionHandler {
 
@@ -31,32 +26,6 @@ public class CustomExceptionHandler {
         });
 
         return new ResponseEntity<>(errors, BAD_REQUEST);
-    }
-
-    @ExceptionHandler({
-            EntityNotFoundException.class,
-            ActivationCodeNotFoundException.class
-    })
-    public ResponseEntity<ErrorResponse> handleNotFoundException(Exception e) {
-        return generateDefaultErrorResponse(NOT_FOUND, e);
-    }
-
-    @ExceptionHandler({
-            EntityExistsException.class,
-            ConstraintViolationException.class
-    })
-    public ResponseEntity<ErrorResponse> handleBadRequestException(Exception e) {
-        return generateDefaultErrorResponse(BAD_REQUEST, e);
-    }
-
-    @ExceptionHandler(ActivationCodeExpiredException.class)
-    public ResponseEntity<ErrorResponse> handleException(ActivationCodeExpiredException e) {
-        return generateDefaultErrorResponse(GONE, e);
-    }
-
-    @ExceptionHandler(AccountNotActivatedException.class)
-    public ResponseEntity<ErrorResponse> handleException(AccountNotActivatedException e) {
-        return generateDefaultErrorResponse(FORBIDDEN, e);
     }
 
     private ResponseEntity<ErrorResponse> generateDefaultErrorResponse(HttpStatus status, Exception e) {
