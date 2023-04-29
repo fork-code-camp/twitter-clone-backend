@@ -26,6 +26,12 @@ public class ProfileService {
                 .orElseThrow();
     }
 
+    public ProfileResponse getProfile(String id) {
+        return profileRepository.findById(id)
+                .map(profileMapper::toResponse)
+                .orElseThrow();
+    }
+
     public ProfileResponse updateProfile(String id, UpdateProfileRequest updateProfileRequest) {
         return profileRepository.findById(id)
                 .map(profile -> {
