@@ -2,6 +2,8 @@ server:
   port: 8080
 
 spring:
+  application:
+    name: authentication-service
   datasource:
     url: jdbc:postgresql://localhost:5432/authentication-service
     username: ${POSTGRES_USERNAME}
@@ -29,10 +31,14 @@ spring:
           starttls.enable: true
           ssl.trust: smtp.gmail.com
 
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+
 secret:
   key: ${SECRET_KEY}
 
 services:
   profile:
-    url: http://localhost:8081
     name: profile-service

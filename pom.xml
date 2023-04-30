@@ -9,13 +9,20 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
-    <groupId>org.example</groupId>
+    <groupId>com.example</groupId>
     <artifactId>twitter-clone-backend</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>twitter-clone-backend</name>
-    <url>https://maven.apache.org</url>
+    <url>http://maven.apache.org</url>
+
+    <modules>
+        <module>discovery-server</module>
+        <module>authentication-service</module>
+        <module>api-gateway</module>
+        <module>profile-service</module>
+    </modules>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

@@ -5,7 +5,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@FeignClient(name = "${services.profile.name}", url = "${services.profile.url}")
+@FeignClient(name = "${services.profile.name}")
 public interface ProfileServiceClient {
 
     @PostMapping(value = "/api/v1/profiles")

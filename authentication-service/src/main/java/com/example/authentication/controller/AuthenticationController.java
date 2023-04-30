@@ -5,6 +5,7 @@ import com.example.authentication.dto.request.RegisterRequest;
 import com.example.authentication.dto.response.ActivationCodeResponse;
 import com.example.authentication.dto.response.AuthenticationResponse;
 import com.example.authentication.service.AuthenticationService;
+import com.example.authentication.service.TokenService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuthenticationController {
 
     private final AuthenticationService authenticationService;
+    private final TokenService tokenService;
 
     @PostMapping("/register")
     public ResponseEntity<ActivationCodeResponse> register(@Valid @RequestBody RegisterRequest request) {
@@ -36,5 +38,10 @@ public class AuthenticationController {
             String activationCode
     ) {
         return ResponseEntity.ok(authenticationService.activate(activationCode));
+    }
+
+    @GetMapping("/validate/{jwt}")
+    public ResponseEntity<Boolean> validateJwt(@PathVariable String jwt) {
+        return ResponseEntity.ok(tokenService.isTokenValid(jwt));
     }
 }

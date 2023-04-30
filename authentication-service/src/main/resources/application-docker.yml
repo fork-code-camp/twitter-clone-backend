@@ -4,3 +4,8 @@ server:
 spring:
   datasource:
     url: jdbc:postgresql://postgres-authentication-service:5432/authentication-service
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://discovery-server:8761/eureka
