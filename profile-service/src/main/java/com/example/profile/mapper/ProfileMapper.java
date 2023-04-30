@@ -13,6 +13,7 @@ import org.mapstruct.Mappings;
 public interface ProfileMapper {
 
     Profile toEntity(CreateProfileRequest createProfileRequest);
+
     ProfileResponse toResponse(Profile profile);
 
     @Mappings({
