@@ -24,6 +24,13 @@ spring:
           filters:
             - Authentication
 
+        - id: profile-service
+          uri: lb://PROFILE-SERVICE
+          predicates:
+            - Path=/api/v1/profiles/**,/api/v1/follows/**
+          filters:
+            - Authentication
+
 logging:
   level:
     root: info

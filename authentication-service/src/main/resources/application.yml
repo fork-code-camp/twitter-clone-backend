@@ -38,3 +38,7 @@ eureka:
 
 secret:
   key: ${SECRET_KEY}
+
+services:
+  profile:
+    name: profile-service

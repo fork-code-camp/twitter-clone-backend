@@ -5,20 +5,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-import java.time.LocalDateTime;
-
-import static org.springframework.http.HttpStatus.*;
+import static org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE;
+import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 @ControllerAdvice
 public class ApigExceptionHandler {
 
-    @ExceptionHandler(InvalidTokenException.class)
-    public ResponseEntity<ErrorMessage> handleException(InvalidTokenException e) {
-        return generateErrorMessage(e, UNAUTHORIZED);
-    }
-
-    @ExceptionHandler(MissingTokenException.class)
-    public ResponseEntity<ErrorMessage> handleException(MissingTokenException e) {
+    @ExceptionHandler({InvalidTokenException.class, MissingTokenException.class})
+    public ResponseEntity<ErrorMessage> handleException(Exception e) {
         return generateErrorMessage(e, UNAUTHORIZED);
     }
 
@@ -30,7 +24,7 @@ public class ApigExceptionHandler {
     private ResponseEntity<ErrorMessage> generateErrorMessage(Exception e, HttpStatus status) {
         ErrorMessage errorMessage = ErrorMessage.builder()
                 .message(e.getMessage())
-                .timestamp(LocalDateTime.now())
+                .timestamp(System.currentTimeMillis())
                 .status(status.value())
                 .build();
         return new ResponseEntity<>(errorMessage, status);
