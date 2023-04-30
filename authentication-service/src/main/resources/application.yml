@@ -1,5 +1,5 @@
 server:
-  port: 0
+  port: 8080
 
 spring:
   application:
@@ -15,7 +15,7 @@ spring:
     show-sql: false
     properties:
       hibernate:
-        show_sql: false
+        show_sql: true
         format_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
   mail:

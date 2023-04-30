@@ -34,7 +34,7 @@ public class TokenService {
         tokenRepository.findByAccount_Id(account.getId())
                 .ifPresent(tokenRepository::delete);
     }
-
+    
     public boolean isTokenValid(String jwt) {
         UserDetails userDetails = takeUserDetailsFromJwt(jwt);
         return tokenRepository.findByJwt(jwt)

@@ -3,6 +3,9 @@ services:
     container_name: postgres-authentication-service
     hostname: postgres-authentication-service
     image: postgres:alpine3.17
+    restart: unless-stopped
+    ports:
+      - 5432:5432
     environment:
       POSTGRES_DB: authentication-service
       POSTGRES_USER: ${POSTGRES_USERNAME}
@@ -10,9 +13,6 @@ services:
       PGDATA: /data/postgres
     volumes:
       - data-authentication-service:/data/postgres
-    ports:
-      - 5432:5432
-    restart: unless-stopped
 
   authentication-service:
     container_name: authentication-service
