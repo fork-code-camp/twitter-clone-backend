@@ -32,8 +32,7 @@ public class AuthenticationController {
 
     @GetMapping("/activate")
     public ResponseEntity<ActivationCodeResponse> activate(
-            @RequestParam
-            @Pattern(regexp = "^\\w{8}-\\w{4}-\\w{4}-\\w{4}-\\w{12}$", message = "{activation.invalid}")
+            @RequestParam @Pattern(regexp = "^\\w{8}-\\w{4}-\\w{4}-\\w{4}-\\w{12}$", message = "{activation.invalid}")
             String activationCode
     ) {
         return ResponseEntity.ok(authenticationService.activate(activationCode));

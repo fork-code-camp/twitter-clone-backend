@@ -10,6 +10,16 @@ spring:
       port: 27017
       database: Profile
       authentication-database: admin
+      auto-index-creation: true
 
   application:
     name: profile-service
+
+logging:
+  level:
+    org:
+      springframework:
+        data:
+          mongodb:
+            core:
+              MongoTemplate: DEBUG

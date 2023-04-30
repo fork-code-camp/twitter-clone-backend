@@ -2,7 +2,7 @@ package com.example.authentication.service;
 
 import com.example.authentication.client.ProfileServiceClient;
 import com.example.authentication.dto.request.AuthenticationRequest;
-import com.example.authentication.client.request.ProfileRequest;
+import com.example.authentication.client.request.CreateProfileRequest;
 import com.example.authentication.dto.request.RegisterRequest;
 import com.example.authentication.dto.response.ActivationCodeResponse;
 import com.example.authentication.dto.response.AuthenticationResponse;
@@ -38,8 +38,8 @@ public class AuthenticationService {
         Account newAccount = accountService.createNewAccount(request.email(), request.password(), false);
         log.info("account {} has been created", newAccount.getId());
 
-        ProfileRequest profileRequest = new ProfileRequest(request.username(), request.email(), LocalDate.now());
-        String profileId = profileServiceClient.createProfile(profileRequest);
+        CreateProfileRequest createProfileRequest = new CreateProfileRequest(request.username(), request.email(), LocalDate.now());
+        String profileId = profileServiceClient.createProfile(createProfileRequest);
         log.info("profile {} has been created", profileId);
 
         activationCodeService.sendNewActivationCode(newAccount);

@@ -1,6 +1,7 @@
 package com.example.profile.exception;
 
 import com.example.profile.dto.response.ErrorResponse;
+import com.mongodb.MongoWriteException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -26,6 +27,11 @@ public class CustomExceptionHandler {
         });
 
         return new ResponseEntity<>(errors, BAD_REQUEST);
+    }
+
+    @ExceptionHandler(MongoWriteException.class)
+    public ResponseEntity<ErrorResponse> handleException(MongoWriteException e) {
+        return generateDefaultErrorResponse(BAD_REQUEST, e);
     }
 
     private ResponseEntity<ErrorResponse> generateDefaultErrorResponse(HttpStatus status, Exception e) {

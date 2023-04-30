@@ -27,20 +27,6 @@ services:
     depends_on:
       - postgres-authentication-service
 
-#  mongodb-profile-service:
-#    container_name: mongodb-profile-service # Name of the final container for this service
-#    hostname: mongodb-profile-service #Tells docker that this service has the hostname equal to mongo within the network among our services.
-#    image: mongo:4.4.3 # Name of the image to pull from
-#    restart: unless-stopped # If something bad internally happens in the container, restart it, unless some user stops the container manually
-#    ports:
-#      - 27017:27017
-#    environment:
-#      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
-#      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
-#      MONGO_INITDB_DATABASE: ${MONGO_DB}
-#      MONGO_DB_USERNAME: ${MONGO_DB_USERNAME}
-#      MONGO_DB_PASSWORD: ${MONGO_DB_PASSWORD}
-
   mongo:
     container_name: mongo
     hostname: mongo

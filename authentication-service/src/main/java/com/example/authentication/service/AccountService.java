@@ -47,14 +47,4 @@ public class AccountService {
         return accountRepository.findByEmail(email)
                 .isPresent();
     }
-
-    public void enableAccount(Account account) {
-        account.setEnabled(true);
-        accountRepository.saveAndFlush(account);
-    }
-
-    public boolean doesAccountExists(String email) {
-        return accountRepository.findByEmail(email)
-                .isPresent();
-    }
 }
