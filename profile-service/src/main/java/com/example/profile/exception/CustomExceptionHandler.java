@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 @ControllerAdvice
 public class CustomExceptionHandler {
@@ -32,6 +33,14 @@ public class CustomExceptionHandler {
     @ExceptionHandler(MongoWriteException.class)
     public ResponseEntity<ErrorResponse> handleException(MongoWriteException e) {
         return generateDefaultErrorResponse(BAD_REQUEST, e);
+    }
+
+    @ExceptionHandler({
+            MissingTokenException.class,
+            NonAuthorizedException.class
+    })
+    public ResponseEntity<ErrorResponse> handleException(Exception e) {
+        return generateDefaultErrorResponse(UNAUTHORIZED, e);
     }
 
     private ResponseEntity<ErrorResponse> generateDefaultErrorResponse(HttpStatus status, Exception e) {

@@ -1,5 +1,5 @@
 server:
-  port: 8081
+  port: 0
 
 spring:
   data:
@@ -28,3 +28,7 @@ logging:
           mongodb:
             core:
               MongoTemplate: DEBUG
+
+feign:
+  auth-client:
+    name: authentication-service
