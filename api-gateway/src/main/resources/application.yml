@@ -36,3 +36,7 @@ logging:
     root: info
     org.springframework.cloud.gateway.route.RouteDefinitionLocator: info
     org.springframework.cloud.gateway: trace
+
+feign:
+  auth-client:
+    name: authentication-service

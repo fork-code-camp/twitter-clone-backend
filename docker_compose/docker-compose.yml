@@ -19,13 +19,12 @@ services:
     hostname: authentication-service
     image: eann1s/authentication-service
     pull_policy: missing
-    ports:
-      - 8080:8080
     environment:
       - SPRING_PROFILES_ACTIVE=docker
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-authentication-service:5432/authentication-service
     depends_on:
       - postgres-authentication-service
+      - api-gateway
 
   mongo:
     container_name: mongo
@@ -39,6 +38,42 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
     volumes:
       - mongo:/data/db
+
+  profile-service:
+    container_name: profile-service
+    hostname: profile-service
+    image: eann1s/profile-service
+    restart: unless-stopped
+    pull_policy: missing
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      - mongo
+      - api-gateway
+
+  api-gateway:
+    container_name: api-gateway
+    hostname: api-gateway
+    image: eann1s/api-gateway
+    restart: unless-stopped
+    pull_policy: missing
+    ports:
+      - 8080:8080
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      - discovery-server
+
+  discovery-server:
+    container_name: discovery-server
+    image: eann1s/discovery-server
+    hostname: discovery-server
+    restart: unless-stopped
+    pull_policy: missing
+    ports:
+      - 8761:8761
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
 
 volumes:
   data-authentication-service: {}

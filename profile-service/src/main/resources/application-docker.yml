@@ -5,3 +5,12 @@ eureka:
   client:
     service-url:
       defaultZone: http://discovery-server:8761/eureka
+
+spring:
+  data:
+    mongodb:
+      username: ${MONGO_USERNAME}
+      password: ${MONGO_PASSWORD}
+      host: mongo
+      port: 27017
+      database: Profile

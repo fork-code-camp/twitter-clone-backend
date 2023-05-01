@@ -10,3 +10,11 @@ spring:
     properties.hibernate:
       ddl-auto: update
     show-sql: true
+
+eureka:
+  client:
+    enabled: false
+
+services:
+  profile:
+    url: http://localhost:8081

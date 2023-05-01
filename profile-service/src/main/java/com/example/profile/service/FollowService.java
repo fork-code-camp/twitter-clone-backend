@@ -1,10 +1,17 @@
 package com.example.profile.service;
 
+import com.example.profile.client.AuthClient;
 import com.example.profile.entity.Follow;
 import com.example.profile.entity.Profile;
+import com.example.profile.exception.MissingTokenException;
+import com.example.profile.exception.NonAuthorizedException;
 import com.example.profile.repository.FollowRepository;
 import com.example.profile.repository.ProfileRepository;
+import com.google.common.net.HttpHeaders;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -12,12 +19,15 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class FollowService {
 
     private final FollowRepository followRepository;
     private final ProfileRepository profileRepository;
+    private final AuthClient authClient;
 
-    public boolean follow(String followeeId, String email) {
+    public boolean follow(String followeeId, HttpServletRequest httpServletRequest) {
+        String email = getUserEmail(httpServletRequest);
         return profileRepository.findByEmail(email)
                 .map(Profile::getId)
                 .map(followerId -> Follow.builder()
@@ -29,7 +39,8 @@ public class FollowService {
                 .isPresent();
     }
 
-    public boolean unfollow(String followeeId, String email) {
+    public boolean unfollow(String followeeId, HttpServletRequest httpServletRequest) {
+        String email = getUserEmail(httpServletRequest);
         return profileRepository.findByEmail(email)
                 .map(Profile::getId)
                 .map(followerId ->
@@ -51,10 +62,31 @@ public class FollowService {
                 .toList();
     }
 
-    public boolean isFollowed(String followeeId, String email) {
+    public boolean isFollowed(String followeeId, HttpServletRequest httpServletRequest) {
+        String email = getUserEmail(httpServletRequest);
         return profileRepository.findByEmail(email)
                 .map(Profile::getId)
                 .map(followerId -> followRepository.existsByFollowerProfile_IdAndFolloweeProfile_Id(followerId, followeeId))
                 .orElseThrow();
+    }
+
+    private String getUserEmail(HttpServletRequest httpServletRequest) {
+        String bearerToken = httpServletRequest.getHeader(HttpHeaders.AUTHORIZATION);
+        if (bearerToken == null || StringUtils.isEmpty(bearerToken) || StringUtils.isBlank(bearerToken)) {
+            throw new MissingTokenException(
+                    "You haven't authentication token. Please authenticate and try again."
+            );
+        }
+
+        String email = authClient.getPrincipalUsername(bearerToken);
+        log.info("Email {} has been successfully extracted", email);
+
+        if (email == null) {
+            throw new NonAuthorizedException(
+                    "You are not authorized."
+            );
+        }
+
+        return email;
     }
 }
