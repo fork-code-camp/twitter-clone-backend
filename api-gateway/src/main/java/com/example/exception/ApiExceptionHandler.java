@@ -9,7 +9,7 @@ import static org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 @ControllerAdvice
-public class ApigExceptionHandler {
+public class ApiExceptionHandler {
 
     @ExceptionHandler({InvalidTokenException.class, MissingTokenException.class})
     public ResponseEntity<ErrorMessage> handleException(Exception e) {

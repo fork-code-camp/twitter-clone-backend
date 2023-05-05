@@ -1,34 +1,8 @@
-server:
-  port: 0
-
 spring:
-  data:
-    mongodb:
-      username: ${MONGO_USERNAME}
-      password: ${MONGO_PASSWORD}
-      host: localhost
-      port: 27017
-      database: Profile
-      authentication-database: admin
-      auto-index-creation: true
-
   application:
     name: profile-service
-
-eureka:
-  client:
-    service-url:
-      defaultZone: http://localhost:8761/eureka
-
-logging:
-  level:
-    org:
-      springframework:
-        data:
-          mongodb:
-            core:
-              MongoTemplate: DEBUG
-
-feign:
-  auth-client:
-    name: authentication-service
+  config:
+    import: "configserver:"
+  cloud:
+    config:
+      uri: http://localhost:8888
