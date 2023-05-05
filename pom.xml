@@ -22,6 +22,7 @@
         <module>authentication-service</module>
         <module>api-gateway</module>
         <module>profile-service</module>
+        <module>tweet-service</module>
     </modules>
 
     <properties>
@@ -86,7 +87,7 @@
                         <image>eclipse-temurin:17.0.6_10-jre-alpine</image>
                     </from>
                     <to>
-                        <image>registry.hub.docker.com/eann1s/${project.artifactId}</image>
+                        <image>registry.hub.docker.com/twitterclone0/${project.artifactId}</image>
                     </to>
                 </configuration>
             </plugin>

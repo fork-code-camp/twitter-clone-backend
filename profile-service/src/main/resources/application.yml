@@ -29,6 +29,6 @@ logging:
             core:
               MongoTemplate: DEBUG
 
-feign:
-  auth-client:
+services:
+  auth:
     name: authentication-service

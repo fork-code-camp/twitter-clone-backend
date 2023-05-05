@@ -1,0 +1,13 @@
+server:
+  port: 8082
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://discovery-server:8761/eureka
+
+spring:
+  datasource:
+    url: jdbc:postgresql://postgres-tweet-service:5431/tweet-service
+    username: ${POSTGRES_USERNAME}
+    password: ${POSTGRES_PASSWORD}

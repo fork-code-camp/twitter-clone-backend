@@ -12,8 +12,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.http.HttpStatus.UNAUTHORIZED;
+import static org.springframework.http.HttpStatus.*;
 
 @ControllerAdvice
 public class CustomExceptionHandler {
@@ -35,12 +34,19 @@ public class CustomExceptionHandler {
         return generateDefaultErrorResponse(BAD_REQUEST, e);
     }
 
-    @ExceptionHandler({
-            MissingTokenException.class,
-            NonAuthorizedException.class
-    })
-    public ResponseEntity<ErrorResponse> handleException(Exception e) {
-        return generateDefaultErrorResponse(UNAUTHORIZED, e);
+    @ExceptionHandler(CreateEntityException.class)
+    public ResponseEntity<ErrorResponse> handleException(CreateEntityException e) {
+        return generateDefaultErrorResponse(UNPROCESSABLE_ENTITY, e);
+    }
+
+    @ExceptionHandler(ActionNotAllowedException.class)
+    public ResponseEntity<ErrorResponse> handleException(ActionNotAllowedException e) {
+        return generateDefaultErrorResponse(FORBIDDEN, e);
+    }
+
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleException(EntityNotFoundException e) {
+        return generateDefaultErrorResponse(NOT_FOUND, e);
     }
 
     private ResponseEntity<ErrorResponse> generateDefaultErrorResponse(HttpStatus status, Exception e) {
