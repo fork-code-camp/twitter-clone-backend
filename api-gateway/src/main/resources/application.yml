@@ -1,42 +1,8 @@
-server:
-  port: 8080
-
-eureka:
-  client:
-    service-url:
-      defaultZone: http://localhost:8761/eureka
-
 spring:
   application:
     name: api-gateway
+  config:
+    import: "configserver:"
   cloud:
-    gateway:
-      routes:
-        - id: authentication-service
-          uri: lb://AUTHENTICATION-SERVICE
-          predicates:
-            - Path=/api/v1/auth/**
-
-        - id: test
-          uri: lb://AUTHENTICATION-SERVICE
-          predicates:
-            - Path=/api/v1/test
-          filters:
-            - Authentication
-
-        - id: profile-service
-          uri: lb://PROFILE-SERVICE
-          predicates:
-            - Path=/api/v1/profiles/**,/api/v1/follows/**
-          filters:
-            - Authentication
-
-logging:
-  level:
-    root: info
-    org.springframework.cloud.gateway.route.RouteDefinitionLocator: info
-    org.springframework.cloud.gateway: trace
-
-feign:
-  auth-client:
-    name: authentication-service
+    config:
+      uri: http://localhost:8888

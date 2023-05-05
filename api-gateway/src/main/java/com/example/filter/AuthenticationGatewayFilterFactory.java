@@ -13,8 +13,8 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
-@Component
 @Slf4j
+@Component
 public class AuthenticationGatewayFilterFactory extends AbstractGatewayFilterFactory<AuthenticationGatewayFilterFactory.Config> {
 
     private final AuthClient authClient;
@@ -31,7 +31,7 @@ public class AuthenticationGatewayFilterFactory extends AbstractGatewayFilterFac
 
             headers.computeIfAbsent(HttpHeaders.AUTHORIZATION, (key) -> {
                 throw new MissingTokenException(
-                        "You haven't authentication token, please authenticate."
+                        "You dont have authentication token, please, authenticate."
                 );
             });
 
@@ -72,7 +72,7 @@ public class AuthenticationGatewayFilterFactory extends AbstractGatewayFilterFac
     }
 
     private String extractJwt(HttpHeaders headers) {
-        String jwt = headers.get(HttpHeaders.AUTHORIZATION).get(0);
+        String jwt = headers.getFirst(HttpHeaders.AUTHORIZATION);
         if (jwt != null && jwt.startsWith("Bearer ")) {
             jwt = jwt.substring(7);
         }
