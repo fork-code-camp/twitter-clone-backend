@@ -42,14 +42,15 @@
         </dependency>
 
         <dependency>
-            <groupId>me.paulschwarz</groupId>
-            <artifactId>spring-dotenv</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
+        </dependency>
+
+        <!-- *** SPRING CLOUD CONFIG *** -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-config</artifactId>
         </dependency>
 
         <!-- *** VALIDATION *** -->
@@ -69,7 +70,7 @@
             <artifactId>mapstruct</artifactId>
             <version>${mapstruct.version}</version>
         </dependency>
-       <dependency> <!-- this is optional, but recommended for improved build times -->
+        <dependency> <!-- this is optional, but recommended for improved build times -->
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct-processor</artifactId>
             <version>${mapstruct.version}</version>
@@ -121,4 +122,5 @@
             </plugin>
         </plugins>
     </build>
+
 </project>

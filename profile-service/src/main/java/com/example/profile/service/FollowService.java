@@ -50,14 +50,14 @@ public class FollowService {
     public List<Profile> getFollowers(String profileId) {
         return followRepository.findAllByFolloweeProfile_Id(profileId)
                 .stream()
-                .map(Follow::getFolloweeProfile)
+                .map(Follow::getFollowerProfile)
                 .toList();
     }
 
     public List<Profile> getFollowees(String profileId) {
         return followRepository.findAllByFollowerProfile_Id(profileId)
                 .stream()
-                .map(Follow::getFollowerProfile)
+                .map(Follow::getFolloweeProfile)
                 .toList();
     }
 

@@ -91,6 +91,6 @@ services:
       - SPRING_PROFILES_ACTIVE=docker
 
 volumes:
-  data-authentication-service: {}
-  data-tweet-service: {}
-  mongo: {}
+  data-authentication-service: { }
+  mongo: { }
+  data-tweet-service: { }

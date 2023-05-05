@@ -17,18 +17,18 @@ public class FollowController {
     private final FollowService followService;
 
     @GetMapping("/{followeeId}")
-    private ResponseEntity<Boolean> isFollowed(@PathVariable String followeeId, HttpServletRequest httpServletRequest) {
-        return ResponseEntity.ok(followService.isFollowed(followeeId, httpServletRequest));
+    private ResponseEntity<Boolean> isFollowed(@PathVariable String followeeId, HttpServletRequest request) {
+        return ResponseEntity.ok(followService.isFollowed(followeeId, request));
     }
 
     @PostMapping("/{followeeId}")
-    public ResponseEntity<Boolean> follow(@PathVariable String followeeId, HttpServletRequest httpServletRequest) {
-        return ResponseEntity.ok(followService.follow(followeeId, httpServletRequest));
+    public ResponseEntity<Boolean> follow(@PathVariable String followeeId, HttpServletRequest request) {
+        return ResponseEntity.ok(followService.follow(followeeId, request));
     }
 
     @DeleteMapping("/{followeeId}")
-    public ResponseEntity<Boolean> unfollow(@PathVariable String followeeId, HttpServletRequest httpServletRequest) {
-        return ResponseEntity.ok(followService.unfollow(followeeId, httpServletRequest));
+    public ResponseEntity<Boolean> unfollow(@PathVariable String followeeId, HttpServletRequest request) {
+        return ResponseEntity.ok(followService.unfollow(followeeId, request));
     }
 
     @GetMapping("/followers/{profileId}")
