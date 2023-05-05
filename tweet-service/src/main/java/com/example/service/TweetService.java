@@ -6,6 +6,7 @@ import com.example.dto.response.TweetResponse;
 import com.example.entity.Tweet;
 import com.example.exception.CreateEntityException;
 import com.example.mapper.TweetMapper;
+import com.example.repository.LikesRepository;
 import com.example.repository.TweetRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,7 +20,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class TweetService {
 
-    private final LikeService likeService;
+    private final LikesRepository likeRepository;
     private final TweetRepository tweetRepository;
     private final ProfileClientService profileClientService;
     private final TweetMapper tweetMapper;
@@ -86,7 +87,7 @@ public class TweetService {
 
         if (tweetResponse.getCreationDate() == null) tweetResponse.setCreationDate(LocalDateTime.now());
 
-        Long likes = likeService.getLikesForTweetById(tweet.getId());
+        Long likes = likeRepository.countAllByTweetId(tweet.getId());
         String profileUsername = profileClientService.getProfileUsername(httpServletRequest);
 
         tweetResponse.setLikes(likes);

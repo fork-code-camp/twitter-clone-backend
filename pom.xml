@@ -23,6 +23,7 @@
         <module>api-gateway</module>
         <module>profile-service</module>
         <module>tweet-service</module>
+        <module>spring-cloud-config-server</module>
     </modules>
 
     <properties>

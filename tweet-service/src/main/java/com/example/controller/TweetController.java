@@ -36,7 +36,7 @@ public class TweetController {
         return ResponseEntity.ok(tweetService.postTweet(tweetCreateRequest, httpServletRequest));
     }
 
-    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
     public ResponseEntity<TweetResponse> updateTweet(
             @PathVariable Long id,
             @RequestBody TweetUpdateRequest tweetUpdateRequest,
