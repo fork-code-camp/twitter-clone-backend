@@ -51,6 +51,21 @@ services:
       - mongo
       - api-gateway
 
+  postgres-tweet-service:
+    container_name: postgres-tweet-service
+    hostname: postgres-tweet-service
+    image: postgres:alpine3.17
+    restart: unless-stopped
+    ports:
+      - 5431:5432
+    environment:
+      POSTGRES_DB: tweet-service
+      POSTGRES_USER: ${POSTGRES_USERNAME}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      PGDATA: /data/postgres
+    volumes:
+      - data-tweet-service:/data/postgres
+
   api-gateway:
     container_name: api-gateway
     hostname: api-gateway
@@ -78,3 +93,4 @@ services:
 volumes:
   data-authentication-service: { }
   mongo: { }
+  data-tweet-service: { }
