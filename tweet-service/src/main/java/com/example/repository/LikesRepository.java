@@ -12,7 +12,10 @@ import java.util.Optional;
 public interface LikesRepository extends JpaRepository<Like, Long> {
 
     Long countAllByTweetId(Long tweetId);
+
     List<Like> findByProfileId(String profileId);
+
     List<Like> findByTweetId(Long tweetId);
+
     Optional<Like> findByProfileIdAndTweetId(String profileId, Long tweetId);
 }

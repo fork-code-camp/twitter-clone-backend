@@ -27,8 +27,7 @@ public class TweetController {
     }
 
 
-
-    @PostMapping("/post")
+    @PostMapping
     public ResponseEntity<TweetResponse> postTweet(
             @RequestBody TweetCreateRequest tweetCreateRequest,
             HttpServletRequest httpServletRequest
