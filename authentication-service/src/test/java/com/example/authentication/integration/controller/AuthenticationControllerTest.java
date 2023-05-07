@@ -1,15 +1,16 @@
 package com.example.authentication.integration.controller;
 
+import com.example.authentication.client.ProfileServiceClient;
 import com.example.authentication.entity.ActivationCode;
 import com.example.authentication.integration.IntegrationTestBase;
 import com.example.authentication.integration.mocks.ProfileMock;
 import com.example.authentication.repository.ActivationCodeRepository;
 import com.example.authentication.service.MessageSourceService;
-import com.github.tomakehurst.wiremock.WireMockServer;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
@@ -31,11 +32,12 @@ public class AuthenticationControllerTest extends IntegrationTestBase {
     private final MockMvc mockMvc;
     private final ActivationCodeRepository activationCodeRepository;
     private final MessageSourceService messageService;
-    private final WireMockServer mockProfileService;
+    @MockBean
+    private final ProfileServiceClient profileServiceClient;
 
     @BeforeEach
     void setUp() {
-        ProfileMock.setupMockProfileResponse(mockProfileService);
+        ProfileMock.setupMockProfileResponse(profileServiceClient);
     }
 
     @Test
