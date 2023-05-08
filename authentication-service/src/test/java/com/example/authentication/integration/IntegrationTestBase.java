@@ -2,12 +2,11 @@ package com.example.authentication.integration;
 
 import com.example.authentication.integration.annotation.IT;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.runner.RunWith;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.jdbc.Sql;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.web.WebAppConfiguration;
+import org.testcontainers.containers.FixedHostPortGenericContainer;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 @IT
@@ -16,15 +15,19 @@ import org.testcontainers.containers.PostgreSQLContainer;
 })
 public class IntegrationTestBase {
 
-    private static final PostgreSQLContainer<?> container = new PostgreSQLContainer<>("postgres:alpine3.17");
+    private static final PostgreSQLContainer<?> postgresContainer = new PostgreSQLContainer<>("postgres:alpine3.17");
+    private static final GenericContainer<?> configServerContainer = new FixedHostPortGenericContainer<>("twitterclone0/spring-cloud-config-server")
+            .withImagePullPolicy(imageName -> false)
+            .withFixedExposedPort(8888, 8888);
 
     @BeforeAll
     static void runContainer() {
-        container.start();
+        configServerContainer.start();
+        postgresContainer.start();
     }
 
     @DynamicPropertySource
     static void postgresProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", container::getJdbcUrl);
+        registry.add("spring.datasource.url", postgresContainer::getJdbcUrl);
     }
 }

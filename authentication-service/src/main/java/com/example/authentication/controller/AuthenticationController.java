@@ -41,7 +41,7 @@ public class AuthenticationController {
     }
 
     @GetMapping("/validate/{jwt}")
-    public ResponseEntity<Boolean> validateJwt(@PathVariable String jwt) {
+    public ResponseEntity<String> isTokenValid(@PathVariable String jwt) {
         return ResponseEntity.ok(tokenService.isTokenValid(jwt));
     }
 }

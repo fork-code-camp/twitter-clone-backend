@@ -1,12 +1,14 @@
 package com.example.authentication.exception;
 
 import com.example.authentication.dto.response.ErrorResponse;
+import io.jsonwebtoken.JwtException;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -19,7 +21,7 @@ import static org.springframework.http.HttpStatus.*;
 
 @Slf4j
 @ControllerAdvice
-public class CustomExceptionHandler {
+public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException e) {
@@ -43,7 +45,10 @@ public class CustomExceptionHandler {
 
     @ExceptionHandler({
             EntityExistsException.class,
-            ConstraintViolationException.class
+            ConstraintViolationException.class,
+            InvalidTokenException.class,
+            BadCredentialsException.class,
+            JwtException.class
     })
     public ResponseEntity<ErrorResponse> handleBadRequestException(Exception e) {
         return generateDefaultErrorResponse(BAD_REQUEST, e);

@@ -2,6 +2,7 @@ package com.example.authentication.service;
 
 import com.example.authentication.entity.Account;
 import com.example.authentication.entity.Token;
+import com.example.authentication.exception.InvalidTokenException;
 import com.example.authentication.repository.TokenRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -35,15 +36,20 @@ public class TokenService {
                 .ifPresent(tokenRepository::delete);
     }
 
-    public boolean isTokenValid(String jwt) {
-        UserDetails userDetails = takeUserDetailsFromJwt(jwt);
-        return tokenRepository.findByJwt(jwt)
+    public String isTokenValid(String jwt) {
+        UserDetails userDetails = extractUserDetails(jwt);
+        boolean isTokenValid = tokenRepository.findByJwt(jwt)
                 .map(token -> !token.isExpired() && !token.isRevoked())
-                .orElse(false) &&
-                jwtService.isJwtValid(jwt, userDetails);
+                .orElse(false);
+
+        if (isTokenValid && jwtService.isJwtValid(jwt, userDetails)) {
+            return userDetails.getUsername();
+        } else {
+            throw new InvalidTokenException("Authentication token is invalid!");
+        }
     }
 
-    public UserDetails takeUserDetailsFromJwt(String jwt) {
+    private UserDetails extractUserDetails(String jwt) {
         String email = jwtService.extractEmail(jwt);
         return userDetailsService.loadUserByUsername(email);
     }

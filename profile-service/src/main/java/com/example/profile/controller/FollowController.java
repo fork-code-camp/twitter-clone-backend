@@ -2,7 +2,6 @@ package com.example.profile.controller;
 
 import com.example.profile.entity.Profile;
 import com.example.profile.service.FollowService;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,18 +16,18 @@ public class FollowController {
     private final FollowService followService;
 
     @GetMapping("/{followeeId}")
-    private ResponseEntity<Boolean> isFollowed(@PathVariable String followeeId, HttpServletRequest request) {
-        return ResponseEntity.ok(followService.isFollowed(followeeId, request));
+    private ResponseEntity<Boolean> isFollowed(@PathVariable String followeeId, @RequestHeader String loggedInUser) {
+        return ResponseEntity.ok(followService.isFollowed(followeeId, loggedInUser));
     }
 
     @PostMapping("/{followeeId}")
-    public ResponseEntity<Boolean> follow(@PathVariable String followeeId, HttpServletRequest request) {
-        return ResponseEntity.ok(followService.follow(followeeId, request));
+    public ResponseEntity<Boolean> follow(@PathVariable String followeeId, @RequestHeader String loggedInUser) {
+        return ResponseEntity.ok(followService.follow(followeeId, loggedInUser));
     }
 
     @DeleteMapping("/{followeeId}")
-    public ResponseEntity<Boolean> unfollow(@PathVariable String followeeId, HttpServletRequest request) {
-        return ResponseEntity.ok(followService.unfollow(followeeId, request));
+    public ResponseEntity<Boolean> unfollow(@PathVariable String followeeId, @RequestHeader String loggedInUser) {
+        return ResponseEntity.ok(followService.unfollow(followeeId, loggedInUser));
     }
 
     @GetMapping("/followers/{profileId}")

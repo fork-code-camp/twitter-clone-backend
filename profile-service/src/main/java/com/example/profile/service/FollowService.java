@@ -1,12 +1,9 @@
 package com.example.profile.service;
 
-import com.example.profile.client.AuthClient;
 import com.example.profile.entity.Follow;
 import com.example.profile.entity.Profile;
 import com.example.profile.repository.FollowRepository;
 import com.example.profile.repository.ProfileRepository;
-import com.google.common.net.HttpHeaders;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -14,19 +11,16 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class FollowService {
 
     private final FollowRepository followRepository;
     private final ProfileRepository profileRepository;
-    private final AuthClientService authClientService;
 
-    public boolean follow(String followeeId, HttpServletRequest httpServletRequest) {
-        String email = authClientService.getUserEmail(httpServletRequest);
-
-        return profileRepository.findByEmail(email)
+    public boolean follow(String followeeId, String loggedInUser) {
+        return profileRepository.findByEmail(loggedInUser)
                 .map(Profile::getId)
                 .map(followerId -> Follow.builder()
                         .followerProfile(profileRepository.findById(followerId).orElseThrow())
@@ -37,10 +31,8 @@ public class FollowService {
                 .isPresent();
     }
 
-    public boolean unfollow(String followeeId, HttpServletRequest httpServletRequest) {
-        String email = authClientService.getUserEmail(httpServletRequest);
-
-        return profileRepository.findByEmail(email)
+    public boolean unfollow(String followeeId, String loggedInUser) {
+        return profileRepository.findByEmail(loggedInUser)
                 .map(Profile::getId)
                 .map(followerId ->
                         followRepository.deleteByFollowerProfile_IdAndFolloweeProfile_Id(followerId, followeeId))
@@ -61,10 +53,8 @@ public class FollowService {
                 .toList();
     }
 
-    public boolean isFollowed(String followeeId, HttpServletRequest httpServletRequest) {
-        String email = authClientService.getUserEmail(httpServletRequest);
-
-        return profileRepository.findByEmail(email)
+    public boolean isFollowed(String followeeId, String loggedInUser) {
+        return profileRepository.findByEmail(loggedInUser)
                 .map(Profile::getId)
                 .map(followerId -> followRepository.existsByFollowerProfile_IdAndFolloweeProfile_Id(followerId, followeeId))
                 .orElseThrow();

@@ -1,74 +1,54 @@
 package com.example.filter;
 
-import lombok.extern.slf4j.Slf4j;
-import com.example.client.AuthClient;
-import com.example.exception.UnavailableServiceException;
-import com.example.exception.InvalidTokenException;
 import com.example.exception.MissingTokenException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
-import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
+import org.springframework.web.client.RestTemplate;
 
 @Slf4j
 @Component
 public class AuthenticationGatewayFilterFactory extends AbstractGatewayFilterFactory<AuthenticationGatewayFilterFactory.Config> {
 
-    private final AuthClient authClient;
+    private final RouteValidator validator;
+    private final RestTemplate restTemplate;
 
-    public AuthenticationGatewayFilterFactory(@Lazy AuthClient authClient) {
+    public AuthenticationGatewayFilterFactory(RouteValidator validator, RestTemplate restTemplate) {
         super(Config.class);
-        this.authClient = authClient;
+        this.validator = validator;
+        this.restTemplate = restTemplate;
     }
 
     @Override
     public GatewayFilter apply(Config config) {
         return (exchange, chain) -> {
-            HttpHeaders headers = exchange.getRequest().getHeaders();
+            ServerHttpRequest request = null;
+            if (validator.isSecured.test(exchange.getRequest())) {
+                if (!exchange.getRequest().getHeaders().containsKey(HttpHeaders.AUTHORIZATION)) {
+                    throw new MissingTokenException("Missing authorization header!");
+                }
 
-            headers.computeIfAbsent(HttpHeaders.AUTHORIZATION, (key) -> {
-                throw new MissingTokenException(
-                        "You dont have authentication token, please, authenticate."
-                );
-            });
+                String jwt = extractJwt(exchange.getRequest().getHeaders());
 
-            String jwt = extractJwt(headers);
-            validateJwt(jwt)
-                    .subscribe(isJwtValid -> {
-                        if (isJwtValid == null) {
-                            throw new UnavailableServiceException(
-                                    "Exception when calling auth-service"
-                            );
-                        }
-
-                        log.info("jwt validation has done successfully: {}", isJwtValid);
-
-                        if (!isJwtValid) {
-                            throw new InvalidTokenException(
-                                    "Invalid token. Please authenticate and try again."
-                            );
-                        }
-                    });
-
-            return chain.filter(
-                    exchange
+                String loggedInUser = restTemplate.getForObject("http://localhost:8080//api//v1//auth//validate//" + jwt, String.class);
+                request = exchange.getRequest()
                         .mutate()
-                        .request(exchange.getRequest())
-                        .build()
+                        .header("loggedInUser", loggedInUser)
+                        .build();
+            }
+            assert request != null;
+            return chain.filter(
+                    exchange.mutate()
+                            .request(request)
+                            .build()
             );
         };
     }
 
     public static class Config {
-    }
-
-    private Mono<Boolean> validateJwt(String jwt) {
-        return Mono.fromCallable(
-                        () -> authClient.validateJwt(jwt))
-                .subscribeOn(Schedulers.boundedElastic());
     }
 
     private String extractJwt(HttpHeaders headers) {
