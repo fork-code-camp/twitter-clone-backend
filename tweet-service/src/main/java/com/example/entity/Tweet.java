@@ -10,20 +10,26 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-@Entity
 @Data
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
+@Entity
 @Table(name = "tweets")
 public class Tweet implements BaseEntity<Long> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @OneToMany(
+            targetEntity = Like.class,
+            mappedBy = "tweet",
+            cascade = CascadeType.ALL
+    )
+    private List<Like> likes = new ArrayList<>();
+
     private String text;
     private String profileId;
     private LocalDateTime creationDate;
-    @OneToMany(targetEntity = Like.class, mappedBy = "tweet", cascade = CascadeType.ALL)
-    private List<Like> likes = new ArrayList<>();
 }

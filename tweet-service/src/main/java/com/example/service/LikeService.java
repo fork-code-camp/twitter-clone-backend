@@ -11,12 +11,9 @@ public class LikeService {
 
     private final LikesRepository likesRepository;
     private final TweetService tweetService;
-    private final ProfileClientService profileClientService;
     private final TweetMapper tweetMapper;
 
     public Long getLikesForTweetById(Long tweetId) {
         return likesRepository.countAllByTweetId(tweetId);
     }
-
-
 }

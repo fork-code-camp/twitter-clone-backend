@@ -1,102 +1,68 @@
 package com.example.service;
 
+import com.example.client.ProfileClient;
 import com.example.dto.request.TweetCreateRequest;
 import com.example.dto.request.TweetUpdateRequest;
 import com.example.dto.response.TweetResponse;
 import com.example.entity.Tweet;
 import com.example.exception.CreateEntityException;
 import com.example.mapper.TweetMapper;
-import com.example.repository.LikesRepository;
 import com.example.repository.TweetRepository;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class TweetService {
 
-    private final LikesRepository likeRepository;
     private final TweetRepository tweetRepository;
-    private final ProfileClientService profileClientService;
     private final TweetMapper tweetMapper;
     private final MessageSourceService messageSourceService;
+    private final ProfileClient profileClient;
 
-    public TweetResponse postTweet(TweetCreateRequest tweetCreateRequest, HttpServletRequest httpServletRequest) {
-        return Optional.of(tweetCreateRequest)
-                .map(tweetMapper::toEntity)
-                .map(tweet -> {
-                    String profileId = profileClientService.getProfileId(httpServletRequest);
-                    tweet.setProfileId(profileId);
-                    tweet.setCreationDate(LocalDateTime.now());
-                    return tweetRepository.saveAndFlush(tweet);
-                })
-                .map(tweet -> buildResponse(tweet, httpServletRequest))
+    public TweetResponse createTweet(TweetCreateRequest request, String loggedInUser) {
+        return Optional.of(request)
+                .map(req -> tweetMapper.toEntity(req, profileClient, loggedInUser))
+                .map(tweetRepository::saveAndFlush)
+                .map(tweet -> tweetMapper.toResponse(tweet, profileClient))
                 .orElseThrow(() -> new CreateEntityException(
                         messageSourceService.generateMessage("error.unsuccessful_creation")
                 ));
     }
 
-    public TweetResponse getTweet(Long id, HttpServletRequest httpServletRequest) {
+    public TweetResponse getTweet(Long id) {
         return tweetRepository.findById(id)
-                .map(tweet -> buildResponse(tweet, httpServletRequest))
+                .map(tweet -> tweetMapper.toResponse(tweet, profileClient))
                 .orElseThrow(() -> new EntityNotFoundException(
                         messageSourceService.generateMessage("error.entity.not_found", id)
                 ));
     }
 
-    public void deleteTweet(Long id) {
-        tweetRepository.findById(id)
+    public TweetResponse updateTweet(Long id, TweetUpdateRequest request, String loggedInUser) {
+        return tweetRepository.findById(id)
+                .filter(tweet -> isTweetOwnedByLoggedInUser(tweet, loggedInUser))
+                .map(tweet -> tweetMapper.updateTweet(request, tweet))
+                .map(tweetRepository::saveAndFlush)
+                .map(tweet -> tweetMapper.toResponse(tweet, profileClient))
+                .orElseThrow(() -> new EntityNotFoundException(
+                        messageSourceService.generateMessage("error.entity.not_found", id)
+                ));
+    }
+
+    public Boolean deleteTweet(Long id, String loggedInUser) {
+        return tweetRepository.findById(id)
+                .filter(tweet -> isTweetOwnedByLoggedInUser(tweet, loggedInUser))
                 .map(tweet -> {
                     tweetRepository.delete(tweet);
                     return tweet;
                 })
-                .orElseThrow(() -> new EntityNotFoundException(
-                        messageSourceService.generateMessage("error.entity.not_found", id)
-                ));
+                .isPresent();
     }
 
-    public TweetResponse updateTweet(Long id, TweetUpdateRequest tweetUpdateRequest, HttpServletRequest httpServletRequest) {
-        return tweetRepository.findById(id)
-                .map(tweet -> {
-                    tweetMapper.updateTweet(tweetUpdateRequest, tweet);
-                    tweetRepository.saveAndFlush(tweet);
-                    return tweet;
-                })
-                .map(tweet -> buildResponse(tweet, httpServletRequest))
-                .orElseThrow(() -> new EntityNotFoundException(
-                        messageSourceService.generateMessage("error.entity.not_found", id)
-                ));
-    }
-
-    public String getProfileIdFromTweet(Long id) {
-        return tweetRepository.findById(id)
-                .map(Tweet::getProfileId)
-                .orElseThrow(() -> new EntityNotFoundException(
-                        messageSourceService.generateMessage("error.entity.not_found", id)
-                ));
-    }
-
-    public Tweet getTweetEntity(Long id) {
-        return tweetRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException(
-                        messageSourceService.generateMessage("error.entity.not_found", id)
-                ));
-    }
-
-    private TweetResponse buildResponse(Tweet tweet, HttpServletRequest httpServletRequest) {
-        TweetResponse tweetResponse = tweetMapper.toResponse(tweet);
-
-        Long likes = likeRepository.countAllByTweetId(tweet.getId());
-        String profileUsername = profileClientService.getProfileUsername(httpServletRequest);
-
-        tweetResponse.setLikes(likes);
-        tweetResponse.setUsername(profileUsername);
-
-        return tweetResponse;
+    private boolean isTweetOwnedByLoggedInUser(Tweet tweet, String loggedInUser) {
+        return profileClient.getProfileIdByLoggedInUser(loggedInUser).equals(tweet.getProfileId());
     }
 }

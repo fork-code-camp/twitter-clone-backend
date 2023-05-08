@@ -16,5 +16,5 @@ public class TweetResponse {
     private String text;
     private String username;
     private LocalDateTime creationDate;
-    private Long likes;
+    private Integer likes;
 }

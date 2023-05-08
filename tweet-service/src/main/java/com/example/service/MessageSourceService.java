@@ -16,13 +16,9 @@ public class MessageSourceService {
 
     public String generateMessage(String source, Object... params) {
         String property = environment.getProperty(source);
-
         if (property == null) {
-            throw new RuntimeException(
-                    String.format("property not found %s", source)
-            );
+            throw new RuntimeException(String.format("property not found %s", source));
         }
-
         return String.format(source, params);
     }
 }
