@@ -3,53 +3,45 @@ package com.example.controller;
 import com.example.dto.request.TweetCreateRequest;
 import com.example.dto.request.TweetUpdateRequest;
 import com.example.dto.response.TweetResponse;
-import com.example.service.LikeService;
 import com.example.service.TweetService;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/tweets")
 @RequiredArgsConstructor
+@RequestMapping("/api/v1/tweets")
 public class TweetController {
 
     private final TweetService tweetService;
-    private final LikeService likeService;
 
-    @GetMapping("/{id}")
-    public ResponseEntity<TweetResponse> getTweet(
-            @PathVariable Long id,
-            HttpServletRequest httpServletRequest
+    @PostMapping
+    public ResponseEntity<TweetResponse> createTweet(
+            @RequestBody TweetCreateRequest request,
+            @RequestHeader String loggedInUser
     ) {
-        return ResponseEntity.ok(tweetService.getTweet(id, httpServletRequest));
+        return ResponseEntity.ok(tweetService.createTweet(request, loggedInUser));
     }
 
-
-
-    @PostMapping("/post")
-    public ResponseEntity<TweetResponse> postTweet(
-            @RequestBody TweetCreateRequest tweetCreateRequest,
-            HttpServletRequest httpServletRequest
-    ) {
-        return ResponseEntity.ok(tweetService.postTweet(tweetCreateRequest, httpServletRequest));
+    @GetMapping("/{id}")
+    public ResponseEntity<TweetResponse> getTweet(@PathVariable Long id) {
+        return ResponseEntity.ok(tweetService.getTweet(id));
     }
 
     @PatchMapping("/{id}")
     public ResponseEntity<TweetResponse> updateTweet(
+            @RequestBody TweetUpdateRequest request,
             @PathVariable Long id,
-            @RequestBody TweetUpdateRequest tweetUpdateRequest,
-            HttpServletRequest httpServletRequest
+            @RequestHeader String loggedInUser
     ) {
-        return ResponseEntity.ok(tweetService.updateTweet(id, tweetUpdateRequest, httpServletRequest));
+        return ResponseEntity.ok(tweetService.updateTweet(id, request, loggedInUser));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteTweet(
-            @PathVariable Long id
+    public ResponseEntity<Boolean> deleteTweet(
+            @PathVariable Long id,
+            @RequestHeader String loggedInUser
     ) {
-        tweetService.deleteTweet(id);
-        return ResponseEntity.ok("Your tweet has been successfully deleted!");
+        return ResponseEntity.ok(tweetService.deleteTweet(id, loggedInUser));
     }
 }

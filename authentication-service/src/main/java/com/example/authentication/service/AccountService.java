@@ -24,7 +24,7 @@ public class AccountService {
                 ));
     }
 
-    public Account createNewAccount(String email, String password, boolean isEnabled) {
+    public Account createAccount(String email, String password, boolean isEnabled) {
         return accountRepository.saveAndFlush(
                 Account.builder()
                         .email(email)
@@ -43,7 +43,7 @@ public class AccountService {
         accountRepository.saveAndFlush(account);
     }
 
-    public boolean doesAccountExists(String email) {
+    public boolean isAccountExists(String email) {
         return accountRepository.findByEmail(email)
                 .isPresent();
     }

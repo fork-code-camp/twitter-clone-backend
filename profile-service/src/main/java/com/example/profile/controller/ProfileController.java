@@ -4,7 +4,6 @@ import com.example.profile.dto.request.CreateProfileRequest;
 import com.example.profile.dto.request.UpdateProfileRequest;
 import com.example.profile.dto.response.ProfileResponse;
 import com.example.profile.service.ProfileService;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -33,8 +32,13 @@ public class ProfileController {
     public ResponseEntity<ProfileResponse> updateProfile(
             @Valid @RequestBody UpdateProfileRequest request,
             @PathVariable String id,
-            HttpServletRequest httpServletRequest
+            @RequestHeader String loggedInUser
     ) {
-        return ResponseEntity.ok(profileService.updateProfile(id, request, httpServletRequest));
+        return ResponseEntity.ok(profileService.updateProfile(id, request, loggedInUser));
+    }
+
+    @GetMapping("/id/{email}")
+    public ResponseEntity<String> getProfileIdByEmail(@PathVariable String email) {
+        return ResponseEntity.ok(profileService.getProfileIdByEmail(email));
     }
 }

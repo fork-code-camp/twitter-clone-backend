@@ -1,8 +1,8 @@
 package com.example.authentication.service;
 
 import com.example.authentication.client.ProfileServiceClient;
-import com.example.authentication.dto.request.AuthenticationRequest;
 import com.example.authentication.client.request.CreateProfileRequest;
+import com.example.authentication.dto.request.AuthenticationRequest;
 import com.example.authentication.dto.request.RegisterRequest;
 import com.example.authentication.dto.response.ActivationCodeResponse;
 import com.example.authentication.dto.response.AuthenticationResponse;
@@ -12,6 +12,8 @@ import com.example.authentication.exception.AccountNotActivatedException;
 import jakarta.persistence.EntityExistsException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -27,15 +29,16 @@ public class AuthenticationService {
     private final TokenService tokenService;
     private final MessageSourceService messageService;
     private final ProfileServiceClient profileServiceClient;
+    private final AuthenticationManager authenticationManager;
 
     public ActivationCodeResponse register(RegisterRequest request) {
-        if (accountService.doesAccountExists(request.email())) {
+        if (accountService.isAccountExists(request.email())) {
             throw new EntityExistsException(
                     messageService.generateMessage("error.account.already_exists", request.email())
             );
         }
 
-        Account newAccount = accountService.createNewAccount(request.email(), request.password(), false);
+        Account newAccount = accountService.createAccount(request.email(), request.password(), false);
         log.info("account {} has been created", newAccount.getId());
 
         CreateProfileRequest createProfileRequest = new CreateProfileRequest(request.username(), request.email(), LocalDate.now());
@@ -51,6 +54,13 @@ public class AuthenticationService {
     }
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        request.email(),
+                        request.password()
+                )
+        );
+
         Account account = accountService.findAccountByEmail(request.email());
 
         if (!account.isEnabled()) {
