@@ -6,6 +6,7 @@ import com.example.dto.response.TweetResponse;
 import com.example.service.LikeService;
 import com.example.service.TweetService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,7 +30,7 @@ public class TweetController {
 
     @PostMapping
     public ResponseEntity<TweetResponse> postTweet(
-            @RequestBody TweetCreateRequest tweetCreateRequest,
+            @Valid @RequestBody TweetCreateRequest tweetCreateRequest,
             HttpServletRequest httpServletRequest
     ) {
         return ResponseEntity.ok(tweetService.postTweet(tweetCreateRequest, httpServletRequest));
@@ -38,7 +39,7 @@ public class TweetController {
     @PatchMapping("/{id}")
     public ResponseEntity<TweetResponse> updateTweet(
             @PathVariable Long id,
-            @RequestBody TweetUpdateRequest tweetUpdateRequest,
+            @Valid @RequestBody TweetUpdateRequest tweetUpdateRequest,
             HttpServletRequest httpServletRequest
     ) {
         return ResponseEntity.ok(tweetService.updateTweet(id, tweetUpdateRequest, httpServletRequest));

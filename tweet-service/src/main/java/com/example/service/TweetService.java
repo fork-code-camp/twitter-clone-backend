@@ -29,6 +29,12 @@ public class TweetService {
     public TweetResponse postTweet(TweetCreateRequest tweetCreateRequest, HttpServletRequest httpServletRequest) {
         return Optional.of(tweetCreateRequest)
                 .map(tweetMapper::toEntity)
+                .map(tweet -> {
+                    String profileId = profileClientService.getProfileId(httpServletRequest);
+                    tweet.setProfileId(profileId);
+                    tweet.setCreationDate(LocalDateTime.now());
+                    return tweetRepository.saveAndFlush(tweet);
+                })
                 .map(tweet -> buildResponse(tweet, httpServletRequest))
                 .orElseThrow(() -> new CreateEntityException(
                         messageSourceService.generateMessage("error.unsuccessful_creation")
@@ -84,8 +90,6 @@ public class TweetService {
 
     private TweetResponse buildResponse(Tweet tweet, HttpServletRequest httpServletRequest) {
         TweetResponse tweetResponse = tweetMapper.toResponse(tweet);
-
-        if (tweetResponse.getCreationDate() == null) tweetResponse.setCreationDate(LocalDateTime.now());
 
         Long likes = likeRepository.countAllByTweetId(tweet.getId());
         String profileUsername = profileClientService.getProfileUsername(httpServletRequest);
