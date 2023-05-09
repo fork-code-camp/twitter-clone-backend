@@ -4,6 +4,7 @@ import com.example.dto.request.TweetCreateRequest;
 import com.example.dto.request.TweetUpdateRequest;
 import com.example.dto.response.TweetResponse;
 import com.example.service.TweetService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,7 +18,7 @@ public class TweetController {
 
     @PostMapping
     public ResponseEntity<TweetResponse> createTweet(
-            @RequestBody TweetCreateRequest request,
+            @Valid @RequestBody TweetCreateRequest request,
             @RequestHeader String loggedInUser
     ) {
         return ResponseEntity.ok(tweetService.createTweet(request, loggedInUser));
@@ -30,7 +31,7 @@ public class TweetController {
 
     @PatchMapping("/{id}")
     public ResponseEntity<TweetResponse> updateTweet(
-            @RequestBody TweetUpdateRequest request,
+            @Valid @RequestBody TweetUpdateRequest request,
             @PathVariable Long id,
             @RequestHeader String loggedInUser
     ) {
