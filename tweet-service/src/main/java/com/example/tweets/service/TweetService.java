@@ -13,6 +13,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -30,7 +31,7 @@ public class TweetService {
                 .map(tweetRepository::saveAndFlush)
                 .map(tweet -> tweetMapper.toResponse(tweet, profileServiceClient))
                 .orElseThrow(() -> new CreateEntityException(
-                        messageSourceService.generateMessage("error.unsuccessful_creation")
+                        messageSourceService.generateMessage("error.entity.unsuccessful_creation")
                 ));
     }
 
@@ -40,6 +41,21 @@ public class TweetService {
                 .orElseThrow(() -> new EntityNotFoundException(
                         messageSourceService.generateMessage("error.entity.not_found", id)
                 ));
+    }
+
+    public List<TweetResponse> getAllTweets() {
+        return tweetRepository.findAll()
+                .stream()
+                .map(tweet -> tweetMapper.toResponse(tweet, profileServiceClient))
+                .toList();
+    }
+
+    public List<TweetResponse> getAllTweetsForUser(String loggedInUser) {
+        String profileId = profileServiceClient.getProfileIdByLoggedInUser(loggedInUser);
+        return tweetRepository.findAllByProfileId(profileId)
+                .stream()
+                .map(tweet -> tweetMapper.toResponse(tweet, profileServiceClient))
+                .toList();
     }
 
     public TweetResponse updateTweet(Long id, TweetUpdateRequest request, String loggedInUser) {
@@ -61,6 +77,13 @@ public class TweetService {
                     return tweet;
                 })
                 .isPresent();
+    }
+
+    public Tweet getTweetEntityById(Long tweetId) {
+        return tweetRepository.findById(tweetId)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        messageSourceService.generateMessage("error.entity.not_found", tweetId)
+                ));
     }
 
     private boolean isTweetOwnedByLoggedInUser(Tweet tweet, String loggedInUser) {

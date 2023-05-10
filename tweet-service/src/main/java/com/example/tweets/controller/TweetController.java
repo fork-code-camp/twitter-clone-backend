@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/tweets")
@@ -27,6 +29,11 @@ public class TweetController {
     @GetMapping("/{id}")
     public ResponseEntity<TweetResponse> getTweet(@PathVariable Long id) {
         return ResponseEntity.ok(tweetService.getTweet(id));
+    }
+
+    @GetMapping
+    public ResponseEntity<List<TweetResponse>> getAllTweets() {
+        return ResponseEntity.ok(tweetService.getAllTweets());
     }
 
     @PatchMapping("/{id}")
