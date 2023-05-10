@@ -11,8 +11,7 @@ public enum UrlConstants {
     REGISTER_URL("/api/v1/auth/register"),
     AUTHENTICATE_URL("/api/v1/auth/authenticate"),
     LOGOUT_URL("/api/v1/auth/logout"),
-    ACTIVATION_URL("/api/v1/auth/activate"),
-    TEST_URL("/api/v1/test");
+    ACTIVATION_URL("/api/v1/auth/activate");
 
     private final String constant;
 }
