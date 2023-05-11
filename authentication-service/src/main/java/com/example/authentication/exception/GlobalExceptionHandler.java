@@ -59,8 +59,11 @@ public class GlobalExceptionHandler {
         return generateDefaultErrorResponse(GONE, e);
     }
 
-    @ExceptionHandler(AccountNotActivatedException.class)
-    public ResponseEntity<ErrorResponse> handleException(AccountNotActivatedException e) {
+    @ExceptionHandler({
+            AccountNotActivatedException.class,
+            InvalidCredentialsException.class
+    })
+    public ResponseEntity<ErrorResponse> handleException(Exception e) {
         return generateDefaultErrorResponse(FORBIDDEN, e);
     }
 

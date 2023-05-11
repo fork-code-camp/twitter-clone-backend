@@ -4,6 +4,7 @@ import com.example.profile.dto.request.CreateProfileRequest;
 import com.example.profile.dto.request.UpdateProfileRequest;
 import com.example.profile.dto.response.ProfileResponse;
 import com.example.profile.entity.Profile;
+import com.example.profile.exception.ActionNotAllowedException;
 import com.example.profile.exception.EntityNotFoundException;
 import com.example.profile.mapper.ProfileMapper;
 import com.example.profile.repository.ProfileRepository;
@@ -40,19 +41,29 @@ public class ProfileService {
 
     public ProfileResponse updateProfile(String id, UpdateProfileRequest updateProfileRequest, String loggedInUser) {
         return profileRepository.findById(id)
-                .filter(profile -> profile.getEmail().equals(loggedInUser))
-                .map(profile -> {
-                    profileMapper.updateProfileFromUpdateProfileRequest(updateProfileRequest, profile);
-                    profileRepository.save(profile);
-                    return profile;
-                })
+                .filter(profile -> checkUpdateAvailabilityForUser(profile.getEmail(), loggedInUser))
+                .map(profile -> profileMapper.updateProfileFromUpdateProfileRequest(updateProfileRequest, profile))
+                .map(profileRepository::save)
                 .map(profileMapper::toResponse)
-                .orElseThrow(() -> new EntityNotFoundException("Entity " + id + " not found")); // TODO: message source
+                .orElseThrow(() -> new EntityNotFoundException(
+                        messageSourceService.generateMessage("error.entity.not_found", id)
+                ));
     }
 
     public String getProfileIdByEmail(String email) {
         return profileRepository.findByEmail(email)
                 .map(Profile::getId)
-                .orElseThrow(() -> new EntityNotFoundException("Profile with email " + email + " not found")); // TODO: message source
+                .orElseThrow(() -> new EntityNotFoundException(
+                        messageSourceService.generateMessage("error.entity.not_found", email)
+                ));
+    }
+
+    private boolean checkUpdateAvailabilityForUser(String updatingUser, String loggedInUser) {
+        if (!updatingUser.equals(loggedInUser)) {
+            throw new ActionNotAllowedException(
+                    messageSourceService.generateMessage("error.forbidden")
+            );
+        }
+        return true;
     }
 }

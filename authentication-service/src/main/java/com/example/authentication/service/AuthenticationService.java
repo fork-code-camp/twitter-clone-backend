@@ -9,10 +9,13 @@ import com.example.authentication.dto.response.AuthenticationResponse;
 import com.example.authentication.entity.Account;
 import com.example.authentication.entity.ActivationCode;
 import com.example.authentication.exception.AccountNotActivatedException;
+import com.example.authentication.exception.InvalidCredentialsException;
 import jakarta.persistence.EntityExistsException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
 
@@ -54,12 +57,22 @@ public class AuthenticationService {
     }
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.email(),
-                        request.password()
-                )
-        );
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.email(),
+                            request.password()
+                    )
+            );
+        } catch (DisabledException e) {
+            throw new AccountNotActivatedException(
+                    messageService.generateMessage("error.account.not_activated", request.email())
+            );
+        } catch (BadCredentialsException e) {
+            throw new InvalidCredentialsException(
+                    messageService.generateMessage("error.account.credentials_invalid")
+            );
+        }
 
         Account account = accountService.findAccountByEmail(request.email());
 

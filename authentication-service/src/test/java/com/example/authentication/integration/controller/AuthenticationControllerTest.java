@@ -3,12 +3,10 @@ package com.example.authentication.integration.controller;
 import com.example.authentication.client.ProfileServiceClient;
 import com.example.authentication.entity.ActivationCode;
 import com.example.authentication.integration.IntegrationTestBase;
-import com.example.authentication.integration.mocks.ProfileMock;
+import com.example.authentication.integration.mocks.ProfileClientMock;
 import com.example.authentication.repository.ActivationCodeRepository;
 import com.example.authentication.service.MessageSourceService;
 import lombok.RequiredArgsConstructor;
-import org.junit.Assert;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -41,7 +39,7 @@ public class AuthenticationControllerTest extends IntegrationTestBase {
 
     @BeforeEach
     void setUp() {
-        ProfileMock.setupMockProfileResponse(profileServiceClient);
+        ProfileClientMock.setupMockProfileResponse(profileServiceClient);
     }
 
     @Test

@@ -17,7 +17,7 @@ services:
   authentication-service:
     container_name: authentication-service
     hostname: authentication-service
-    image: eann1s/authentication-service
+    image: twitterclone0/authentication-service
     pull_policy: missing
     environment:
       - SPRING_PROFILES_ACTIVE=docker
@@ -42,7 +42,7 @@ services:
   profile-service:
     container_name: profile-service
     hostname: profile-service
-    image: eann1s/profile-service
+    image: twitterclone0/profile-service
     restart: unless-stopped
     pull_policy: missing
     environment:
@@ -66,10 +66,23 @@ services:
     volumes:
       - data-tweet-service:/data/postgres
 
+  tweet-service:
+    container_name: tweet-service
+    hostname: tweet-service
+    image: twitterclone0/tweet-service
+    restart: unless-stopped
+    pull_policy: missing
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-tweet-service:5432/tweet-service
+    depends_on:
+      - postgres-tweet-service
+      - api-gateway
+
   api-gateway:
     container_name: api-gateway
     hostname: api-gateway
-    image: eann1s/api-gateway
+    image: twitterclone0/api-gateway
     restart: unless-stopped
     pull_policy: missing
     ports:
@@ -81,7 +94,7 @@ services:
 
   discovery-server:
     container_name: discovery-server
-    image: eann1s/discovery-server
+    image: twitterclone0/discovery-server
     hostname: discovery-server
     restart: unless-stopped
     pull_policy: missing
@@ -89,6 +102,17 @@ services:
       - 8761:8761
     environment:
       - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      - config-server
+
+  config-server:
+    container_name: config-server
+    hostname: config-server
+    image: twitterclone0/spring-cloud-config-server
+    restart: unless-stopped
+    pull_policy: missing
+    ports:
+      - 8888:8888
 
 volumes:
   data-authentication-service: { }
