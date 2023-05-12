@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.ToString;
 
-import static com.example.tweets.integration.constants.TweetConstants.*;
+import static com.example.tweets.integration.constants.GlobalConstants.*;
 
 @Getter
 @ToString

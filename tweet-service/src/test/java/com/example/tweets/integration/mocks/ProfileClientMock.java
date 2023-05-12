@@ -6,7 +6,7 @@ import org.mockito.Mockito;
 
 import java.time.LocalDate;
 
-import static com.example.tweets.integration.constants.TweetConstants.*;
+import static com.example.tweets.integration.constants.GlobalConstants.*;
 
 public class ProfileClientMock {
 

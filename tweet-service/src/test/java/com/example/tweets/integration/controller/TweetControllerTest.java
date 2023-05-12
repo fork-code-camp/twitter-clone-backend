@@ -8,7 +8,6 @@ import com.example.tweets.repository.TweetRepository;
 import com.example.tweets.service.MessageSourceService;
 import com.example.tweets.service.TweetService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -20,7 +19,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
 import static com.example.tweets.integration.constants.JsonConstants.*;
-import static com.example.tweets.integration.constants.TweetConstants.*;
+import static com.example.tweets.integration.constants.GlobalConstants.*;
 import static com.example.tweets.integration.constants.UrlConstants.TWEETS_URL;
 import static com.example.tweets.integration.constants.UrlConstants.TWEETS_URL_WITH_ID;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -32,7 +31,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @AutoConfigureMockMvc
 @RequiredArgsConstructor
-@Slf4j
 @Sql(statements = "ALTER SEQUENCE tweets_id_seq RESTART WITH 1")
 public class TweetControllerTest extends IntegrationTestBase {
 

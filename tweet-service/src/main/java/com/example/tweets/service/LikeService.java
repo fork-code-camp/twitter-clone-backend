@@ -35,7 +35,7 @@ public class LikeService {
         likesRepository.findByProfileIdAndTweetId(profileId, tweetId)
                 .ifPresentOrElse(likesRepository::delete, () -> {
                     throw new EntityNotFoundException(
-                            messageSourceService.generateMessage("error.entity.not_found")
+                            messageSourceService.generateMessage("error.entity.not_found", tweetId)
                     );
                 });
     }

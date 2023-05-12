@@ -10,7 +10,8 @@ import lombok.ToString;
 public enum UrlConstants {
 
     TWEETS_URL("/api/v1/tweets"),
-    TWEETS_URL_WITH_ID("/api/v1/tweets/%d");
+    TWEETS_URL_WITH_ID("/api/v1/tweets/%d"),
+    LIKES_URL_WITH_ID("/api/v1/likes/%d");
 
     private final String constant;
 }
