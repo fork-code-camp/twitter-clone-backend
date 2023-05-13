@@ -17,9 +17,11 @@ public interface TweetMapper {
     @Mapping(target = "profileId", expression = "java(profileServiceClient.getProfileIdByLoggedInUser(loggedInUser))")
     @Mapping(target = "creationDate", expression = "java(java.time.LocalDateTime.now())")
     @Mapping(target = "likes", expression = "java(new java.util.ArrayList<>())")
+    @Mapping(target = "retweets", expression = "java(new java.util.ArrayList<>())")
     Tweet toEntity(TweetCreateRequest request, @Context ProfileServiceClient profileServiceClient, @Context String loggedInUser);
 
     @Mapping(target = "likes", expression = "java(tweet.getLikes().size())")
+    @Mapping(target = "retweets", expression = "java(tweet.getRetweets().size())")
     @Mapping(target = "username", expression = "java(profileServiceClient.getProfileById(tweet.getProfileId()).username())")
     TweetResponse toResponse(Tweet tweet, @Context ProfileServiceClient profileServiceClient);
 
@@ -27,5 +29,6 @@ public interface TweetMapper {
     @Mapping(target = "profileId", ignore = true)
     @Mapping(target = "creationDate", ignore = true)
     @Mapping(target = "likes", ignore = true)
+    @Mapping(target = "retweets", ignore = true)
     Tweet updateTweet(TweetUpdateRequest request, @MappingTarget Tweet tweet);
 }

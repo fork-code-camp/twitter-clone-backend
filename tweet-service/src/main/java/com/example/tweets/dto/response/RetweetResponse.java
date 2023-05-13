@@ -11,11 +11,9 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class TweetResponse {
+public class RetweetResponse {
 
-    private String text;
+    private TweetResponse tweet;
     private String username;
-    private LocalDateTime creationDate;
-    private Integer likes;
-    private Integer retweets;
+    private LocalDateTime retweetTime;
 }

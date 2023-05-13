@@ -28,6 +28,12 @@ public class Tweet implements BaseEntity<Long> {
             cascade = CascadeType.ALL
     )
     private List<Like> likes = new ArrayList<>();
+    @OneToMany(
+            targetEntity = Retweet.class,
+            mappedBy = "tweet",
+            cascade = CascadeType.ALL
+    )
+    private List<Retweet> retweets = new ArrayList<>();
 
     private String text;
     private String profileId;
