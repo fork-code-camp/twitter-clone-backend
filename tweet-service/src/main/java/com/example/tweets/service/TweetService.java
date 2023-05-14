@@ -52,6 +52,7 @@ public class TweetService {
 
     public List<TweetResponse> getAllTweetsForUser(String loggedInUser) {
         String profileId = profileServiceClient.getProfileIdByLoggedInUser(loggedInUser);
+
         return tweetRepository.findAllByProfileId(profileId)
                 .stream()
                 .map(tweet -> tweetMapper.toResponse(tweet, profileServiceClient))
