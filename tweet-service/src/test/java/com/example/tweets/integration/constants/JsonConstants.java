@@ -14,7 +14,8 @@ public enum JsonConstants {
     REQUEST_PATTERN("{\"text\": \"%s\"}"),
     CREATE_TWEET_REQUEST(REQUEST_PATTERN.getConstant().formatted(DEFAULT_TWEET_TEXT.getConstant())),
     UPDATE_TWEET_REQUEST(REQUEST_PATTERN.getConstant().formatted(UPDATE_TWEET_TEXT.getConstant())),
-    EMPTY_TWEET_REQUEST(REQUEST_PATTERN.getConstant().formatted(""));
+    EMPTY_TWEET_REQUEST(REQUEST_PATTERN.getConstant().formatted("")),
+    RETWEET_REQUEST(REQUEST_PATTERN.getConstant().formatted(DEFAULT_TWEET_TEXT));
 
     private final String constant;
 }

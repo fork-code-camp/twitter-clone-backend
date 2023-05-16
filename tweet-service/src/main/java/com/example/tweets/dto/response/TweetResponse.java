@@ -1,5 +1,6 @@
 package com.example.tweets.dto.response;
 
+import com.example.tweets.client.response.ProfileResponse;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,9 +14,10 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class TweetResponse {
 
+    private ProfileResponse profile;
+    private TweetResponse originalTweet;
     private String text;
-    private String username;
-    private LocalDateTime creationDate;
     private Integer likes;
     private Integer retweets;
+    private LocalDateTime creationDate;
 }

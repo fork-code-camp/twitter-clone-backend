@@ -1,5 +1,6 @@
 package com.example.tweets.entity;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,7 +16,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "tweets")
+@Table(name = "tweets", uniqueConstraints = @UniqueConstraint(columnNames = {"original_tweet_id", "profileId"}))
 public class Tweet implements BaseEntity<Long> {
 
     @Id
@@ -28,13 +29,10 @@ public class Tweet implements BaseEntity<Long> {
             cascade = CascadeType.ALL
     )
     private List<Like> likes = new ArrayList<>();
-    @OneToMany(
-            targetEntity = Retweet.class,
-            mappedBy = "tweet",
-            cascade = CascadeType.ALL
-    )
-    private List<Retweet> retweets = new ArrayList<>();
 
+    @OneToOne(targetEntity = Tweet.class)
+    @Nullable
+    private Tweet originalTweet;
     private String text;
     private String profileId;
     private LocalDateTime creationDate;

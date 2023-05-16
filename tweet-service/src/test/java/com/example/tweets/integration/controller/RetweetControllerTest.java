@@ -1,6 +1,7 @@
 package com.example.tweets.integration.controller;
 
 import com.example.tweets.client.ProfileServiceClient;
+import com.example.tweets.dto.request.RetweetRequest;
 import com.example.tweets.integration.IntegrationTestBase;
 import com.example.tweets.integration.mocks.ProfileClientMock;
 import com.example.tweets.repository.RetweetRepository;
@@ -12,10 +13,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static com.example.tweets.integration.constants.GlobalConstants.*;
+import static com.example.tweets.integration.constants.JsonConstants.*;
 import static com.example.tweets.integration.constants.UrlConstants.*;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -25,7 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @AutoConfigureMockMvc
 @RequiredArgsConstructor
-@Sql(value = "classpath:sql/data.sql", statements = "ALTER SEQUENCE retweets_id_seq RESTART WITH 1")
+@Sql(value = "classpath:sql/data.sql")
 public class RetweetControllerTest extends IntegrationTestBase {
 
     private final MockMvc mockMvc;
@@ -44,26 +47,25 @@ public class RetweetControllerTest extends IntegrationTestBase {
     @Test
     public void retweetTest() throws Exception {
         retweetAndExpectSuccess(1L);
+        assertTrue(retweetRepository.findByOriginalTweetIdAndProfileId(1L, ID.getConstant()).isPresent());
 
         retweetAndExpectFailure(100L, NOT_FOUND, messageSourceService.generateMessage("error.entity.not_found", 100));
-        assertTrue(retweetRepository.findByProfileIdAndTweetId(ID.getConstant(), 1L).isPresent());
-
         retweetAndExpectFailure(1L, BAD_REQUEST, ERROR_DUPLICATE_ENTITY.getConstant());
     }
 
     @Test
     public void undoRetweetTest() throws Exception {
-        retweetService.retweet(1L, EMAIL.getConstant());
+        retweetDummyTweet();
 
         undoRetweetAndExpectSuccess(1L);
         undoRetweetAndExpectFailure(1L, NOT_FOUND, messageSourceService.generateMessage("error.entity.not_found", 1));
 
-        assertFalse(retweetRepository.findByProfileIdAndTweetId(ID.getConstant(), 1L).isPresent());
+        assertFalse(retweetRepository.findByOriginalTweetIdAndProfileId(1L, ID.getConstant()).isPresent());
     }
 
     @Test
     public void getRetweetTest() throws Exception {
-        retweetService.retweet(1L, EMAIL.getConstant());
+        retweetDummyTweet();
 
         getRetweetAndExpectSuccess(1L);
         getRetweetAndExpectFailure(100L, NOT_FOUND, messageSourceService.generateMessage("error.entity.not_found", 100));
@@ -72,6 +74,8 @@ public class RetweetControllerTest extends IntegrationTestBase {
     private void retweetAndExpectSuccess(Long tweetId) throws Exception {
         mockMvc.perform(post(
                         RETWEETS_URL_WITH_ID.getConstant().formatted(tweetId))
+                        .content(RETWEET_REQUEST.getConstant())
+                        .contentType(MediaType.APPLICATION_JSON)
                         .header("loggedInUser", EMAIL.getConstant())
                 )
                 .andExpectAll(
@@ -83,6 +87,8 @@ public class RetweetControllerTest extends IntegrationTestBase {
     private void retweetAndExpectFailure(Long tweetId, HttpStatus status, String message) throws Exception {
         mockMvc.perform(post(
                         RETWEETS_URL_WITH_ID.getConstant().formatted(tweetId))
+                        .content(RETWEET_REQUEST.getConstant())
+                        .contentType(MediaType.APPLICATION_JSON)
                         .header("loggedInUser", EMAIL.getConstant())
                 )
                 .andExpectAll(
@@ -119,11 +125,17 @@ public class RetweetControllerTest extends IntegrationTestBase {
                 )
                 .andExpectAll(
                         status().isOk(),
-                        jsonPath("$.tweet.text").value(DEFAULT_TWEET_TEXT.getConstant()),
-                        jsonPath("$.tweet.username").value(USERNAME.getConstant()),
-                        jsonPath("$.tweet.creationDate").exists(),
-                        jsonPath("$.username").value(USERNAME.getConstant()),
-                        jsonPath("$.retweetTime").exists()
+                        jsonPath("$.originalTweet.text").value(DEFAULT_TWEET_TEXT.getConstant()),
+                        jsonPath("$.originalTweet.profile.username").value(USERNAME.getConstant()),
+                        jsonPath("$.originalTweet.profile.email").value(EMAIL.getConstant()),
+                        jsonPath("$.originalTweet.likes").value(0),
+                        jsonPath("$.originalTweet.retweets").value(1),
+                        jsonPath("$.originalTweet.creationDate").exists(),
+                        jsonPath("$.profile.username").value(USERNAME.getConstant()),
+                        jsonPath("$.profile.email").value(EMAIL.getConstant()),
+                        jsonPath("$.text").value(DEFAULT_TWEET_TEXT.getConstant()),
+                        jsonPath("$.likes").value(0),
+                        jsonPath("$.retweets").value(0)
                 );
     }
 
@@ -135,5 +147,9 @@ public class RetweetControllerTest extends IntegrationTestBase {
                         status().is(status.value()),
                         jsonPath("$.message").value(message)
                 );
+    }
+
+    private void retweetDummyTweet() {
+        retweetService.retweet(new RetweetRequest(DEFAULT_TWEET_TEXT.getConstant()), 1L, EMAIL.getConstant());
     }
 }

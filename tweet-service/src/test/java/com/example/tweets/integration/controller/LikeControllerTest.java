@@ -31,7 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @AutoConfigureMockMvc
 @RequiredArgsConstructor
-@Sql(value = "classpath:sql/data.sql", statements = "ALTER SEQUENCE likes_id_seq RESTART WITH 1;")
+@Sql(value = "classpath:sql/data.sql")
 public class LikeControllerTest extends IntegrationTestBase {
 
     private final MockMvc mockMvc;

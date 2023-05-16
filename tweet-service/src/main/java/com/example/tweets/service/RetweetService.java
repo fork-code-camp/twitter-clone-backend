@@ -1,9 +1,9 @@
 package com.example.tweets.service;
 
 import com.example.tweets.client.ProfileServiceClient;
-import com.example.tweets.dto.response.RetweetResponse;
+import com.example.tweets.dto.request.RetweetRequest;
+import com.example.tweets.dto.response.TweetResponse;
 import com.example.tweets.entity.Tweet;
-import com.example.tweets.mapper.RetweetMapper;
 import com.example.tweets.mapper.TweetMapper;
 import com.example.tweets.repository.RetweetRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -17,26 +17,24 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class RetweetService {
 
-    private final RetweetMapper retweetMapper;
     private final TweetMapper tweetMapper;
     private final RetweetRepository retweetRepository;
     private final TweetService tweetService;
     private final ProfileServiceClient profileServiceClient;
     private final MessageSourceService messageSourceService;
 
-    public boolean retweet(Long tweetId, String loggedInUser) {
-        Tweet tweet = tweetService.getTweetEntityById(tweetId);
+    public boolean retweet(RetweetRequest retweetRequest, Long tweetId, String loggedInUser) {
+        Tweet originalTweet = tweetService.getTweetEntityById(tweetId);
 
-        return Optional.of(tweetId)
-                .map(id -> retweetMapper.toEntity(tweet, profileServiceClient, loggedInUser))
+        return Optional.of(retweetRequest)
+                .map(req -> tweetMapper.toEntity(retweetRequest, originalTweet, profileServiceClient, loggedInUser))
                 .map(retweetRepository::saveAndFlush)
                 .isPresent();
     }
 
     public boolean undoRetweet(Long tweetId, String loggedInUser) {
         String profileId = profileServiceClient.getProfileIdByLoggedInUser(loggedInUser);
-
-        retweetRepository.findByProfileIdAndTweetId(profileId, tweetId)
+        retweetRepository.findByOriginalTweetIdAndProfileId(tweetId, profileId)
                 .ifPresentOrElse(retweetRepository::delete, () -> {
                     throw new EntityNotFoundException(
                             messageSourceService.generateMessage("error.entity.not_found", tweetId)
@@ -45,22 +43,20 @@ public class RetweetService {
         return true;
     }
 
-    public RetweetResponse getRetweetByUserAndTweetId(Long tweetId, String loggedInUser) {
+    public TweetResponse getRetweetByOriginalTweetId(Long tweetId, String loggedInUser) {
         String profileId = profileServiceClient.getProfileIdByLoggedInUser(loggedInUser);
-
-        return retweetRepository.findByProfileIdAndTweetId(profileId, tweetId)
-                .map(retweet -> retweetMapper.toResponse(retweet, retweet.getTweet(), tweetMapper, profileServiceClient))
+        return retweetRepository.findByOriginalTweetIdAndProfileId(tweetId, profileId)
+                .map(retweet -> tweetMapper.toResponse(retweet, retweetRepository, profileServiceClient))
                 .orElseThrow(() -> new EntityNotFoundException(
                         messageSourceService.generateMessage("error.entity.not_found", tweetId)
                 ));
     }
 
-    public List<RetweetResponse> getRetweetsForUser(String loggedInUser) {
+    public List<TweetResponse> getRetweetsForUser(String loggedInUser) {
         String profileId = profileServiceClient.getProfileIdByLoggedInUser(loggedInUser);
-
-        return retweetRepository.findAllByProfileId(profileId)
+        return retweetRepository.findAllByProfileIdAndOriginalTweetNotNull(profileId)
                 .stream()
-                .map(retweet -> retweetMapper.toResponse(retweet, retweet.getTweet(), tweetMapper, profileServiceClient))
+                .map(retweet -> tweetMapper.toResponse(retweet, retweetRepository, profileServiceClient))
                 .toList();
     }
 }

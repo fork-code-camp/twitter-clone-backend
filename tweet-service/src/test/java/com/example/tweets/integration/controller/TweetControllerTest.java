@@ -8,6 +8,7 @@ import com.example.tweets.repository.TweetRepository;
 import com.example.tweets.service.MessageSourceService;
 import com.example.tweets.service.TweetService;
 import lombok.RequiredArgsConstructor;
+import org.hamcrest.core.IsNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -18,12 +19,11 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
-import static com.example.tweets.integration.constants.JsonConstants.*;
 import static com.example.tweets.integration.constants.GlobalConstants.*;
+import static com.example.tweets.integration.constants.JsonConstants.*;
 import static com.example.tweets.integration.constants.UrlConstants.TWEETS_URL;
 import static com.example.tweets.integration.constants.UrlConstants.TWEETS_URL_WITH_ID;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -31,7 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @AutoConfigureMockMvc
 @RequiredArgsConstructor
-@Sql(statements = "ALTER SEQUENCE tweets_id_seq RESTART WITH 1")
+@Sql(statements = "ALTER SEQUENCE tweets_id_seq RESTART WITH 1;")
 public class TweetControllerTest extends IntegrationTestBase {
 
     private final MockMvc mockMvc;
@@ -165,8 +165,10 @@ public class TweetControllerTest extends IntegrationTestBase {
                 .andExpectAll(
                         status().isOk(),
                         content().contentType(MediaType.APPLICATION_JSON),
+                        jsonPath("$.originalTweet").value(IsNull.nullValue()),
+                        jsonPath("$.profile.username").value(USERNAME.getConstant()),
+                        jsonPath("$.profile.email").value(EMAIL.getConstant()),
                         jsonPath("$.text").value(text),
-                        jsonPath("$.username").value(USERNAME.getConstant()),
                         jsonPath("$.likes").value(likes),
                         jsonPath("$.creationDate").exists()
                 );
