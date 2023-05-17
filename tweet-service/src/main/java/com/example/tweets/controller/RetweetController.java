@@ -1,8 +1,8 @@
 package com.example.tweets.controller;
 
-import com.example.tweets.dto.request.RetweetRequest;
-import com.example.tweets.dto.response.TweetResponse;
+import com.example.tweets.dto.response.RetweetResponse;
 import com.example.tweets.service.RetweetService;
+import jakarta.ws.rs.QueryParam;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,11 +18,10 @@ public class RetweetController {
 
     @PostMapping("/{tweetId}")
     public ResponseEntity<Boolean> retweet(
-            @RequestBody RetweetRequest retweetRequest,
             @PathVariable Long tweetId,
             @RequestHeader String loggedInUser
     ) {
-        return ResponseEntity.ok(retweetService.retweet(retweetRequest, tweetId, loggedInUser));
+        return ResponseEntity.ok(retweetService.retweet(tweetId, loggedInUser));
     }
 
     @DeleteMapping("/{tweetId}")
@@ -31,12 +30,17 @@ public class RetweetController {
     }
 
     @GetMapping("/{tweetId}")
-    public ResponseEntity<TweetResponse> getRetweetByTweetId(@PathVariable Long tweetId, @RequestHeader String loggedInUser) {
-        return ResponseEntity.ok(retweetService.getRetweetByOriginalTweetId(tweetId, loggedInUser));
+    public ResponseEntity<Boolean> isRetweeted(@PathVariable Long tweetId, @RequestHeader String loggedInUser) {
+        return ResponseEntity.ok(retweetService.isRetweeted(tweetId, loggedInUser));
     }
 
     @GetMapping
-    public ResponseEntity<List<TweetResponse>> getRetweetsForUser(@RequestHeader String loggedInUser) {
-        return ResponseEntity.ok(retweetService.getRetweetsForUser(loggedInUser));
+    public ResponseEntity<RetweetResponse> getRetweet(@QueryParam(value = "retweetId") Long retweetId) {
+        return ResponseEntity.ok(retweetService.findRetweetById(retweetId));
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<List<RetweetResponse>> getRetweetsForUser(@RequestHeader String loggedInUser) {
+        return ResponseEntity.ok(retweetService.findRetweetsForUser(loggedInUser));
     }
 }

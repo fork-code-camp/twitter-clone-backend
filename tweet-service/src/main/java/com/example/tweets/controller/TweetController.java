@@ -5,6 +5,7 @@ import com.example.tweets.dto.request.TweetUpdateRequest;
 import com.example.tweets.dto.response.TweetResponse;
 import com.example.tweets.service.TweetService;
 import jakarta.validation.Valid;
+import jakarta.ws.rs.QueryParam;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,30 +27,39 @@ public class TweetController {
         return ResponseEntity.ok(tweetService.createTweet(request, loggedInUser));
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<TweetResponse> getTweet(@PathVariable Long id) {
-        return ResponseEntity.ok(tweetService.getTweet(id));
+    @PostMapping("/{tweetId}")
+    public ResponseEntity<TweetResponse> createQuoteTweet(
+            @PathVariable Long tweetId,
+            @Valid @RequestBody TweetCreateRequest request,
+            @RequestHeader String loggedInUser
+    ) {
+        return ResponseEntity.ok(tweetService.createQuoteTweet(request, tweetId, loggedInUser));
     }
 
     @GetMapping
+    public ResponseEntity<TweetResponse> getTweet(@QueryParam(value = "tweetId") Long tweetId) {
+        return ResponseEntity.ok(tweetService.getTweet(tweetId));
+    }
+
+    @GetMapping("/all")
     public ResponseEntity<List<TweetResponse>> getAllTweets() {
         return ResponseEntity.ok(tweetService.getAllTweets());
     }
 
-    @PatchMapping("/{id}")
+    @PatchMapping("/{tweetId}")
     public ResponseEntity<TweetResponse> updateTweet(
             @Valid @RequestBody TweetUpdateRequest request,
-            @PathVariable Long id,
+            @PathVariable Long tweetId,
             @RequestHeader String loggedInUser
     ) {
-        return ResponseEntity.ok(tweetService.updateTweet(id, request, loggedInUser));
+        return ResponseEntity.ok(tweetService.updateTweet(tweetId, request, loggedInUser));
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{tweetId}")
     public ResponseEntity<Boolean> deleteTweet(
-            @PathVariable Long id,
+            @PathVariable Long tweetId,
             @RequestHeader String loggedInUser
     ) {
-        return ResponseEntity.ok(tweetService.deleteTweet(id, loggedInUser));
+        return ResponseEntity.ok(tweetService.deleteTweet(tweetId, loggedInUser));
     }
 }

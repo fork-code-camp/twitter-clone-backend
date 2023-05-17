@@ -37,6 +37,16 @@ public class TweetService {
                 ));
     }
 
+    public TweetResponse createQuoteTweet(TweetCreateRequest request, Long tweetId, String loggedInUser) {
+        return tweetRepository.findById(tweetId)
+                .map(tweet -> tweetMapper.toEntity(request, tweet, profileServiceClient, loggedInUser))
+                .map(tweetRepository::saveAndFlush)
+                .map(quoteTweet -> tweetMapper.toResponse(quoteTweet, retweetRepository, profileServiceClient))
+                .orElseThrow(() -> new EntityNotFoundException(
+                        messageSourceService.generateMessage("error.entity.not_found", tweetId)
+                ));
+    }
+
     public TweetResponse getTweet(Long id) {
         return tweetRepository.findById(id)
                 .map(tweet -> tweetMapper.toResponse(tweet, retweetRepository, profileServiceClient))

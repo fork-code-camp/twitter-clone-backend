@@ -16,7 +16,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "tweets", uniqueConstraints = @UniqueConstraint(columnNames = {"original_tweet_id", "profileId"}))
+@Table(name = "tweets")
 public class Tweet implements BaseEntity<Long> {
 
     @Id
@@ -29,6 +29,13 @@ public class Tweet implements BaseEntity<Long> {
             cascade = CascadeType.ALL
     )
     private List<Like> likes = new ArrayList<>();
+
+    @OneToMany(
+            targetEntity = Retweet.class,
+            mappedBy = "parentTweet",
+            cascade = CascadeType.ALL
+    )
+    private List<Retweet> retweets = new ArrayList<>();
 
     @OneToOne(targetEntity = Tweet.class)
     @Nullable

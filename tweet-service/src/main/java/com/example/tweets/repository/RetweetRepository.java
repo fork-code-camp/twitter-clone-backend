@@ -1,6 +1,6 @@
 package com.example.tweets.repository;
 
-import com.example.tweets.entity.Tweet;
+import com.example.tweets.entity.Retweet;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -8,11 +8,9 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface RetweetRepository extends JpaRepository<Tweet, Long> {
+public interface RetweetRepository extends JpaRepository<Retweet, Long> {
 
-    Integer countAllByOriginalTweetId(Long id);
-
-    Optional<Tweet> findByOriginalTweetIdAndProfileId(Long id, String profileId);
-
-    List<Tweet> findAllByProfileIdAndOriginalTweetNotNull(String profileId);
+    Integer countAllByParentTweetId(Long id);
+    Optional<Retweet> findByParentTweetIdAndProfileId(Long originalTweetId, String profileId);
+    List<Retweet> findAllByProfileId(String profileId);
 }
