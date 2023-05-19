@@ -14,6 +14,7 @@ public enum GlobalConstants {
     ID("dummy-id"),
     DEFAULT_TWEET_TEXT("some text"),
     UPDATE_TWEET_TEXT("updated text"),
+    DEFAULT_REPLY_TEXT("reply text"),
     TEXT_EMPTY_MESSAGE("Text shouldn't be empty."),
     ERROR_DUPLICATE_ENTITY("could not execute statement");
 

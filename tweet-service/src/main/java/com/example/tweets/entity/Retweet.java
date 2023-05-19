@@ -19,8 +19,9 @@ public class Retweet implements BaseEntity<Long> {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @ManyToOne(targetEntity = Tweet.class)
-    private Tweet parentTweet;
     private String profileId;
     private LocalDateTime retweetTime;
+
+    @ManyToOne(targetEntity = Tweet.class)
+    private Tweet parentTweet;
 }

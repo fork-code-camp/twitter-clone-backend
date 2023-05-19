@@ -17,10 +17,7 @@ public class RetweetController {
     private final RetweetService retweetService;
 
     @PostMapping("/{tweetId}")
-    public ResponseEntity<Boolean> retweet(
-            @PathVariable Long tweetId,
-            @RequestHeader String loggedInUser
-    ) {
+    public ResponseEntity<Boolean> retweet(@PathVariable Long tweetId, @RequestHeader String loggedInUser) {
         return ResponseEntity.ok(retweetService.retweet(tweetId, loggedInUser));
     }
 

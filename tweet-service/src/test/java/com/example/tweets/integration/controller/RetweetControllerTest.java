@@ -131,6 +131,7 @@ public class RetweetControllerTest extends IntegrationTestBase {
                         jsonPath("$.parentTweet.profile.email").value(EMAIL.getConstant()),
                         jsonPath("$.parentTweet.likes").value(0),
                         jsonPath("$.parentTweet.retweets").value(1),
+                        jsonPath("$.parentTweet.replies").value(0),
                         jsonPath("$.parentTweet.creationDate").exists(),
                         jsonPath("$.profile.username").value(USERNAME.getConstant()),
                         jsonPath("$.profile.email").value(EMAIL.getConstant()),

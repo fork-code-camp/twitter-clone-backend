@@ -22,6 +22,9 @@ public class Tweet implements BaseEntity<Long> {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    private String text;
+    private String profileId;
+    private LocalDateTime creationDate;
 
     @OneToMany(
             targetEntity = Like.class,
@@ -37,10 +40,11 @@ public class Tweet implements BaseEntity<Long> {
     )
     private List<Retweet> retweets = new ArrayList<>();
 
+    @ManyToOne(targetEntity = Tweet.class)
+    @Nullable
+    private Tweet parentTweetForReply;
+
     @OneToOne(targetEntity = Tweet.class)
     @Nullable
-    private Tweet originalTweet;
-    private String text;
-    private String profileId;
-    private LocalDateTime creationDate;
+    private Tweet embeddedTweet;
 }

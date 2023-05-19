@@ -14,10 +14,12 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class TweetResponse {
 
+    private TweetResponse parentTweetForReply;
     private ProfileResponse profile;
-    private TweetResponse originalTweet;
     private String text;
+    private TweetResponse embeddedTweet;
     private Integer likes;
     private Integer retweets;
+    private Integer replies;
     private LocalDateTime creationDate;
 }

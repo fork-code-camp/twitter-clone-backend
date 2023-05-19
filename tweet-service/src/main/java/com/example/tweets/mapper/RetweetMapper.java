@@ -5,6 +5,7 @@ import com.example.tweets.dto.response.RetweetResponse;
 import com.example.tweets.entity.Retweet;
 import com.example.tweets.entity.Tweet;
 import com.example.tweets.repository.RetweetRepository;
+import com.example.tweets.repository.TweetRepository;
 import org.mapstruct.Context;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -22,12 +23,13 @@ public interface RetweetMapper {
             @Context String loggedInUser
     );
 
-    @Mapping(target = "parentTweet", expression = "java(tweetMapper.toResponse(retweet.getParentTweet(), retweetRepository, profileServiceClient))")
+    @Mapping(target = "parentTweet", expression = "java(tweetMapper.toResponse(retweet.getParentTweet(), retweetRepository, tweetRepository, profileServiceClient))")
     @Mapping(target = "profile", expression = "java(profileServiceClient.getProfileById(retweet.getProfileId()))")
     RetweetResponse toResponse(
             Retweet retweet,
             @Context TweetMapper tweetMapper,
             @Context RetweetRepository retweetRepository,
+            @Context TweetRepository tweetRepository,
             @Context ProfileServiceClient profileServiceClient
     );
 }

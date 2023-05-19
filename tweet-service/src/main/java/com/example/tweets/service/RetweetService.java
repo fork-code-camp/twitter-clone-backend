@@ -6,6 +6,7 @@ import com.example.tweets.entity.Tweet;
 import com.example.tweets.mapper.RetweetMapper;
 import com.example.tweets.mapper.TweetMapper;
 import com.example.tweets.repository.RetweetRepository;
+import com.example.tweets.repository.TweetRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,7 @@ public class RetweetService {
     private final RetweetMapper retweetMapper;
     private final TweetMapper tweetMapper;
     private final TweetService tweetService;
+    private final TweetRepository tweetRepository;
     private final RetweetRepository retweetRepository;
     private final ProfileServiceClient profileServiceClient;
     private final MessageSourceService messageSourceService;
@@ -50,7 +52,7 @@ public class RetweetService {
 
     public RetweetResponse findRetweetById(Long retweetId) {
         return retweetRepository.findById(retweetId)
-                .map(retweet -> retweetMapper.toResponse(retweet, tweetMapper, retweetRepository, profileServiceClient))
+                .map(retweet -> retweetMapper.toResponse(retweet, tweetMapper, retweetRepository, tweetRepository, profileServiceClient))
                 .orElseThrow(() -> new EntityNotFoundException(
                         messageSourceService.generateMessage("error.entity.not_found", retweetId)
                 ));
@@ -60,7 +62,7 @@ public class RetweetService {
         String profileId = profileServiceClient.getProfileIdByLoggedInUser(loggedInUser);
         return retweetRepository.findAllByProfileId(profileId)
                 .stream()
-                .map(retweet -> retweetMapper.toResponse(retweet, tweetMapper, retweetRepository, profileServiceClient))
+                .map(retweet -> retweetMapper.toResponse(retweet, tweetMapper, retweetRepository, tweetRepository, profileServiceClient))
                 .toList();
     }
 }
