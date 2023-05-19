@@ -17,8 +17,9 @@ public class IntegrationTestBase {
             .withFixedExposedPort(8888, 8888);
 
     @BeforeAll
-    static void runContainer() {
+    static void runContainer() throws InterruptedException {
         configServerContainer.start();
+        Thread.sleep(5000L);
         postgresContainer.start();
     }
 
