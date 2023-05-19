@@ -28,7 +28,7 @@ public class Tweet implements BaseEntity<Long> {
 
     @OneToMany(
             targetEntity = Like.class,
-            mappedBy = "tweet",
+            mappedBy = "parentTweet",
             cascade = CascadeType.ALL
     )
     private List<Like> likes = new ArrayList<>();
@@ -39,6 +39,13 @@ public class Tweet implements BaseEntity<Long> {
             cascade = CascadeType.ALL
     )
     private List<Retweet> retweets = new ArrayList<>();
+
+    @OneToMany(
+            targetEntity = View.class,
+            mappedBy = "parentTweet",
+            cascade = CascadeType.ALL
+    )
+    private List<View> views = new ArrayList<>();
 
     @ManyToOne(targetEntity = Tweet.class)
     @Nullable

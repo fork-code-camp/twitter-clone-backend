@@ -37,8 +37,8 @@ public class TweetController {
     }
 
     @GetMapping
-    public ResponseEntity<TweetResponse> getTweet(@QueryParam(value = "tweetId") Long tweetId) {
-        return ResponseEntity.ok(tweetService.getTweet(tweetId));
+    public ResponseEntity<TweetResponse> getTweet(@QueryParam(value = "tweetId") Long tweetId, @RequestHeader String loggedInUser) {
+        return ResponseEntity.ok(tweetService.getTweet(tweetId, loggedInUser));
     }
 
     @GetMapping("/all")

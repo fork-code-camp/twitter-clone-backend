@@ -18,8 +18,9 @@ public class TweetResponse {
     private ProfileResponse profile;
     private String text;
     private TweetResponse embeddedTweet;
-    private Integer likes;
     private Integer retweets;
     private Integer replies;
+    private Integer likes;
+    private Integer views;
     private LocalDateTime creationDate;
 }

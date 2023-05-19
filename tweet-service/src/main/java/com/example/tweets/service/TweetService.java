@@ -26,6 +26,7 @@ public class TweetService {
     private final MessageSourceService messageSourceService;
     private final ProfileServiceClient profileServiceClient;
     private final RetweetRepository retweetRepository;
+    private final ViewService viewService;
 
     public TweetResponse createTweet(TweetCreateRequest request, String loggedInUser) {
         return Optional.of(request)
@@ -39,7 +40,7 @@ public class TweetService {
 
     public TweetResponse createQuoteTweet(TweetCreateRequest request, Long tweetId, String loggedInUser) {
         return tweetRepository.findById(tweetId)
-                .map(tweet -> tweetMapper.toEntity(request, tweet, null, profileServiceClient, loggedInUser))
+                .map(embeddedTweet -> tweetMapper.toEntity(request, embeddedTweet, null, profileServiceClient, loggedInUser))
                 .map(tweetRepository::saveAndFlush)
                 .map(quoteTweet -> tweetMapper.toResponse(quoteTweet, retweetRepository, tweetRepository, profileServiceClient))
                 .orElseThrow(() -> new EntityNotFoundException(
@@ -47,11 +48,13 @@ public class TweetService {
                 ));
     }
 
-    public TweetResponse getTweet(Long id) {
-        return tweetRepository.findById(id)
+    public TweetResponse getTweet(Long tweetId, String loggedInUser) {
+        return tweetRepository.findById(tweetId)
+                .map(tweet -> viewService.createViewEntity(tweet, loggedInUser, profileServiceClient))
+                .map(tweetRepository::saveAndFlush)
                 .map(tweet -> tweetMapper.toResponse(tweet, retweetRepository, tweetRepository, profileServiceClient))
                 .orElseThrow(() -> new EntityNotFoundException(
-                        messageSourceService.generateMessage("error.entity.not_found", id)
+                        messageSourceService.generateMessage("error.entity.not_found", tweetId)
                 ));
     }
 

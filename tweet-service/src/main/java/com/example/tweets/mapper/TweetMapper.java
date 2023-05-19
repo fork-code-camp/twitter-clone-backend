@@ -23,6 +23,7 @@ public interface TweetMapper {
     @Mapping(target = "creationDate", expression = "java(java.time.LocalDateTime.now())")
     @Mapping(target = "likes", expression = "java(new java.util.ArrayList<>())")
     @Mapping(target = "retweets", expression = "java(new java.util.ArrayList<>())")
+    @Mapping(target = "views", expression = "java(new java.util.ArrayList<>())")
     Tweet toEntity(
             TweetCreateRequest request,
             Tweet embeddedTweet,
@@ -31,10 +32,11 @@ public interface TweetMapper {
             @Context String loggedInUser
     );
 
-    @Mapping(target = "likes", expression = "java(tweet.getLikes().size())")
     @Mapping(target = "profile", expression = "java(profileServiceClient.getProfileById(tweet.getProfileId()))")
     @Mapping(target = "embeddedTweet", expression = "java(this.toResponse(tweet.getEmbeddedTweet(), retweetRepository, tweetRepository, profileServiceClient))")
     @Mapping(target = "parentTweetForReply", expression = "java(this.toResponse(tweet.getParentTweetForReply(), retweetRepository, tweetRepository, profileServiceClient))")
+    @Mapping(target = "likes", expression = "java(tweet.getLikes().size())")
+    @Mapping(target = "views", expression = "java(tweet.getViews().size())")
     @Mapping(target = "retweets", expression = "java(retweetRepository.countAllByParentTweetId(tweet.getId()))")
     @Mapping(target = "replies", expression = "java(tweetRepository.countAllByParentTweetForReplyId(tweet.getId()))")
     TweetResponse toResponse(
@@ -48,6 +50,7 @@ public interface TweetMapper {
     @Mapping(target = "profileId", ignore = true)
     @Mapping(target = "creationDate", ignore = true)
     @Mapping(target = "likes", ignore = true)
+    @Mapping(target = "views", ignore = true)
     @Mapping(target = "parentTweetForReply", ignore = true)
     @Mapping(target = "embeddedTweet", ignore = true)
     Tweet updateTweet(TweetUpdateRequest request, @MappingTarget Tweet tweet);
