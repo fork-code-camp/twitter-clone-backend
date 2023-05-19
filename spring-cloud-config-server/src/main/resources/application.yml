@@ -8,6 +8,8 @@ spring:
         git:
           uri: https://github.com/fork-code-camp/microservices-config-server
           searchPaths: '{application}'
+          default-label: main
+          timeout: 3
 
 encrypt:
   keystore:

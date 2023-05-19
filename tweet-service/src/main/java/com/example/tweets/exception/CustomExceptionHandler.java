@@ -3,12 +3,13 @@ package com.example.tweets.exception;
 import com.example.tweets.dto.response.ErrorResponse;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolationException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -16,7 +17,7 @@ import java.util.Map;
 
 import static org.springframework.http.HttpStatus.*;
 
-@ControllerAdvice
+@RestControllerAdvice
 public class CustomExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -47,8 +48,11 @@ public class CustomExceptionHandler {
         return generateDefaultErrorMessage(e, FORBIDDEN);
     }
 
-    @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<ErrorResponse> handleException(ConstraintViolationException e) {
+    @ExceptionHandler({
+            ConstraintViolationException.class,
+            DataIntegrityViolationException.class
+    })
+    public ResponseEntity<ErrorResponse> handleException(Exception e) {
         return generateDefaultErrorMessage(e, BAD_REQUEST);
     }
 

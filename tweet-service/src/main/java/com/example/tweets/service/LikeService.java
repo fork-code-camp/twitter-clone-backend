@@ -1,6 +1,7 @@
 package com.example.tweets.service;
 
 import com.example.tweets.client.ProfileServiceClient;
+import com.example.tweets.entity.Tweet;
 import com.example.tweets.exception.CreateEntityException;
 import com.example.tweets.mapper.LikeMapper;
 import com.example.tweets.repository.LikesRepository;
@@ -20,9 +21,10 @@ public class LikeService {
     private final LikeMapper likeMapper;
     private final MessageSourceService messageSourceService;
 
-    public void likeTweet(Long tweetId, String loggedInUser) {
-        Optional.of(tweetId)
-                .map(id -> likeMapper.toEntityFromTweetId(id, tweetService, profileServiceClient, loggedInUser))
+    public void likeTweet(Long parentTweetId, String loggedInUser) {
+        Tweet parentTweet = tweetService.getTweetEntityById(parentTweetId);
+        Optional.of(parentTweet)
+                .map(tweet -> likeMapper.toEntity(tweet, profileServiceClient, loggedInUser))
                 .map(likesRepository::saveAndFlush)
                 .orElseThrow(() -> new CreateEntityException(
                         messageSourceService.generateMessage("error.entity.unsuccessful_creation")
@@ -31,18 +33,16 @@ public class LikeService {
 
     public void unlikeTweet(Long tweetId, String loggedInUser) {
         String profileId = profileServiceClient.getProfileIdByLoggedInUser(loggedInUser);
-
-        likesRepository.findByProfileIdAndTweetId(profileId, tweetId)
+        likesRepository.findByProfileIdAndParentTweetId(profileId, tweetId)
                 .ifPresentOrElse(likesRepository::delete, () -> {
                     throw new EntityNotFoundException(
-                            messageSourceService.generateMessage("error.entity.not_found")
+                            messageSourceService.generateMessage("error.entity.not_found", tweetId)
                     );
                 });
     }
 
     public boolean isLiked(Long tweetId, String loggedInUser) {
         String profileId = profileServiceClient.getProfileIdByLoggedInUser(loggedInUser);
-
-        return likesRepository.findByProfileIdAndTweetId(profileId, tweetId).isPresent();
+        return likesRepository.findByProfileIdAndParentTweetId(profileId, tweetId).isPresent();
     }
 }
