@@ -1,21 +1,21 @@
 package com.example.tweets.mapper;
 
 import com.example.tweets.client.ProfileServiceClient;
-import com.example.tweets.entity.Like;
 import com.example.tweets.entity.Tweet;
+import com.example.tweets.entity.View;
 import org.mapstruct.Context;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
-public interface LikeMapper {
+public interface ViewMapper {
 
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "parentTweet", expression = "java(parentTweet)")
     @Mapping(target = "profileId", expression = "java(profileServiceClient.getProfileIdByLoggedInUser(loggedInUser))")
-    Like toEntity (
+    @Mapping(target = "parentTweet", expression = "java(parentTweet)")
+    View toEntity(
             Tweet parentTweet,
-            @Context ProfileServiceClient profileServiceClient,
-            @Context String loggedInUser
+            @Context String loggedInUser,
+            @Context ProfileServiceClient profileServiceClient
     );
 }

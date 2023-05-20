@@ -6,13 +6,13 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+@Entity
 @Data
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
-@Entity
-@Table(name = "likes", uniqueConstraints = @UniqueConstraint(columnNames = {"parent_tweet_id", "profileId"}))
-public class Like implements BaseEntity<Long> {
+@AllArgsConstructor
+@Table(name = "views", uniqueConstraints = @UniqueConstraint(columnNames = {"parent_tweet_id", "profileId"}))
+public class View implements BaseEntity<Long> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
