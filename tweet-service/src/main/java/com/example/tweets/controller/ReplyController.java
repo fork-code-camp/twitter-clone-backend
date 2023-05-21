@@ -26,12 +26,12 @@ public class ReplyController {
         return ResponseEntity.ok(replyService.reply(tweetCreateRequest, parentTweetId, loggedInUser));
     }
 
-    @GetMapping("/all")
+    @GetMapping
     public ResponseEntity<List<TweetResponse>> findAllRepliesForUser(@RequestHeader String loggedInUser) {
         return ResponseEntity.ok(replyService.findAllRepliesForUser(loggedInUser));
     }
 
-    @GetMapping("/all/{parentTweetId}")
+    @GetMapping("{parentTweetId}")
     public ResponseEntity<List<TweetResponse>> findAllRepliesForTweet(@PathVariable Long parentTweetId) {
         return ResponseEntity.ok(replyService.findAllRepliesForTweet(parentTweetId));
     }

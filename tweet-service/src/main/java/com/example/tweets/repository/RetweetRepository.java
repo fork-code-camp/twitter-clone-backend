@@ -10,7 +10,7 @@ import java.util.Optional;
 @Repository
 public interface RetweetRepository extends JpaRepository<Retweet, Long> {
 
-    Integer countAllByParentTweetId(Long id);
-    Optional<Retweet> findByParentTweetIdAndProfileId(Long originalTweetId, String profileId);
+    Integer countAllByParentTweetId(Long parentTweetId);
+    Optional<Retweet> findByParentTweetIdAndProfileId(Long parentTweetId, String profileId);
     List<Retweet> findAllByProfileId(String profileId);
 }

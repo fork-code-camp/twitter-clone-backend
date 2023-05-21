@@ -8,8 +8,8 @@ import com.example.tweets.entity.Tweet;
 import com.example.tweets.exception.ActionNotAllowedException;
 import com.example.tweets.exception.CreateEntityException;
 import com.example.tweets.mapper.TweetMapper;
-import com.example.tweets.repository.RetweetRepository;
 import com.example.tweets.repository.TweetRepository;
+import com.example.tweets.util.TweetUtil;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,18 +21,18 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class TweetService {
 
-    private final TweetRepository tweetRepository;
     private final TweetMapper tweetMapper;
     private final MessageSourceService messageSourceService;
     private final ProfileServiceClient profileServiceClient;
-    private final RetweetRepository retweetRepository;
+    private final TweetRepository tweetRepository;
+    private final TweetUtil tweetUtil;
     private final ViewService viewService;
 
     public TweetResponse createTweet(TweetCreateRequest request, String loggedInUser) {
         return Optional.of(request)
                 .map(req -> tweetMapper.toEntity(req, null, null, profileServiceClient, loggedInUser))
                 .map(tweetRepository::saveAndFlush)
-                .map(tweet -> tweetMapper.toResponse(tweet, retweetRepository, tweetRepository, profileServiceClient))
+                .map(tweet -> tweetMapper.toResponse(tweet, tweetUtil, profileServiceClient))
                 .orElseThrow(() -> new CreateEntityException(
                         messageSourceService.generateMessage("error.entity.unsuccessful_creation")
                 ));
@@ -42,7 +42,7 @@ public class TweetService {
         return tweetRepository.findById(tweetId)
                 .map(embeddedTweet -> tweetMapper.toEntity(request, embeddedTweet, null, profileServiceClient, loggedInUser))
                 .map(tweetRepository::saveAndFlush)
-                .map(quoteTweet -> tweetMapper.toResponse(quoteTweet, retweetRepository, tweetRepository, profileServiceClient))
+                .map(quoteTweet -> tweetMapper.toResponse(quoteTweet, tweetUtil, profileServiceClient))
                 .orElseThrow(() -> new EntityNotFoundException(
                         messageSourceService.generateMessage("error.entity.not_found", tweetId)
                 ));
@@ -51,26 +51,25 @@ public class TweetService {
     public TweetResponse getTweet(Long tweetId, String loggedInUser) {
         return tweetRepository.findById(tweetId)
                 .map(tweet -> viewService.createViewEntity(tweet, loggedInUser, profileServiceClient))
-                .map(tweetRepository::saveAndFlush)
-                .map(tweet -> tweetMapper.toResponse(tweet, retweetRepository, tweetRepository, profileServiceClient))
+                .map(tweet -> tweetMapper.toResponse(tweet, tweetUtil, profileServiceClient))
                 .orElseThrow(() -> new EntityNotFoundException(
                         messageSourceService.generateMessage("error.entity.not_found", tweetId)
                 ));
     }
 
     public List<TweetResponse> getAllTweets() {
-        return tweetRepository.findAllByParentTweetForReplyIsNull()
+        return tweetRepository.findAllByReplyToIsNull()
                 .stream()
-                .map(tweet -> tweetMapper.toResponse(tweet, retweetRepository, tweetRepository, profileServiceClient))
+                .map(tweet -> tweetMapper.toResponse(tweet, tweetUtil, profileServiceClient))
                 .toList();
     }
 
     public List<TweetResponse> getAllTweetsForUser(String loggedInUser) {
         String profileId = profileServiceClient.getProfileIdByLoggedInUser(loggedInUser);
 
-        return tweetRepository.findAllByProfileIdAndParentTweetForReplyIsNull(profileId)
+        return tweetRepository.findAllByProfileIdAndReplyToIsNull(profileId)
                 .stream()
-                .map(tweet -> tweetMapper.toResponse(tweet, retweetRepository, tweetRepository, profileServiceClient))
+                .map(tweet -> tweetMapper.toResponse(tweet, tweetUtil, profileServiceClient))
                 .toList();
     }
 
@@ -79,7 +78,7 @@ public class TweetService {
                 .filter(tweet -> isTweetOwnedByLoggedInUser(tweet, loggedInUser))
                 .map(tweet -> tweetMapper.updateTweet(request, tweet))
                 .map(tweetRepository::saveAndFlush)
-                .map(tweet -> tweetMapper.toResponse(tweet, retweetRepository, tweetRepository, profileServiceClient))
+                .map(tweet -> tweetMapper.toResponse(tweet, tweetUtil, profileServiceClient))
                 .orElseThrow(() -> new EntityNotFoundException(
                         messageSourceService.generateMessage("error.entity.not_found", id)
                 ));

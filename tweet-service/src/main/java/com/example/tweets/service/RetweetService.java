@@ -6,7 +6,7 @@ import com.example.tweets.entity.Tweet;
 import com.example.tweets.mapper.RetweetMapper;
 import com.example.tweets.mapper.TweetMapper;
 import com.example.tweets.repository.RetweetRepository;
-import com.example.tweets.repository.TweetRepository;
+import com.example.tweets.util.TweetUtil;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,7 +21,7 @@ public class RetweetService {
     private final RetweetMapper retweetMapper;
     private final TweetMapper tweetMapper;
     private final TweetService tweetService;
-    private final TweetRepository tweetRepository;
+    private final TweetUtil tweetUtil;
     private final RetweetRepository retweetRepository;
     private final ProfileServiceClient profileServiceClient;
     private final MessageSourceService messageSourceService;
@@ -45,14 +45,9 @@ public class RetweetService {
         return true;
     }
 
-    public boolean isRetweeted(Long tweetId, String loggedInUser) {
-        String profileId = profileServiceClient.getProfileIdByLoggedInUser(loggedInUser);
-        return retweetRepository.findByParentTweetIdAndProfileId(tweetId, profileId).isPresent();
-    }
-
     public RetweetResponse findRetweetById(Long retweetId) {
         return retweetRepository.findById(retweetId)
-                .map(retweet -> retweetMapper.toResponse(retweet, tweetMapper, retweetRepository, tweetRepository, profileServiceClient))
+                .map(retweet -> retweetMapper.toResponse(retweet, tweetMapper, tweetUtil, profileServiceClient))
                 .orElseThrow(() -> new EntityNotFoundException(
                         messageSourceService.generateMessage("error.entity.not_found", retweetId)
                 ));
@@ -62,7 +57,7 @@ public class RetweetService {
         String profileId = profileServiceClient.getProfileIdByLoggedInUser(loggedInUser);
         return retweetRepository.findAllByProfileId(profileId)
                 .stream()
-                .map(retweet -> retweetMapper.toResponse(retweet, tweetMapper, retweetRepository, tweetRepository, profileServiceClient))
+                .map(retweet -> retweetMapper.toResponse(retweet, tweetMapper, tweetUtil, profileServiceClient))
                 .toList();
     }
 }

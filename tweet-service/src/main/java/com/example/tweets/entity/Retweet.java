@@ -13,7 +13,13 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "retweets", uniqueConstraints = @UniqueConstraint(columnNames = {"parent_tweet_id", "profileId"}))
+@Table(
+        name = "retweets",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"parent_tweet_id", "profileId"}),
+        indexes = {
+                @Index(columnList = "parent_tweet_id")
+        }
+)
 public class Retweet implements BaseEntity<Long> {
 
     @Id
