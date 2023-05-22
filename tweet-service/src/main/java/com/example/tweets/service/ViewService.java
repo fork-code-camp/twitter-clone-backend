@@ -25,7 +25,6 @@ public class ViewService {
             Optional.of(parentTweet)
                     .map(tweet -> viewMapper.toEntity(tweet, loggedInUser, profileServiceClient))
                     .map(viewRepository::saveAndFlush)
-                    .map(parentTweet.getViews()::add)
                     .orElseThrow(() -> new CreateEntityException(
                             messageSourceService.generateMessage("error.entity.unsuccessful_creation")
                     ));

@@ -10,4 +10,6 @@ import java.util.Optional;
 public interface ViewRepository extends JpaRepository<View, Long> {
 
     Optional<View> findByProfileIdAndParentTweetId(String profileId, Long parentTweetId);
+
+    Integer countAllByParentTweetId(Long parentTweetId);
 }

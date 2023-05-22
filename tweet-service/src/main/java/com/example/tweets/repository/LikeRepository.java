@@ -7,7 +7,9 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface LikesRepository extends JpaRepository<Like, Long> {
+public interface LikeRepository extends JpaRepository<Like, Long> {
 
-    Optional<Like> findByProfileIdAndParentTweetId(String profileId, Long tweetId);
+    Optional<Like> findByProfileIdAndParentTweetId(String profileId, Long parentTweetId);
+
+    Integer countAllByParentTweetId(Long parentTweetId);
 }

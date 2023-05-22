@@ -5,7 +5,6 @@ import com.example.tweets.dto.request.TweetUpdateRequest;
 import com.example.tweets.dto.response.TweetResponse;
 import com.example.tweets.service.TweetService;
 import jakarta.validation.Valid;
-import jakarta.ws.rs.QueryParam;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -36,12 +35,12 @@ public class TweetController {
         return ResponseEntity.ok(tweetService.createQuoteTweet(request, tweetId, loggedInUser));
     }
 
-    @GetMapping
-    public ResponseEntity<TweetResponse> getTweet(@QueryParam(value = "tweetId") Long tweetId, @RequestHeader String loggedInUser) {
+    @GetMapping("/{tweetId}")
+    public ResponseEntity<TweetResponse> getTweet(@PathVariable Long tweetId, @RequestHeader String loggedInUser) {
         return ResponseEntity.ok(tweetService.getTweet(tweetId, loggedInUser));
     }
 
-    @GetMapping("/all")
+    @GetMapping
     public ResponseEntity<List<TweetResponse>> getAllTweets() {
         return ResponseEntity.ok(tweetService.getAllTweets());
     }

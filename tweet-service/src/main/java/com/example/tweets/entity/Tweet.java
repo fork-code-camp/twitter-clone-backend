@@ -2,28 +2,36 @@ package com.example.tweets.entity;
 
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "tweets")
+@Table(
+        name = "tweets",
+        indexes = {
+                @Index(columnList = "reply_to_id", name = "reply_to_id"),
+                @Index(columnList = "quote_to_id", name = "quote_to_id")
+        }
+)
 public class Tweet implements BaseEntity<Long> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
+
     private String text;
+
     private String profileId;
+
     private LocalDateTime creationDate;
 
     @OneToMany(
@@ -31,27 +39,27 @@ public class Tweet implements BaseEntity<Long> {
             mappedBy = "parentTweet",
             cascade = CascadeType.ALL
     )
-    private List<Like> likes = new ArrayList<>();
+    private Set<Like> likes = new HashSet<>();
 
     @OneToMany(
             targetEntity = Retweet.class,
             mappedBy = "parentTweet",
             cascade = CascadeType.ALL
     )
-    private List<Retweet> retweets = new ArrayList<>();
+    private Set<Retweet> retweets = new HashSet<>();
 
     @OneToMany(
-            targetEntity = View.class,
-            mappedBy = "parentTweet",
+            targetEntity = Tweet.class,
+            mappedBy = "replyTo",
             cascade = CascadeType.ALL
     )
-    private List<View> views = new ArrayList<>();
+    private Set<Tweet> replies = new HashSet<>();
 
     @ManyToOne(targetEntity = Tweet.class)
     @Nullable
-    private Tweet parentTweetForReply;
+    private Tweet replyTo;
 
-    @OneToOne(targetEntity = Tweet.class)
+    @ManyToOne(targetEntity = Tweet.class)
     @Nullable
-    private Tweet embeddedTweet;
+    private Tweet quoteTo;
 }
