@@ -22,6 +22,7 @@ public class FollowService {
     public boolean follow(String followeeId, String loggedInUser) {
         return profileRepository.findByEmail(loggedInUser)
                 .map(Profile::getId)
+                .filter(followerId -> !isFollowed(followeeId, loggedInUser))
                 .map(followerId -> Follow.builder()
                         .followerProfile(profileRepository.findById(followerId).orElseThrow())
                         .followeeProfile(profileRepository.findById(followeeId).orElseThrow())
@@ -34,6 +35,7 @@ public class FollowService {
     public boolean unfollow(String followeeId, String loggedInUser) {
         return profileRepository.findByEmail(loggedInUser)
                 .map(Profile::getId)
+                .filter(followerId -> isFollowed(followeeId, loggedInUser))
                 .map(followerId ->
                         followRepository.deleteByFollowerProfile_IdAndFolloweeProfile_Id(followerId, followeeId))
                 .isPresent();
@@ -57,6 +59,6 @@ public class FollowService {
         return profileRepository.findByEmail(loggedInUser)
                 .map(Profile::getId)
                 .map(followerId -> followRepository.existsByFollowerProfile_IdAndFolloweeProfile_Id(followerId, followeeId))
-                .orElseThrow();
+                .orElse(false);
     }
 }

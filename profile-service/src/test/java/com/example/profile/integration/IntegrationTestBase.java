@@ -1,35 +1,34 @@
-package com.example.authentication.integration;
+package com.example.profile.integration;
 
-import com.example.authentication.integration.annotation.IT;
+import com.example.profile.integration.annotation.IT;
+import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeAll;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.context.jdbc.Sql;
 import org.testcontainers.containers.FixedHostPortGenericContainer;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.utility.DockerImageName;
 
 @IT
-@Sql({
-        "classpath:sql/data.sql"
-})
+@RequiredArgsConstructor
 public class IntegrationTestBase {
 
-    private static final PostgreSQLContainer<?> postgresContainer = new PostgreSQLContainer<>("postgres:alpine3.17");
+    private static final MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:4.4.3"));
     private static final GenericContainer<?> configServerContainer = new FixedHostPortGenericContainer<>("twitterclone0/spring-cloud-config-server")
             .withFixedExposedPort(8888, 8888)
             .waitingFor(Wait.forHttp("/profile-service/test")
                     .forStatusCodeMatching(port -> port >= 200 && port < 400));
 
     @BeforeAll
-    static void runContainer() {
+    public static void runContainer() {
         configServerContainer.start();
-        postgresContainer.start();
+        mongoDBContainer.start();
     }
 
     @DynamicPropertySource
-    static void postgresProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", postgresContainer::getJdbcUrl);
+    static void mongoProperties(DynamicPropertyRegistry registry) {
+        registry.add("spring.data.mongodb.uri", mongoDBContainer::getReplicaSetUrl);
     }
 }

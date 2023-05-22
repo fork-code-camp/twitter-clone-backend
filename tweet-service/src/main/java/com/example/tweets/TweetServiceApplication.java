@@ -9,6 +9,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 @EnableDiscoveryClient
 @EnableFeignClients
 public class TweetServiceApplication {
+
     public static void main(String[] args) {
         SpringApplication.run(TweetServiceApplication.class, args);
     }

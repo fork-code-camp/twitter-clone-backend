@@ -16,4 +16,3 @@ encrypt:
     location: classpath:key/APIKey.jks
     password: ${KEYSTORE_PASSWORD}
     alias: APIKey
-
