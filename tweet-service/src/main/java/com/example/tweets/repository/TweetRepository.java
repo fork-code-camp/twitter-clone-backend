@@ -9,13 +9,11 @@ import java.util.List;
 @Repository
 public interface TweetRepository extends JpaRepository<Tweet, Long> {
 
-    Integer countAllByParentTweetForReplyId(Long parentTweetForReplyId);
+    List<Tweet> findAllByReplyToIsNull();
 
-    List<Tweet> findAllByParentTweetForReplyIsNull();
+    List<Tweet> findAllByProfileIdAndReplyToIsNull(String profileId);
 
-    List<Tweet> findAllByParentTweetForReplyId(Long parentTweetId);
+    List<Tweet> findAllByProfileIdAndReplyToIsNotNull(String profileId);
 
-    List<Tweet> findAllByProfileIdAndParentTweetForReplyIsNull(String profileId);
-
-    List<Tweet> findAllByProfileIdAndParentTweetForReplyIsNotNull(String profileId);
+    Integer countAllByReplyToId(Long replyToId);
 }

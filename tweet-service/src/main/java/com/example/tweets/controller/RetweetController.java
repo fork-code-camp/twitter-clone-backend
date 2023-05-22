@@ -2,7 +2,6 @@ package com.example.tweets.controller;
 
 import com.example.tweets.dto.response.RetweetResponse;
 import com.example.tweets.service.RetweetService;
-import jakarta.ws.rs.QueryParam;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,17 +25,12 @@ public class RetweetController {
         return ResponseEntity.ok(retweetService.undoRetweet(tweetId, loggedInUser));
     }
 
-    @GetMapping("/{tweetId}")
-    public ResponseEntity<Boolean> isRetweeted(@PathVariable Long tweetId, @RequestHeader String loggedInUser) {
-        return ResponseEntity.ok(retweetService.isRetweeted(tweetId, loggedInUser));
-    }
-
-    @GetMapping
-    public ResponseEntity<RetweetResponse> getRetweet(@QueryParam(value = "retweetId") Long retweetId) {
+    @GetMapping("/{retweetId}")
+    public ResponseEntity<RetweetResponse> getRetweet(@PathVariable Long retweetId) {
         return ResponseEntity.ok(retweetService.findRetweetById(retweetId));
     }
 
-    @GetMapping("/all")
+    @GetMapping
     public ResponseEntity<List<RetweetResponse>> getRetweetsForUser(@RequestHeader String loggedInUser) {
         return ResponseEntity.ok(retweetService.findRetweetsForUser(loggedInUser));
     }

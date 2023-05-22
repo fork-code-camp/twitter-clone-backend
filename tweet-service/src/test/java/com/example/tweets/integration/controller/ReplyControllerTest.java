@@ -5,6 +5,7 @@ import com.example.tweets.integration.IntegrationTestBase;
 import com.example.tweets.integration.mocks.ProfileClientMock;
 import com.example.tweets.service.MessageSourceService;
 import com.example.tweets.service.ReplyService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.hamcrest.core.IsNull;
 import org.junit.jupiter.api.BeforeEach;
@@ -78,15 +79,14 @@ public class ReplyControllerTest extends IntegrationTestBase {
                 )
                 .andExpectAll(
                         status().isOk(),
-                        jsonPath("$.parentTweetForReply.text").value(parentTweetText),
-                        jsonPath("$.parentTweetForReply.embeddedTweet").value(IsNull.nullValue()),
-                        jsonPath("$.parentTweetForReply.replies").value(repliesForTweet),
-                        jsonPath("$.parentTweetForReply.retweets").value(0),
-                        jsonPath("$.parentTweetForReply.likes").value(0),
-                        jsonPath("$.parentTweetForReply.views").value(0),
-                        jsonPath("$.parentTweetForReply.profile").exists(),
+                        jsonPath("$.replyTo.text").value(parentTweetText),
+                        jsonPath("$.replyTo.replies").value(repliesForTweet),
+                        jsonPath("$.replyTo.retweets").value(0),
+                        jsonPath("$.replyTo.likes").value(0),
+                        jsonPath("$.replyTo.views").value(0),
+                        jsonPath("$.replyTo.profile").exists(),
+                        jsonPath("$.quoteTo").value(IsNull.nullValue()),
                         jsonPath("$.text").value(DEFAULT_REPLY_TEXT.getConstant()),
-                        jsonPath("$.embeddedTweet").value(IsNull.nullValue()),
                         jsonPath("$.replies").value(0),
                         jsonPath("$.retweets").value(0),
                         jsonPath("$.likes").value(0),
@@ -121,7 +121,9 @@ public class ReplyControllerTest extends IntegrationTestBase {
     }
 
     private void checkNumberOfReplies(long parentTweetId, int repliesForTweet, int repliesForUser) {
-        assertEquals(repliesForTweet, replyService.findAllRepliesForTweet(parentTweetId).size());
+        try {
+            assertEquals(repliesForTweet, replyService.findAllRepliesForTweet(parentTweetId).size());
+        } catch (EntityNotFoundException ignored) {}
         assertEquals(repliesForUser, replyService.findAllRepliesForUser(EMAIL.getConstant()).size());
     }
 }

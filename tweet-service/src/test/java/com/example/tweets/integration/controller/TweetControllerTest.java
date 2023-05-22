@@ -157,8 +157,7 @@ public class TweetControllerTest extends IntegrationTestBase {
 
     private void getTweetAndExpectSuccess(Long id) throws Exception {
         ResultActions resultActions = mockMvc.perform(get(
-                TWEETS_URL.getConstant())
-                .queryParam("tweetId", String.valueOf(id))
+                TWEETS_URL_WITH_ID.getConstant().formatted(id))
                 .header("loggedInUser", EMAIL.getConstant()));
 
         expectOkTweetResponse(resultActions, DEFAULT_TWEET_TEXT.getConstant(), 1);
@@ -166,8 +165,7 @@ public class TweetControllerTest extends IntegrationTestBase {
 
     private void getTweetAndExpectFailure(Long id) throws Exception {
         ResultActions resultActions = mockMvc.perform(get(
-                TWEETS_URL.getConstant())
-                .queryParam("tweetId", String.valueOf(id))
+                TWEETS_URL_WITH_ID.getConstant().formatted(id))
                 .header("loggedInUser", EMAIL.getConstant()));
 
         expectFailResponse(resultActions, NOT_FOUND, "$.message", messageSourceService.generateMessage("error.entity.not_found", id));
@@ -210,8 +208,8 @@ public class TweetControllerTest extends IntegrationTestBase {
                 .andExpectAll(
                         status().isOk(),
                         content().contentType(MediaType.APPLICATION_JSON),
-                        jsonPath("$.parentTweetForReply").value(IsNull.nullValue()),
-                        jsonPath("$.embeddedTweet").value(IsNull.nullValue()),
+                        jsonPath("$.replyTo").value(IsNull.nullValue()),
+                        jsonPath("$.quoteTo").value(IsNull.nullValue()),
                         jsonPath("$.profile.username").value(USERNAME.getConstant()),
                         jsonPath("$.profile.email").value(EMAIL.getConstant()),
                         jsonPath("$.text").value(text),
@@ -228,13 +226,13 @@ public class TweetControllerTest extends IntegrationTestBase {
                 .andExpectAll(
                         status().isOk(),
                         content().contentType(MediaType.APPLICATION_JSON),
-                        jsonPath("$.parentTweetForReply").value(IsNull.nullValue()),
-                        jsonPath("$.embeddedTweet.text").value(DEFAULT_TWEET_TEXT.getConstant()),
-                        jsonPath("$.embeddedTweet.replies").value(0),
-                        jsonPath("$.embeddedTweet.retweets").value(0),
-                        jsonPath("$.embeddedTweet.likes").value(0),
-                        jsonPath("$.embeddedTweet.views").value(0),
-                        jsonPath("$.embeddedTweet.creationDate").exists(),
+                        jsonPath("$.replyTo").value(IsNull.nullValue()),
+                        jsonPath("$.quoteTo.text").value(DEFAULT_TWEET_TEXT.getConstant()),
+                        jsonPath("$.quoteTo.replies").value(0),
+                        jsonPath("$.quoteTo.retweets").value(0),
+                        jsonPath("$.quoteTo.likes").value(0),
+                        jsonPath("$.quoteTo.views").value(0),
+                        jsonPath("$.quoteTo.creationDate").exists(),
                         jsonPath("$.profile.username").value(USERNAME.getConstant()),
                         jsonPath("$.profile.email").value(EMAIL.getConstant()),
                         jsonPath("$.text").value(text),

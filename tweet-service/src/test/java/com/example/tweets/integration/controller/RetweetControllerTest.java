@@ -17,7 +17,6 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static com.example.tweets.integration.constants.GlobalConstants.*;
 import static com.example.tweets.integration.constants.UrlConstants.RETWEETS_URL_WITH_ID;
-import static com.example.tweets.integration.constants.UrlConstants.RETWEETS_URL;
 import static org.hamcrest.Matchers.containsStringIgnoringCase;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -79,7 +78,6 @@ public class RetweetControllerTest extends IntegrationTestBase {
                 );
 
         assertTrue(retweetRepository.findByParentTweetIdAndProfileId(tweetId, ID.getConstant()).isPresent());
-        assertTrue(retweetService.isRetweeted(tweetId, EMAIL.getConstant()));
     }
 
     private void retweetAndExpectFailure(Long tweetId, HttpStatus status, String message) throws Exception {
@@ -104,7 +102,6 @@ public class RetweetControllerTest extends IntegrationTestBase {
                 );
 
         assertFalse(retweetRepository.findByParentTweetIdAndProfileId(tweetId, ID.getConstant()).isPresent());
-        assertFalse(retweetService.isRetweeted(tweetId, EMAIL.getConstant()));
     }
 
     private void undoRetweetAndExpectFailure(Long tweetId, HttpStatus status, String message) throws Exception {
@@ -120,8 +117,7 @@ public class RetweetControllerTest extends IntegrationTestBase {
 
     private void getRetweetAndExpectSuccess(Long retweetId) throws Exception {
         mockMvc.perform(get(
-                        RETWEETS_URL.getConstant())
-                        .queryParam("retweetId", String.valueOf(retweetId))
+                        RETWEETS_URL_WITH_ID.getConstant().formatted(retweetId))
                         .header("loggedInUser", EMAIL.getConstant())
                 )
                 .andExpectAll(
@@ -142,8 +138,7 @@ public class RetweetControllerTest extends IntegrationTestBase {
 
     private void getRetweetAndExpectFailure(Long retweetId, HttpStatus status, String message) throws Exception {
         mockMvc.perform(get(
-                        RETWEETS_URL.getConstant())
-                        .queryParam("retweetId", String.valueOf(retweetId))
+                        RETWEETS_URL_WITH_ID.getConstant().formatted(retweetId))
                         .header("loggedInUser", EMAIL.getConstant())
                 )
                 .andExpectAll(

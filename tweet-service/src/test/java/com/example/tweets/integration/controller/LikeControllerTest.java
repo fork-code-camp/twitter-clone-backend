@@ -4,7 +4,7 @@ package com.example.tweets.integration.controller;
 import com.example.tweets.client.ProfileServiceClient;
 import com.example.tweets.integration.IntegrationTestBase;
 import com.example.tweets.integration.mocks.ProfileClientMock;
-import com.example.tweets.repository.LikesRepository;
+import com.example.tweets.repository.LikeRepository;
 import com.example.tweets.service.LikeService;
 import com.example.tweets.service.MessageSourceService;
 import com.example.tweets.service.TweetService;
@@ -36,7 +36,7 @@ public class LikeControllerTest extends IntegrationTestBase {
 
     private final MockMvc mockMvc;
     private final MessageSourceService messageSourceService;
-    private final LikesRepository likesRepository;
+    private final LikeRepository likeRepository;
     private final TweetService tweetService;
     private final LikeService likeService;
 
@@ -75,7 +75,7 @@ public class LikeControllerTest extends IntegrationTestBase {
                 );
 
         assertTrue(likeService.isLiked(tweetId, EMAIL.getConstant()));
-        assertTrue(likesRepository.existsById(1L));
+        assertTrue(likeRepository.existsById(1L));
         assertFalse(tweetService
                 .getTweetEntityById(tweetId)
                 .getLikes()
@@ -105,7 +105,7 @@ public class LikeControllerTest extends IntegrationTestBase {
                 );
 
         assertFalse(likeService.isLiked(tweetId, EMAIL.getConstant()));
-        assertFalse(likesRepository.existsById(1L));
+        assertFalse(likeRepository.existsById(1L));
     }
 
     private void unlikeTweetAndExpectFailure(Long tweetId) throws Exception {

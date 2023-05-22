@@ -4,7 +4,7 @@ import com.example.tweets.client.ProfileServiceClient;
 import com.example.tweets.entity.Tweet;
 import com.example.tweets.exception.CreateEntityException;
 import com.example.tweets.mapper.LikeMapper;
-import com.example.tweets.repository.LikesRepository;
+import com.example.tweets.repository.LikeRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,7 +15,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class LikeService {
 
-    private final LikesRepository likesRepository;
+    private final LikeRepository likeRepository;
     private final TweetService tweetService;
     private final ProfileServiceClient profileServiceClient;
     private final LikeMapper likeMapper;
@@ -25,7 +25,7 @@ public class LikeService {
         Tweet parentTweet = tweetService.getTweetEntityById(parentTweetId);
         Optional.of(parentTweet)
                 .map(tweet -> likeMapper.toEntity(tweet, profileServiceClient, loggedInUser))
-                .map(likesRepository::saveAndFlush)
+                .map(likeRepository::saveAndFlush)
                 .orElseThrow(() -> new CreateEntityException(
                         messageSourceService.generateMessage("error.entity.unsuccessful_creation")
                 ));
@@ -33,8 +33,8 @@ public class LikeService {
 
     public void unlikeTweet(Long tweetId, String loggedInUser) {
         String profileId = profileServiceClient.getProfileIdByLoggedInUser(loggedInUser);
-        likesRepository.findByProfileIdAndParentTweetId(profileId, tweetId)
-                .ifPresentOrElse(likesRepository::delete, () -> {
+        likeRepository.findByProfileIdAndParentTweetId(profileId, tweetId)
+                .ifPresentOrElse(likeRepository::delete, () -> {
                     throw new EntityNotFoundException(
                             messageSourceService.generateMessage("error.entity.not_found", tweetId)
                     );
@@ -43,6 +43,6 @@ public class LikeService {
 
     public boolean isLiked(Long tweetId, String loggedInUser) {
         String profileId = profileServiceClient.getProfileIdByLoggedInUser(loggedInUser);
-        return likesRepository.findByProfileIdAndParentTweetId(profileId, tweetId).isPresent();
+        return likeRepository.findByProfileIdAndParentTweetId(profileId, tweetId).isPresent();
     }
 }

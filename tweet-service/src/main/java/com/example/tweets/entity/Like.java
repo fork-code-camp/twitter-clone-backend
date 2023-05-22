@@ -11,7 +11,13 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "likes", uniqueConstraints = @UniqueConstraint(columnNames = {"parent_tweet_id", "profileId"}))
+@Table(
+        name = "likes",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"parent_tweet_id", "profileId"}),
+        indexes = {
+                @Index(columnList = "parent_tweet_id")
+        }
+)
 public class Like implements BaseEntity<Long> {
 
     @Id
