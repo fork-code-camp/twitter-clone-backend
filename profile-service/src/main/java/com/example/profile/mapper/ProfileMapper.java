@@ -16,6 +16,7 @@ public interface ProfileMapper {
 
     Profile toEntity(ProfileResponse profileResponse);
 
+    @Mapping(target = "profileId", source = "id")
     ProfileResponse toResponse(Profile profile);
 
     @Mappings({

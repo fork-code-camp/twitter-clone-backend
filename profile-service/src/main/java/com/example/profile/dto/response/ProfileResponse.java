@@ -3,6 +3,7 @@ package com.example.profile.dto.response;
 import java.time.LocalDate;
 
 public record ProfileResponse(
+        String profileId,
         String username,
         String email,
         LocalDate joinDate,

@@ -9,6 +9,8 @@ import com.example.tweets.repository.RetweetRepository;
 import com.example.tweets.util.TweetUtil;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -25,26 +27,41 @@ public class RetweetService {
     private final RetweetRepository retweetRepository;
     private final ProfileServiceClient profileServiceClient;
     private final MessageSourceService messageSourceService;
+    private final FanoutService.UserTimelineService userTimelineService;
+    private final FanoutService.HomeTimelineService homeTimelineService;
 
-    public boolean retweet(Long tweetId, String loggedInUser) {
-        Tweet parentTweet = tweetService.getTweetEntityById(tweetId);
+    public boolean retweet(Long parentTweetId, String loggedInUser) {
+        Tweet parentTweet = tweetService.getTweetEntityById(parentTweetId);
         return Optional.of(parentTweet)
                 .map(tweet -> retweetMapper.toEntity(tweet, profileServiceClient, loggedInUser))
                 .map(retweetRepository::saveAndFlush)
+                .map(retweet -> retweetMapper.toResponse(retweet, tweetMapper, tweetUtil, profileServiceClient))
+                .map(userTimelineService::addRetweetToUserTimeline)
+                .map(homeTimelineService::addRetweetToHomeTimelines)
                 .isPresent();
     }
 
-    public boolean undoRetweet(Long tweetId, String loggedInUser) {
+    @CacheEvict(cacheNames = "retweets", key = "#p0")
+    public boolean undoRetweet(Long parentTweetId, String loggedInUser) {
         String profileId = profileServiceClient.getProfileIdByLoggedInUser(loggedInUser);
-        retweetRepository.findByParentTweetIdAndProfileId(tweetId, profileId)
-                .ifPresentOrElse(retweetRepository::delete, () -> {
+        retweetRepository.findByParentTweetIdAndProfileId(parentTweetId, profileId)
+                .ifPresentOrElse(retweet -> {
+                    userTimelineService.deleteRetweetFromUserTimeline(retweet);
+                    homeTimelineService.deleteRetweetFromHomeTimelines(retweet);
+                    retweetRepository.delete(retweet);
+                }, () -> {
                     throw new EntityNotFoundException(
-                            messageSourceService.generateMessage("error.entity.not_found", tweetId)
+                            messageSourceService.generateMessage("error.entity.not_found", parentTweetId)
                     );
                 });
         return true;
     }
 
+    @Cacheable(
+            cacheNames = "retweets",
+            key = "#p0",
+            unless = "#result.parentTweet.likes < 5000 && #result.parentTweet.views < 25000 && #result.parentTweet.replies < 1000 && #result.parentTweet.retweets < 1000"
+    )
     public RetweetResponse findRetweetById(Long retweetId) {
         return retweetRepository.findById(retweetId)
                 .map(retweet -> retweetMapper.toResponse(retweet, tweetMapper, tweetUtil, profileServiceClient))
@@ -55,7 +72,7 @@ public class RetweetService {
 
     public List<RetweetResponse> findRetweetsForUser(String loggedInUser) {
         String profileId = profileServiceClient.getProfileIdByLoggedInUser(loggedInUser);
-        return retweetRepository.findAllByProfileId(profileId)
+        return retweetRepository.findAllByProfileIdOrderByRetweetTimeDesc(profileId)
                 .stream()
                 .map(retweet -> retweetMapper.toResponse(retweet, tweetMapper, tweetUtil, profileServiceClient))
                 .toList();

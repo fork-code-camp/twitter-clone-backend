@@ -1,6 +1,6 @@
 package com.example.profile.controller;
 
-import com.example.profile.entity.Profile;
+import com.example.profile.dto.response.ProfileResponse;
 import com.example.profile.service.FollowService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -30,13 +30,13 @@ public class FollowController {
         return ResponseEntity.ok(followService.unfollow(followeeId, loggedInUser));
     }
 
-    @GetMapping("/followers/{profileId}")
-    public ResponseEntity<List<Profile>> getFollowers(@PathVariable String profileId) {
+    @GetMapping("/{profileId}/followers")
+    public ResponseEntity<List<ProfileResponse>> getFollowers(@PathVariable String profileId) {
         return ResponseEntity.ok(followService.getFollowers(profileId));
     }
 
-    @GetMapping("/followees/{profileId}")
-    public ResponseEntity<List<Profile>> getFollowees(@PathVariable String profileId) {
+    @GetMapping("/{profileId}/followees")
+    public ResponseEntity<List<ProfileResponse>> getFollowees(@PathVariable String profileId) {
         return ResponseEntity.ok(followService.getFollowees(profileId));
     }
 }

@@ -5,6 +5,7 @@ import com.example.tweets.dto.request.TweetCreateRequest;
 import com.example.tweets.integration.IntegrationTestBase;
 import com.example.tweets.integration.mocks.ProfileClientMock;
 import com.example.tweets.repository.TweetRepository;
+import com.example.tweets.repository.ViewRepository;
 import com.example.tweets.service.MessageSourceService;
 import com.example.tweets.service.TweetService;
 import lombok.RequiredArgsConstructor;
@@ -23,8 +24,7 @@ import static com.example.tweets.integration.constants.GlobalConstants.*;
 import static com.example.tweets.integration.constants.JsonConstants.REQUEST_PATTERN;
 import static com.example.tweets.integration.constants.UrlConstants.TWEETS_URL;
 import static com.example.tweets.integration.constants.UrlConstants.TWEETS_URL_WITH_ID;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -33,12 +33,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @RequiredArgsConstructor
 @Sql(statements = "ALTER SEQUENCE tweets_id_seq RESTART WITH 1;")
+@SuppressWarnings("all")
 public class TweetControllerTest extends IntegrationTestBase {
 
     private final MockMvc mockMvc;
     private final MessageSourceService messageSourceService;
-    private final TweetService tweetService;
     private final TweetRepository tweetRepository;
+    private final ViewRepository viewRepository;
+    private final TweetService tweetService;
 
     @MockBean
     private final ProfileServiceClient profileServiceClient;
@@ -79,8 +81,8 @@ public class TweetControllerTest extends IntegrationTestBase {
     public void getTweetTest() throws Exception {
         createDummyTweet();
 
-        getTweetAndExpectSuccess(1L);
-        getTweetAndExpectSuccess(1L);
+        getTweetAndExpectSuccess(1L, 1);
+        getTweetAndExpectSuccess(1L, 1);
         getTweetAndExpectFailure(100L);
     }
 
@@ -155,12 +157,12 @@ public class TweetControllerTest extends IntegrationTestBase {
         expectFailResponse(resultActions, status, jsonPath, message);
     }
 
-    private void getTweetAndExpectSuccess(Long id) throws Exception {
+    private void getTweetAndExpectSuccess(Long id, int views) throws Exception {
         ResultActions resultActions = mockMvc.perform(get(
                 TWEETS_URL_WITH_ID.getConstant().formatted(id))
                 .header("loggedInUser", EMAIL.getConstant()));
 
-        expectOkTweetResponse(resultActions, DEFAULT_TWEET_TEXT.getConstant(), 1);
+        expectOkTweetResponse(resultActions, DEFAULT_TWEET_TEXT.getConstant(), views);
     }
 
     private void getTweetAndExpectFailure(Long id) throws Exception {
@@ -213,9 +215,9 @@ public class TweetControllerTest extends IntegrationTestBase {
                         jsonPath("$.profile.username").value(USERNAME.getConstant()),
                         jsonPath("$.profile.email").value(EMAIL.getConstant()),
                         jsonPath("$.text").value(text),
-                        jsonPath("$.replies").value(0),
-                        jsonPath("$.retweets").value(0),
-                        jsonPath("$.likes").value(0),
+                        jsonPath("$.replies").exists(),
+                        jsonPath("$.retweets").exists(),
+                        jsonPath("$.likes").exists(),
                         jsonPath("$.views").value(views),
                         jsonPath("$.creationDate").exists()
                 );

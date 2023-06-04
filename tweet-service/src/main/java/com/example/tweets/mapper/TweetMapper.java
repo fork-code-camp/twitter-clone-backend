@@ -23,6 +23,7 @@ public interface TweetMapper {
     @Mapping(target = "likes", expression = "java(new java.util.HashSet<>())")
     @Mapping(target = "retweets", expression = "java(new java.util.HashSet<>())")
     @Mapping(target = "replies", expression = "java(new java.util.HashSet<>())")
+    @Mapping(target = "views", expression = "java(new java.util.HashSet<>())")
     Tweet toEntity(
             TweetCreateRequest request,
             Tweet quoteTo,
@@ -31,6 +32,7 @@ public interface TweetMapper {
             @Context String loggedInUser
     );
 
+    @Mapping(target = "tweetId", source = "id")
     @Mapping(target = "profile", expression = "java(profileServiceClient.getProfileById(tweet.getProfileId()))")
     @Mapping(target = "quoteTo", expression = "java(this.toResponse(tweet.getQuoteTo(), tweetUtil, profileServiceClient))")
     @Mapping(target = "replyTo", expression = "java(this.toResponse(tweet.getReplyTo(), tweetUtil, profileServiceClient))")
@@ -50,6 +52,7 @@ public interface TweetMapper {
     @Mapping(target = "likes", ignore = true)
     @Mapping(target = "replies", ignore = true)
     @Mapping(target = "retweets", ignore = true)
+    @Mapping(target = "views", ignore = true)
     @Mapping(target = "replyTo", ignore = true)
     @Mapping(target = "quoteTo", ignore = true)
     Tweet updateTweet(TweetUpdateRequest request, @MappingTarget Tweet tweet);

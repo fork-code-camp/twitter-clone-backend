@@ -114,6 +114,14 @@ services:
     ports:
       - 8888:8888
 
+  redis:
+    container_name: redis
+    image: redis:7.2-rc-alpine3.18
+    hostname: redis
+    restart: unless-stopped
+    ports:
+      - 6379:6379
+
 volumes:
   data-authentication-service: { }
   mongo: { }

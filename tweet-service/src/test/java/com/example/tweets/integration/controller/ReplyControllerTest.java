@@ -30,6 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @RequiredArgsConstructor
 @Sql(value = "classpath:/sql/data.sql")
+@SuppressWarnings("all")
 public class ReplyControllerTest extends IntegrationTestBase {
 
     private final MockMvc mockMvc;

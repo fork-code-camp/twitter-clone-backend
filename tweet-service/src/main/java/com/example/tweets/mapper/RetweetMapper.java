@@ -22,6 +22,7 @@ public interface RetweetMapper {
             @Context String loggedInUser
     );
 
+    @Mapping(target = "retweetId", source = "id")
     @Mapping(target = "parentTweet", expression = "java(tweetMapper.toResponse(retweet.getParentTweet(), tweetUtil, profileServiceClient))")
     @Mapping(target = "profile", expression = "java(profileServiceClient.getProfileById(retweet.getProfileId()))")
     RetweetResponse toResponse(

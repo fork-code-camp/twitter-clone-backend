@@ -12,6 +12,9 @@ import com.example.tweets.repository.TweetRepository;
 import com.example.tweets.util.TweetUtil;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -27,12 +30,16 @@ public class TweetService {
     private final TweetRepository tweetRepository;
     private final TweetUtil tweetUtil;
     private final ViewService viewService;
+    private final FanoutService.UserTimelineService userTimelineService;
+    private final FanoutService.HomeTimelineService homeTimelineService;
 
     public TweetResponse createTweet(TweetCreateRequest request, String loggedInUser) {
         return Optional.of(request)
                 .map(req -> tweetMapper.toEntity(req, null, null, profileServiceClient, loggedInUser))
                 .map(tweetRepository::saveAndFlush)
                 .map(tweet -> tweetMapper.toResponse(tweet, tweetUtil, profileServiceClient))
+                .map(userTimelineService::addTweetToUserTimeline)
+                .map(homeTimelineService::addTweetToHomeTimelines)
                 .orElseThrow(() -> new CreateEntityException(
                         messageSourceService.generateMessage("error.entity.unsuccessful_creation")
                 ));
@@ -40,14 +47,21 @@ public class TweetService {
 
     public TweetResponse createQuoteTweet(TweetCreateRequest request, Long tweetId, String loggedInUser) {
         return tweetRepository.findById(tweetId)
-                .map(embeddedTweet -> tweetMapper.toEntity(request, embeddedTweet, null, profileServiceClient, loggedInUser))
+                .map(quoteToTweet -> tweetMapper.toEntity(request, quoteToTweet, null, profileServiceClient, loggedInUser))
                 .map(tweetRepository::saveAndFlush)
                 .map(quoteTweet -> tweetMapper.toResponse(quoteTweet, tweetUtil, profileServiceClient))
+                .map(userTimelineService::addTweetToUserTimeline)
+                .map(homeTimelineService::addTweetToHomeTimelines)
                 .orElseThrow(() -> new EntityNotFoundException(
                         messageSourceService.generateMessage("error.entity.not_found", tweetId)
                 ));
     }
 
+    @Cacheable(
+            cacheNames = "tweets",
+            key = "#p0",
+            unless = "#result.likes < 5000 && #result.views < 25000 && #result.replies < 1000 && #result.retweets < 1000"
+    )
     public TweetResponse getTweet(Long tweetId, String loggedInUser) {
         return tweetRepository.findById(tweetId)
                 .map(tweet -> viewService.createViewEntity(tweet, loggedInUser, profileServiceClient))
@@ -57,37 +71,35 @@ public class TweetService {
                 ));
     }
 
-    public List<TweetResponse> getAllTweets() {
-        return tweetRepository.findAllByReplyToIsNull()
-                .stream()
-                .map(tweet -> tweetMapper.toResponse(tweet, tweetUtil, profileServiceClient))
-                .toList();
-    }
-
     public List<TweetResponse> getAllTweetsForUser(String loggedInUser) {
         String profileId = profileServiceClient.getProfileIdByLoggedInUser(loggedInUser);
-
-        return tweetRepository.findAllByProfileIdAndReplyToIsNull(profileId)
+        return tweetRepository.findAllByProfileIdAndReplyToIsNullOrderByCreationDateDesc(profileId)
                 .stream()
                 .map(tweet -> tweetMapper.toResponse(tweet, tweetUtil, profileServiceClient))
                 .toList();
     }
 
-    public TweetResponse updateTweet(Long id, TweetUpdateRequest request, String loggedInUser) {
-        return tweetRepository.findById(id)
+    @CachePut(cacheNames = "tweets", key = "#p0")
+    public TweetResponse updateTweet(Long tweetId, TweetUpdateRequest request, String loggedInUser) {
+        return tweetRepository.findById(tweetId)
                 .filter(tweet -> isTweetOwnedByLoggedInUser(tweet, loggedInUser))
                 .map(tweet -> tweetMapper.updateTweet(request, tweet))
                 .map(tweetRepository::saveAndFlush)
                 .map(tweet -> tweetMapper.toResponse(tweet, tweetUtil, profileServiceClient))
+                .map(userTimelineService::updateTweetInUserTimeline)
+                .map(homeTimelineService::updateTweetInHomeTimelines)
                 .orElseThrow(() -> new EntityNotFoundException(
-                        messageSourceService.generateMessage("error.entity.not_found", id)
+                        messageSourceService.generateMessage("error.entity.not_found", tweetId)
                 ));
     }
 
-    public Boolean deleteTweet(Long id, String loggedInUser) {
-        return tweetRepository.findById(id)
+    @CacheEvict(cacheNames = "tweets", key = "#p0")
+    public Boolean deleteTweet(Long tweetId, String loggedInUser) {
+        return tweetRepository.findById(tweetId)
                 .filter(tweet -> isTweetOwnedByLoggedInUser(tweet, loggedInUser))
                 .map(tweet -> {
+                    userTimelineService.deleteTweetFromUserTimeline(tweet);
+                    homeTimelineService.deleteTweetFromHomeTimelines(tweet);
                     tweetRepository.delete(tweet);
                     return tweet;
                 })

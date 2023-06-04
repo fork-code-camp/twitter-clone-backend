@@ -12,5 +12,5 @@ public interface RetweetRepository extends JpaRepository<Retweet, Long> {
 
     Integer countAllByParentTweetId(Long parentTweetId);
     Optional<Retweet> findByParentTweetIdAndProfileId(Long parentTweetId, String profileId);
-    List<Retweet> findAllByProfileId(String profileId);
+    List<Retweet> findAllByProfileIdOrderByRetweetTimeDesc(String profileId);
 }

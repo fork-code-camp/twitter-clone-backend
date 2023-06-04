@@ -41,8 +41,8 @@ public class TweetController {
     }
 
     @GetMapping
-    public ResponseEntity<List<TweetResponse>> getAllTweets() {
-        return ResponseEntity.ok(tweetService.getAllTweets());
+    public ResponseEntity<List<TweetResponse>> getAllTweetsForUser(@RequestHeader String loggedInUser) {
+        return ResponseEntity.ok(tweetService.getAllTweetsForUser(loggedInUser));
     }
 
     @PatchMapping("/{tweetId}")

@@ -55,6 +55,13 @@ public class Tweet implements BaseEntity<Long> {
     )
     private Set<Tweet> replies = new HashSet<>();
 
+    @OneToMany(
+            targetEntity = View.class,
+            mappedBy = "parentTweet",
+            cascade = CascadeType.ALL
+    )
+    private Set<View> views = new HashSet<>();
+
     @ManyToOne(targetEntity = Tweet.class)
     @Nullable
     private Tweet replyTo;

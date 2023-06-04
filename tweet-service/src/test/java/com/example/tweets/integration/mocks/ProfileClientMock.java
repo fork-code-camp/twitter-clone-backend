@@ -5,8 +5,10 @@ import com.example.tweets.client.response.ProfileResponse;
 import org.mockito.Mockito;
 
 import java.time.LocalDate;
+import java.util.Collections;
 
 import static com.example.tweets.integration.constants.GlobalConstants.*;
+import static org.mockito.ArgumentMatchers.anyString;
 
 public class ProfileClientMock {
 
@@ -30,5 +32,9 @@ public class ProfileClientMock {
         Mockito.doReturn(response)
                 .when(profileServiceClient)
                 .getProfileById(ID.getConstant());
+
+        Mockito.doReturn(Collections.emptyList())
+                .when(profileServiceClient)
+                .getFollowers(anyString());
     }
 }
