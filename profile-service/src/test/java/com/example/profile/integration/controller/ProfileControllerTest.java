@@ -37,8 +37,8 @@ public class ProfileControllerTest extends IntegrationTestBase {
     public void createProfileTestFailure() throws Exception {
         createProfileSuccess(EXISTENT_PROFILE_JSON.getConstant());
         createProfileFailure(EXISTENT_PROFILE_JSON.getConstant());
-        getProfileByIdFailure("dummy id");
-        getProfileByEmailFailure("dummy email");
+        getProfileByIdFailure();
+        getProfileByEmailFailure();
     }
 
     @Test
@@ -89,11 +89,11 @@ public class ProfileControllerTest extends IntegrationTestBase {
         return extractFieldFromResponse(resultActions, fieldToExtract);
     }
 
-    private void getProfileByIdFailure(String profileId) throws Exception {
-        mockMvc.perform(get(PROFILE_BY_ID_URL.getConstant().formatted(profileId)))
+    private void getProfileByIdFailure() throws Exception {
+        mockMvc.perform(get(PROFILE_BY_ID_URL.getConstant().formatted("dummy id")))
                 .andExpectAll(
                         status().isNotFound(),
-                        jsonPath("$.message").value(messageService.generateMessage("error.entity.not_found", profileId))
+                        jsonPath("$.message").value(messageService.generateMessage("error.entity.not_found", "dummy id"))
                 );
     }
 
@@ -106,11 +106,11 @@ public class ProfileControllerTest extends IntegrationTestBase {
                 );
     }
 
-    private void getProfileByEmailFailure(String email) throws Exception {
-        mockMvc.perform(get(PROFILE_ID_BY_EMAIL_URL.getConstant().formatted(email)))
+    private void getProfileByEmailFailure() throws Exception {
+        mockMvc.perform(get(PROFILE_ID_BY_EMAIL_URL.getConstant().formatted("dummy email")))
                 .andExpectAll(
                         status().isNotFound(),
-                        jsonPath("$.message").value(messageService.generateMessage("error.entity.not_found", email))
+                        jsonPath("$.message").value(messageService.generateMessage("error.entity.not_found", "dummy email"))
                 );
     }
 

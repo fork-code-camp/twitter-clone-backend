@@ -19,7 +19,7 @@ public class IntegrationTestBase {
     private static final PostgreSQLContainer<?> postgresContainer = new PostgreSQLContainer<>("postgres:alpine3.17");
     private static final GenericContainer<?> configServerContainer = new FixedHostPortGenericContainer<>("twitterclone0/spring-cloud-config-server")
             .withFixedExposedPort(8888, 8888)
-            .waitingFor(Wait.forHttp("/profile-service/test")
+            .waitingFor(Wait.forHttp("/authentication-service/test")
                     .forStatusCodeMatching(port -> port >= 200 && port < 400));
 
     @BeforeAll

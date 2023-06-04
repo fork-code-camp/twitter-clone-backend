@@ -19,6 +19,7 @@
         <mapstruct.version>1.5.3.Final</mapstruct.version>
         <wiremock.version>2.27.2</wiremock.version>
         <swagger.version>2.0.4</swagger.version>
+        <spring-cloud-starter-aws.version>2.2.6.RELEASE</spring-cloud-starter-aws.version>
     </properties>
 
     <dependencies>
@@ -38,6 +39,13 @@
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+        </dependency>
+
+        <!-- *** AMAZON BLOB STORAGE *** -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-aws</artifactId>
+            <version>${spring-cloud-starter-aws.version}</version>
         </dependency>
 
         <!-- *** LOMBOK *** -->

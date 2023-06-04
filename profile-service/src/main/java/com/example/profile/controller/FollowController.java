@@ -16,7 +16,7 @@ public class FollowController {
     private final FollowService followService;
 
     @GetMapping("/{followeeId}")
-    private ResponseEntity<Boolean> isFollowed(@PathVariable String followeeId, @RequestHeader String loggedInUser) {
+    public ResponseEntity<Boolean> isFollowed(@PathVariable String followeeId, @RequestHeader String loggedInUser) {
         return ResponseEntity.ok(followService.isFollowed(followeeId, loggedInUser));
     }
 
@@ -30,12 +30,12 @@ public class FollowController {
         return ResponseEntity.ok(followService.unfollow(followeeId, loggedInUser));
     }
 
-    @GetMapping("/followers/{profileId}")
+    @GetMapping("/{profileId}/followers")
     public ResponseEntity<List<Profile>> getFollowers(@PathVariable String profileId) {
         return ResponseEntity.ok(followService.getFollowers(profileId));
     }
 
-    @GetMapping("/followees/{profileId}")
+    @GetMapping("/{profileId}/followees")
     public ResponseEntity<List<Profile>> getFollowees(@PathVariable String profileId) {
         return ResponseEntity.ok(followService.getFollowees(profileId));
     }

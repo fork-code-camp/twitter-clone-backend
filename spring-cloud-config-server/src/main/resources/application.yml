@@ -6,7 +6,7 @@ spring:
     config:
       server:
         git:
-          uri: https://github.com/fork-code-camp/microservices-config-server
+          uri: https://github.com/lwantPizza/microservices-config-server
           searchPaths: '{application}'
           default-label: main
           timeout: 3

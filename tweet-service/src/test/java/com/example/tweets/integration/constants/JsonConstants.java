@@ -9,6 +9,13 @@ import lombok.ToString;
 @AllArgsConstructor
 public enum JsonConstants {
 
-    REQUEST_PATTERN("{\"text\": \"%s\"}");
+    REQUEST_PATTERN(
+            """
+                    {
+                        "text": "%s"
+                    }
+                    """
+    );
+
     private final String constant;
 }
