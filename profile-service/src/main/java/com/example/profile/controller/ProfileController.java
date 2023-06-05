@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import static org.springframework.http.HttpStatus.CREATED;
 
@@ -40,5 +41,25 @@ public class ProfileController {
     @GetMapping("/id/{email}")
     public ResponseEntity<String> getProfileIdByEmail(@PathVariable String email) {
         return ResponseEntity.ok(profileService.getProfileIdByEmail(email));
+    }
+
+    @PostMapping("/images/avatar")
+    public ResponseEntity<Boolean> uploadAvatarImage(@RequestParam MultipartFile file, @RequestHeader String loggedInUser) {
+        return ResponseEntity.ok(profileService.uploadAvatarImage(file, loggedInUser));
+    }
+
+    @DeleteMapping("/images/avatar")
+    public ResponseEntity<Boolean> deleteAvatarImage(@RequestHeader String loggedInUser) {
+        return ResponseEntity.ok(profileService.deleteAvatarImage(loggedInUser));
+    }
+
+    @PostMapping("/images/banner")
+    public ResponseEntity<Boolean> uploadBannerImage(@RequestParam MultipartFile file, @RequestHeader String loggedInUser) {
+        return ResponseEntity.ok(profileService.uploadBannerImage(file, loggedInUser));
+    }
+
+    @DeleteMapping("/images/banner")
+    public ResponseEntity<Boolean> deleteBannerImage(@RequestHeader String loggedInUser) {
+        return ResponseEntity.ok(profileService.deleteBannerImage(loggedInUser));
     }
 }

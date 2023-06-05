@@ -38,12 +38,6 @@
             <artifactId>spring-cloud-starter-config</artifactId>
         </dependency>
 
-        <!-- *** FEIGN *** -->
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-openfeign</artifactId>
-        </dependency>
-
         <!-- *** AMAZON BLOB STORAGE *** -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
