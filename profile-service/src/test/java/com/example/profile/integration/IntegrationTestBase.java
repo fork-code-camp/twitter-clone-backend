@@ -15,7 +15,7 @@ import org.testcontainers.utility.DockerImageName;
 @RequiredArgsConstructor
 public class IntegrationTestBase {
 
-    private static final MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:4.4.3"));
+    private static final MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:jammy"));
     private static final GenericContainer<?> configServerContainer = new FixedHostPortGenericContainer<>("twitterclone0/spring-cloud-config-server")
             .withFixedExposedPort(8888, 8888)
             .waitingFor(Wait.forHttp("/profile-service/test")

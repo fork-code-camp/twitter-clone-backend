@@ -34,6 +34,12 @@
             <artifactId>spring-boot-starter-data-mongodb</artifactId>
         </dependency>
 
+        <!-- *** FEIGN *** -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-openfeign</artifactId>
+        </dependency>
+
         <!-- *** NETFLIX STACK *** -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>

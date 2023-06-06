@@ -2,7 +2,6 @@ package com.example.profile.dto.request;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 import java.time.LocalDate;
@@ -15,13 +14,7 @@ public record UpdateProfileRequest(
         @Size(max = 30, message = "{location.size}") String location,
         @Size(max = 100, message = "{website.size}") String website,
 
-        @Past LocalDate birthDate,
-
-        @Pattern(regexp = "(http(s?):/)(/[^/]+)+\\.(?:jpg|jpeg|gif|png)", message = "{image.pattern}")
-        String avatarUrl,
-
-        @Pattern(regexp = "(http(s?):/)(/[^/]+)+\\.(?:jpg|jpeg|gif|png)", message = "{image.pattern}")
-        String bannerUrl
+        @Past LocalDate birthDate
 ) {
 
 }
