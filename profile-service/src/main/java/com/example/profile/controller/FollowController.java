@@ -16,7 +16,7 @@ public class FollowController {
     private final FollowService followService;
 
     @GetMapping("/{followeeId}")
-    private ResponseEntity<Boolean> isFollowed(@PathVariable String followeeId, @RequestHeader String loggedInUser) {
+    public ResponseEntity<Boolean> isFollowed(@PathVariable String followeeId, @RequestHeader String loggedInUser) {
         return ResponseEntity.ok(followService.isFollowed(followeeId, loggedInUser));
     }
 

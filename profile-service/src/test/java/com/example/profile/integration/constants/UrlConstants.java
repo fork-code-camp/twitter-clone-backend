@@ -13,8 +13,8 @@ public enum UrlConstants {
     PROFILE_ID_BY_EMAIL_URL("/api/v1/profiles/id/%s"),
 
     FOLLOW_BY_ID_URL("/api/v1/follows/%s"),
-    FOLLOWERS_BY_ID_URL("/api/v1/follows/followers/%s"),
-    FOLLOWEES_BY_ID_URL("/api/v1/follows/followees/%s");
+    FOLLOWERS_BY_ID_URL("/api/v1/follows/%s/followers"),
+    FOLLOWEES_BY_ID_URL("/api/v1/follows/%s/followees");
 
     private final String constant;
 }
