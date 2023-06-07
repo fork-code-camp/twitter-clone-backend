@@ -42,7 +42,6 @@ public class TweetControllerTest extends IntegrationTestBase {
     private final TweetService tweetService;
     private final TweetRepository tweetRepository;
     private final ViewRepository viewRepository;
-    private final TweetService tweetService;
 
     @MockBean
     private final ProfileServiceClient profileServiceClient;

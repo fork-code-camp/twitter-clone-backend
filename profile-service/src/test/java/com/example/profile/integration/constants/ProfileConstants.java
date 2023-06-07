@@ -27,7 +27,9 @@ public enum ProfileConstants {
 
     NEW_PROFILE_EMAIL("new_profile@gmail.com"),
     UPDATE_PROFILE_EMAIL("updated@gmail.com"),
-    EXISTENT_PROFILE_EMAIL("test@gmail.com");
+    EXISTENT_PROFILE_EMAIL("test@gmail.com"),
+    USERNAME("dummy username"),
+    ID("dummy id");
 
     private final String constant;
 }

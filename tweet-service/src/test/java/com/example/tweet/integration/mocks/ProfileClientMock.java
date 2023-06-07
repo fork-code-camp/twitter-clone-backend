@@ -2,13 +2,13 @@ package com.example.tweet.integration.mocks;
 
 import com.example.tweet.client.ProfileServiceClient;
 import com.example.tweet.client.response.ProfileResponse;
-import org.mockito.Mockito;
 
 import java.time.LocalDate;
 import java.util.Collections;
 
 import static com.example.tweet.integration.constants.GlobalConstants.*;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
 
 public class ProfileClientMock {
 
@@ -25,16 +25,13 @@ public class ProfileClientMock {
                 .bannerUrl("some banner url")
                 .build();
 
-        Mockito.doReturn(ID.getConstant())
-                .when(profileServiceClient)
-                .getProfileIdByLoggedInUser(EMAIL.getConstant());
+        when(profileServiceClient.getProfileIdByLoggedInUser(EMAIL.getConstant()))
+                .thenReturn(ID.getConstant());
 
-        Mockito.doReturn(response)
-                .when(profileServiceClient)
-                .getProfileById(ID.getConstant());
+        when(profileServiceClient.getProfileById(ID.getConstant()))
+                .thenReturn(response);
 
-        Mockito.doReturn(Collections.emptyList())
-                .when(profileServiceClient)
-                .getFollowers(anyString());
+        when(profileServiceClient.getFollowers(anyString()))
+                .thenReturn(Collections.emptyList());
     }
 }

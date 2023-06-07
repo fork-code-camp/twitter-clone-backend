@@ -1,21 +1,21 @@
-package com.example.tweets.integration.controller;
+package com.example.tweet.integration.controller;
 
 
-import com.example.tweets.client.ProfileServiceClient;
-import com.example.tweets.dto.request.TweetUpdateRequest;
-import com.example.tweets.dto.response.RetweetResponse;
-import com.example.tweets.dto.response.TweetResponse;
-import com.example.tweets.entity.Retweet;
-import com.example.tweets.entity.Tweet;
-import com.example.tweets.integration.IntegrationTestBase;
-import com.example.tweets.integration.mocks.ProfileClientMock;
-import com.example.tweets.repository.RetweetRepository;
-import com.example.tweets.repository.TweetRepository;
-import com.example.tweets.service.ReplyService;
-import com.example.tweets.service.RetweetService;
-import com.example.tweets.service.TweetService;
-import com.example.tweets.service.ViewService;
-import com.example.tweets.util.TweetUtil;
+import com.example.tweet.client.ProfileServiceClient;
+import com.example.tweet.dto.request.TweetUpdateRequest;
+import com.example.tweet.dto.response.RetweetResponse;
+import com.example.tweet.dto.response.TweetResponse;
+import com.example.tweet.entity.Retweet;
+import com.example.tweet.entity.Tweet;
+import com.example.tweet.integration.IntegrationTestBase;
+import com.example.tweet.integration.mocks.ProfileClientMock;
+import com.example.tweet.repository.RetweetRepository;
+import com.example.tweet.repository.TweetRepository;
+import com.example.tweet.service.ReplyService;
+import com.example.tweet.service.RetweetService;
+import com.example.tweet.service.TweetService;
+import com.example.tweet.service.ViewService;
+import com.example.tweet.util.TweetUtil;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.AfterEach;
@@ -31,7 +31,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
-import static com.example.tweets.integration.constants.GlobalConstants.*;
+import static com.example.tweet.integration.constants.GlobalConstants.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 

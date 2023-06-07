@@ -1,12 +1,12 @@
-package com.example.tweets.service;
+package com.example.tweet.service;
 
-import com.example.tweets.client.ProfileServiceClient;
-import com.example.tweets.client.response.ProfileResponse;
-import com.example.tweets.dto.response.RetweetResponse;
-import com.example.tweets.dto.response.TweetResponse;
-import com.example.tweets.entity.BaseEntity;
-import com.example.tweets.entity.Retweet;
-import com.example.tweets.entity.Tweet;
+import com.example.tweet.client.ProfileServiceClient;
+import com.example.tweet.client.response.ProfileResponse;
+import com.example.tweet.dto.response.RetweetResponse;
+import com.example.tweet.dto.response.TweetResponse;
+import com.example.tweet.entity.BaseEntity;
+import com.example.tweet.entity.Retweet;
+import com.example.tweet.entity.Tweet;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static com.example.tweets.service.FanoutService.TimelinePrefixes.*;
+import static com.example.tweet.service.FanoutService.TimelinePrefixes.*;
 
 @Service
 @RequiredArgsConstructor

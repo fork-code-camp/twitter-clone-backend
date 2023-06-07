@@ -39,4 +39,9 @@ public class FollowController {
     public ResponseEntity<List<ProfileResponse>> getFollowees(@PathVariable String profileId) {
         return ResponseEntity.ok(followService.getFollowees(profileId));
     }
+
+    @GetMapping("/{profileId}/followees-celebrities")
+    public ResponseEntity<List<ProfileResponse>> getFolloweesCelebrities(@PathVariable String profileId) {
+        return ResponseEntity.ok(followService.getFolloweesCelebrities(profileId));
+    }
 }
