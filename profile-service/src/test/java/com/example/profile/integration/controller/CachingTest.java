@@ -64,7 +64,7 @@ public class CachingTest extends IntegrationTestBase {
 
     @Test
     public void cacheProfileTest() {
-        createStubForProfile(ID.getConstant(), 15000, 100);
+        createStubForProfile(ID.getConstant(), 10000, 100);
 
         profileService.getProfile(ID.getConstant());
         ProfileResponse profile = profileService.getProfile(ID.getConstant());
@@ -78,7 +78,7 @@ public class CachingTest extends IntegrationTestBase {
 
     @Test
     public void doNotCacheProfileTest() {
-        createStubForProfile(ID.getConstant(), 10000, 1000);
+        createStubForProfile(ID.getConstant(), 1000, 100);
 
         profileService.getProfile(ID.getConstant());
         profileService.getProfile(ID.getConstant());
@@ -91,7 +91,7 @@ public class CachingTest extends IntegrationTestBase {
 
     @Test
     public void updateProfileInCacheTest() {
-        createStubForProfile(ID.getConstant(), 15000, 1000);
+        createStubForProfile(ID.getConstant(), 10000, 1000);
 
         ProfileResponse profile = profileService.getProfile(ID.getConstant());
         ProfileResponse profileFromCache = getProfileFromCache(ID.getConstant());
@@ -104,7 +104,7 @@ public class CachingTest extends IntegrationTestBase {
     
     @Test
     public void cacheFollowersTest() {
-        createStubForProfileWithFollowersAndFollowees(ID.getConstant(), 15000, 10, 0);
+        createStubForProfileWithFollowersAndFollowees(ID.getConstant(), 10000, 10, 0);
 
         followService.getFollowers(ID.getConstant());
         followService.getFollowers(ID.getConstant());
@@ -114,12 +114,12 @@ public class CachingTest extends IntegrationTestBase {
 
         List<ProfileResponse> followers = getProfilesFromCache(ID.getConstant(), "followers");
         assertNotNull(followers);
-        assertEquals(15000, followers.size());
+        assertEquals(10000, followers.size());
     }
 
     @Test
     public void cacheFolloweesTest() {
-        createStubForProfileWithFollowersAndFollowees(ID.getConstant(), 10, 1500, 0);
+        createStubForProfileWithFollowersAndFollowees(ID.getConstant(), 10, 1000, 0);
 
         followService.getFollowees(ID.getConstant());
         followService.getFollowees(ID.getConstant());
@@ -129,7 +129,7 @@ public class CachingTest extends IntegrationTestBase {
 
         List<ProfileResponse> followees = getProfilesFromCache(ID.getConstant(), "followees");
         assertNotNull(followees);
-        assertEquals(1500, followees.size());
+        assertEquals(1000, followees.size());
     }
 
     @Test

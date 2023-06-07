@@ -24,6 +24,7 @@ public class IntegrationTestBase {
     static void runContainer() {
         configServerContainer.start();
         postgresContainer.start();
+        redisContainer.start();
     }
 
     @DynamicPropertySource

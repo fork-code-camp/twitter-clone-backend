@@ -48,7 +48,7 @@ public class FollowService {
                 .isPresent();
     }
 
-    @Cacheable(cacheNames = "followers", key = "#p0", unless = "#result.size() <= 10000")
+    @Cacheable(cacheNames = "followers", key = "#p0", unless = "#result.size() < 10000")
     public List<ProfileResponse> getFollowers(String profileId) {
         return followRepository.findAllByFolloweeProfile_Id(profileId)
                 .stream()
@@ -57,7 +57,7 @@ public class FollowService {
                 .collect(Collectors.toList());
     }
 
-    @Cacheable(cacheNames = "followees", key = "#p0", unless = "#result.size() <= 1000")
+    @Cacheable(cacheNames = "followees", key = "#p0", unless = "#result.size() < 1000")
     public List<ProfileResponse> getFollowees(String profileId) {
         return followRepository.findAllByFollowerProfile_Id(profileId)
                 .stream()

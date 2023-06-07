@@ -82,7 +82,7 @@ public class FanoutService {
     class HomeTimelineService {
         public TweetResponse addTweetToHomeTimelines(TweetResponse tweetResponse) {
             List<ProfileResponse> followers = profileServiceClient.getFollowers(tweetResponse.getProfile().profileId());
-            if (followers.size() <= 10000) {
+            if (followers.size() < 10000) {
                 for (ProfileResponse follower : followers) {
                     addEntityToTimeline(tweetResponse, TWEETS_HOME_TIMELINE_PREFIX.prefix + follower.profileId());
                 }
@@ -92,7 +92,7 @@ public class FanoutService {
 
         public TweetResponse updateTweetInHomeTimelines(TweetResponse tweetResponse) {
             List<ProfileResponse> followers = profileServiceClient.getFollowers(tweetResponse.getProfile().profileId());
-            if (followers.size() <= 10000) {
+            if (followers.size() < 10000) {
                 for (ProfileResponse follower : followers) {
                     updateTweetInTimeline(tweetResponse, TWEETS_HOME_TIMELINE_PREFIX.prefix + follower.profileId());
                 }
@@ -102,7 +102,7 @@ public class FanoutService {
 
         public void deleteTweetFromHomeTimelines(Tweet tweet) {
             List<ProfileResponse> followers = profileServiceClient.getFollowers(tweet.getProfileId());
-            if (followers.size() <= 10000) {
+            if (followers.size() < 10000) {
                 for (ProfileResponse follower : followers) {
                     deleteEntityFromTimeline(tweet.getId(), TWEETS_HOME_TIMELINE_PREFIX.prefix + follower.profileId());
                 }
@@ -111,7 +111,7 @@ public class FanoutService {
 
         public RetweetResponse addRetweetToHomeTimelines(RetweetResponse retweetResponse) {
             List<ProfileResponse> followers = profileServiceClient.getFollowers(retweetResponse.getProfile().profileId());
-            if (followers.size() <= 10000) {
+            if (followers.size() < 10000) {
                 for (ProfileResponse follower : followers) {
                     addEntityToTimeline(retweetResponse, RETWEETS_HOME_TIMELINE_PREFIX.prefix + follower.profileId());
                 }
@@ -121,7 +121,7 @@ public class FanoutService {
 
         public void deleteRetweetFromHomeTimelines(Retweet retweet) {
             List<ProfileResponse> followers = profileServiceClient.getFollowers(retweet.getProfileId());
-            if (followers.size() <= 10000) {
+            if (followers.size() < 10000) {
                 for (ProfileResponse follower : followers) {
                     deleteEntityFromTimeline(retweet.getId(), RETWEETS_HOME_TIMELINE_PREFIX.prefix + follower.profileId());
                 }

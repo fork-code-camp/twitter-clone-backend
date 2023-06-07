@@ -18,7 +18,6 @@ import com.example.tweet.service.ViewService;
 import com.example.tweet.util.TweetUtil;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.Nullable;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -27,9 +26,10 @@ import org.springframework.test.context.jdbc.Sql;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 import static com.example.tweet.integration.constants.GlobalConstants.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -63,11 +63,9 @@ public class CachingTest extends IntegrationTestBase {
     @BeforeEach
     public void setUp() {
         ProfileClientMock.setupProfileClientResponse(profileServiceClient);
-    }
-
-    @AfterEach
-    public void cleanUp() {
         cacheManager.getCache("tweets").clear();
+        cacheManager.getCache("retweets").clear();
+        cacheManager.getCache("repliesForTweet").clear();
     }
 
     @Test
@@ -167,17 +165,24 @@ public class CachingTest extends IntegrationTestBase {
     private Tweet createStubForTweetWithReplies(long tweetId, int views, int likes, int retweets, int replies) {
         Tweet parentTweet = createStubForTweet(tweetId, views, likes, retweets, replies);
 
-        List<Tweet> repliesForTweet = new ArrayList<>();
-        for (long i = tweetId+100; i < tweetId+100+replies; i++) {
-            Tweet reply = createStubForTweet(i, 0, 0, 0, 0);
-            reply.setReplyTo(parentTweet);
-            repliesForTweet.add(reply);
-        }
-        parentTweet.setReplies(new HashSet<>(repliesForTweet));
+        List<Tweet> repliesForTweetFromDb = mock(ArrayList.class);
+        List<TweetResponse> repliesForTweet = mock(ArrayList.class);
+        Stream<Tweet> mockStreamOfReplies = mock(Stream.class);
 
-        doReturn(repliesForTweet)
-                .when(tweetRepository)
-                .findAllByReplyToId(tweetId);
+        when(tweetRepository.findAllByReplyToId(tweetId))
+                .thenReturn(repliesForTweetFromDb);
+
+        when(repliesForTweetFromDb.stream())
+                .thenReturn(mockStreamOfReplies);
+
+        when(mockStreamOfReplies.map(any(Function.class)))
+                .thenReturn(mockStreamOfReplies);
+
+        when(mockStreamOfReplies.collect(any()))
+                .thenReturn(repliesForTweet);
+
+        when(repliesForTweet.size())
+                .thenReturn(replies);
 
         return parentTweet;
     }
