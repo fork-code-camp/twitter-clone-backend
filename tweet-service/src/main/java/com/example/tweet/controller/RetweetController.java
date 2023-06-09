@@ -1,6 +1,6 @@
 package com.example.tweet.controller;
 
-import com.example.tweet.dto.response.RetweetResponse;
+import com.example.tweet.dto.response.TweetResponse;
 import com.example.tweet.service.RetweetService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -26,12 +26,12 @@ public class RetweetController {
     }
 
     @GetMapping("/{retweetId}")
-    public ResponseEntity<RetweetResponse> getRetweet(@PathVariable Long retweetId) {
+    public ResponseEntity<TweetResponse> getRetweet(@PathVariable Long retweetId) {
         return ResponseEntity.ok(retweetService.findRetweetById(retweetId));
     }
 
     @GetMapping
-    public ResponseEntity<List<RetweetResponse>> getRetweetsForUser(@RequestHeader String loggedInUser) {
+    public ResponseEntity<List<TweetResponse>> getRetweetsForUser(@RequestHeader String loggedInUser) {
         return ResponseEntity.ok(retweetService.findRetweetsForUser(loggedInUser));
     }
 }

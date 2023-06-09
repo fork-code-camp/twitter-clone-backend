@@ -4,9 +4,11 @@ import com.example.tweet.dto.response.ErrorResponse;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.expression.spel.SpelEvaluationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -33,7 +35,10 @@ public class CustomExceptionHandler {
         return new ResponseEntity<>(errors, BAD_REQUEST);
     }
 
-    @ExceptionHandler(EntityNotFoundException.class)
+    @ExceptionHandler({
+            EntityNotFoundException.class,
+            SpelEvaluationException.class
+    })
     public ResponseEntity<ErrorResponse> handleException(EntityNotFoundException e) {
         return generateDefaultErrorMessage(e, NOT_FOUND);
     }
@@ -50,7 +55,8 @@ public class CustomExceptionHandler {
 
     @ExceptionHandler({
             ConstraintViolationException.class,
-            DataIntegrityViolationException.class
+            DataIntegrityViolationException.class,
+            HttpMediaTypeNotSupportedException.class
     })
     public ResponseEntity<ErrorResponse> handleException(Exception e) {
         return generateDefaultErrorMessage(e, BAD_REQUEST);

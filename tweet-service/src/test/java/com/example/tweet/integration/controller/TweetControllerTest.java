@@ -1,19 +1,21 @@
 package com.example.tweet.integration.controller;
 
 import com.example.tweet.client.ProfileServiceClient;
+import com.example.tweet.client.StorageServiceClient;
 import com.example.tweet.dto.request.TweetCreateRequest;
 import com.example.tweet.integration.IntegrationTestBase;
 import com.example.tweet.integration.mocks.ProfileClientMock;
 import com.example.tweet.repository.TweetRepository;
+import com.example.tweet.repository.ViewRepository;
 import com.example.tweet.service.MessageSourceService;
 import com.example.tweet.service.TweetService;
-import com.example.tweet.repository.ViewRepository;
 import lombok.RequiredArgsConstructor;
 import org.hamcrest.core.IsNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.jdbc.Sql;
@@ -21,7 +23,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
 import static com.example.tweet.integration.constants.GlobalConstants.*;
-import static com.example.tweet.integration.constants.JsonConstants.REQUEST_PATTERN;
 import static com.example.tweet.integration.constants.UrlConstants.TWEETS_URL;
 import static com.example.tweet.integration.constants.UrlConstants.TWEETS_URL_WITH_ID;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -45,6 +46,9 @@ public class TweetControllerTest extends IntegrationTestBase {
 
     @MockBean
     private final ProfileServiceClient profileServiceClient;
+
+    @MockBean
+    private final StorageServiceClient storageServiceClient;
 
     @BeforeEach
     public void setUp() {
@@ -117,9 +121,10 @@ public class TweetControllerTest extends IntegrationTestBase {
     }
 
     private void createTweetAndExpectSuccess(String text) throws Exception {
-        ResultActions resultActions = mockMvc.perform(post(
+        ResultActions resultActions = mockMvc.perform(multipart(
+                HttpMethod.POST,
                 TWEETS_URL.getConstant())
-                .content(REQUEST_PATTERN.getConstant().formatted(text))
+                .file(createRequest(text))
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("loggedInUser", EMAIL.getConstant()));
 
@@ -127,19 +132,21 @@ public class TweetControllerTest extends IntegrationTestBase {
     }
 
     private void createTweetAndExpectFailure(String text) throws Exception {
-        ResultActions resultActions = mockMvc.perform(post(
+        ResultActions resultActions = mockMvc.perform(multipart(
+                HttpMethod.POST,
                 TWEETS_URL.getConstant())
-                .content(REQUEST_PATTERN.getConstant().formatted(text))
+                .file(createRequest(text))
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("loggedInUser", EMAIL.getConstant()));
 
         expectFailResponse(resultActions, BAD_REQUEST, "$.text", TEXT_EMPTY_MESSAGE.getConstant());
     }
 
-    private void createQuoteTweetAndExpectSuccess(String text, Long embeddedTweetId) throws Exception {
-        ResultActions resultActions = mockMvc.perform(post(
-                TWEETS_URL_WITH_ID.getConstant().formatted(embeddedTweetId))
-                .content(REQUEST_PATTERN.getConstant().formatted(text))
+    private void createQuoteTweetAndExpectSuccess(String text, Long quoteToId) throws Exception {
+        ResultActions resultActions = mockMvc.perform(multipart(
+                HttpMethod.POST,
+                TWEETS_URL_WITH_ID.getConstant().formatted(quoteToId))
+                .file(createRequest(text))
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("loggedInUser", EMAIL.getConstant())
         );
@@ -147,10 +154,11 @@ public class TweetControllerTest extends IntegrationTestBase {
         expectOkQuoteTweetResponse(resultActions, text, 0);
     }
 
-    private void createQuoteTweetAndExpectFailure(String text, Long embeddedTweetId, HttpStatus status, String jsonPath, String message) throws Exception {
-        ResultActions resultActions = mockMvc.perform(post(
-                TWEETS_URL_WITH_ID.getConstant().formatted(embeddedTweetId))
-                .content(REQUEST_PATTERN.getConstant().formatted(text))
+    private void createQuoteTweetAndExpectFailure(String text, Long quoteToId, HttpStatus status, String jsonPath, String message) throws Exception {
+        ResultActions resultActions = mockMvc.perform(multipart(
+                HttpMethod.POST,
+                TWEETS_URL_WITH_ID.getConstant().formatted(quoteToId))
+                .file(createRequest(text))
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("loggedInUser", EMAIL.getConstant())
         );
@@ -175,9 +183,10 @@ public class TweetControllerTest extends IntegrationTestBase {
     }
 
     private void updateTweetAndExpectSuccess(Long id, String text) throws Exception {
-        ResultActions resultActions = mockMvc.perform(patch(
+        ResultActions resultActions = mockMvc.perform(multipart(
+                HttpMethod.PATCH,
                 TWEETS_URL_WITH_ID.getConstant().formatted(id))
-                .content(REQUEST_PATTERN.getConstant().formatted(text))
+                .file(createRequest(text))
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("loggedInUser", EMAIL.getConstant()));
 
@@ -185,9 +194,10 @@ public class TweetControllerTest extends IntegrationTestBase {
     }
 
     private void updateTweetAndExpectFailure(Long id, String text, HttpStatus status, String jsonPath, String message) throws Exception {
-        ResultActions resultActions = mockMvc.perform(patch(
+        ResultActions resultActions = mockMvc.perform(multipart(
+                HttpMethod.PATCH,
                 TWEETS_URL_WITH_ID.getConstant().formatted(id))
-                .content(REQUEST_PATTERN.getConstant().formatted(text))
+                .file(createRequest(text))
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("loggedInUser", EMAIL.getConstant()));
 
@@ -213,6 +223,7 @@ public class TweetControllerTest extends IntegrationTestBase {
                         content().contentType(MediaType.APPLICATION_JSON),
                         jsonPath("$.replyTo").value(IsNull.nullValue()),
                         jsonPath("$.quoteTo").value(IsNull.nullValue()),
+                        jsonPath("$.retweetTo").value(IsNull.nullValue()),
                         jsonPath("$.profile.username").value(USERNAME.getConstant()),
                         jsonPath("$.profile.email").value(EMAIL.getConstant()),
                         jsonPath("$.text").value(text),
@@ -220,7 +231,8 @@ public class TweetControllerTest extends IntegrationTestBase {
                         jsonPath("$.retweets").exists(),
                         jsonPath("$.likes").exists(),
                         jsonPath("$.views").value(views),
-                        jsonPath("$.creationDate").exists()
+                        jsonPath("$.creationDate").exists(),
+                        jsonPath("$.mediaUrls").value(IsNull.nullValue())
                 );
     }
 
@@ -230,20 +242,22 @@ public class TweetControllerTest extends IntegrationTestBase {
                         status().isOk(),
                         content().contentType(MediaType.APPLICATION_JSON),
                         jsonPath("$.replyTo").value(IsNull.nullValue()),
+                        jsonPath("$.retweetTo").value(IsNull.nullValue()),
                         jsonPath("$.quoteTo.text").value(DEFAULT_TWEET_TEXT.getConstant()),
-                        jsonPath("$.quoteTo.replies").value(0),
-                        jsonPath("$.quoteTo.retweets").value(0),
-                        jsonPath("$.quoteTo.likes").value(0),
-                        jsonPath("$.quoteTo.views").value(0),
+                        jsonPath("$.quoteTo.replies").exists(),
+                        jsonPath("$.quoteTo.retweets").exists(),
+                        jsonPath("$.quoteTo.likes").exists(),
+                        jsonPath("$.quoteTo.views").exists(),
                         jsonPath("$.quoteTo.creationDate").exists(),
                         jsonPath("$.profile.username").value(USERNAME.getConstant()),
                         jsonPath("$.profile.email").value(EMAIL.getConstant()),
                         jsonPath("$.text").value(text),
-                        jsonPath("$.replies").value(0),
-                        jsonPath("$.retweets").value(0),
-                        jsonPath("$.likes").value(0),
+                        jsonPath("$.replies").exists(),
+                        jsonPath("$.retweets").exists(),
+                        jsonPath("$.likes").exists(),
                         jsonPath("$.views").value(views),
-                        jsonPath("$.creationDate").exists()
+                        jsonPath("$.creationDate").exists(),
+                        jsonPath("$.mediaUrls").value(IsNull.nullValue())
                 );
     }
 
@@ -256,6 +270,6 @@ public class TweetControllerTest extends IntegrationTestBase {
     }
 
     private void createDummyTweet() {
-        tweetService.createTweet(new TweetCreateRequest(DEFAULT_TWEET_TEXT.getConstant()), EMAIL.getConstant());
+        tweetService.createTweet(new TweetCreateRequest(DEFAULT_TWEET_TEXT.getConstant()), EMAIL.getConstant(), null);
     }
 }

@@ -1,6 +1,7 @@
 package com.example.tweet.integration.controller;
 
 import com.example.tweet.client.ProfileServiceClient;
+import com.example.tweet.client.StorageServiceClient;
 import com.example.tweet.integration.IntegrationTestBase;
 import com.example.tweet.integration.mocks.ProfileClientMock;
 import com.example.tweet.service.MessageSourceService;
@@ -12,18 +13,18 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static com.example.tweet.integration.constants.GlobalConstants.*;
-import static com.example.tweet.integration.constants.JsonConstants.REQUEST_PATTERN;
 import static com.example.tweet.integration.constants.UrlConstants.REPLIES_URL_WITH_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -40,6 +41,9 @@ public class ReplyControllerTest extends IntegrationTestBase {
     @MockBean
     private final ProfileServiceClient profileServiceClient;
 
+    @MockBean
+    private final StorageServiceClient storageServiceClient;
+
     @BeforeEach
     public void setUp() {
         ProfileClientMock.setupProfileClientResponse(profileServiceClient);
@@ -47,9 +51,9 @@ public class ReplyControllerTest extends IntegrationTestBase {
 
     @Test
     public void replyTest() throws Exception {
-        replyAndExpectSuccess(1L, DEFAULT_TWEET_TEXT.getConstant(), 1, 1);
-        replyAndExpectSuccess(1L, DEFAULT_TWEET_TEXT.getConstant(), 2, 2);
-        replyAndExpectSuccess(3L, DEFAULT_REPLY_TEXT.getConstant(), 1, 3);
+        replyAndExpectSuccess(DEFAULT_REPLY_TEXT.getConstant(), 1L, DEFAULT_TWEET_TEXT.getConstant(), 1, 1);
+        replyAndExpectSuccess(DEFAULT_REPLY_TEXT.getConstant(), 1L, DEFAULT_TWEET_TEXT.getConstant(), 2, 2);
+        replyAndExpectSuccess(DEFAULT_REPLY_TEXT.getConstant(), 3L, DEFAULT_REPLY_TEXT.getConstant(), 1, 3);
 
         replyAndExpectFailure(
                 100L,
@@ -71,60 +75,65 @@ public class ReplyControllerTest extends IntegrationTestBase {
         );
     }
 
-    private void replyAndExpectSuccess(Long parentTweetId, String parentTweetText, int repliesForTweet, int repliesForUser) throws Exception {
-        mockMvc.perform(post(
+    private void replyAndExpectSuccess(String replyText, Long parentTweetId, String replyToText, int repliesForTweet, int repliesForUser) throws Exception {
+        mockMvc.perform(multipart(
+                        HttpMethod.POST,
                         REPLIES_URL_WITH_ID.getConstant().formatted(parentTweetId))
-                        .header("loggedInUser", EMAIL.getConstant())
-                        .content(REQUEST_PATTERN.getConstant().formatted(DEFAULT_REPLY_TEXT.getConstant()))
+                        .file(createRequest(replyText))
                         .contentType(MediaType.APPLICATION_JSON)
+                        .header("loggedInUser", EMAIL.getConstant())
                 )
                 .andExpectAll(
                         status().isOk(),
-                        jsonPath("$.replyTo.text").value(parentTweetText),
+                        jsonPath("$.replyTo.text").value(replyToText),
                         jsonPath("$.replyTo.replies").value(repliesForTweet),
-                        jsonPath("$.replyTo.retweets").value(0),
-                        jsonPath("$.replyTo.likes").value(0),
-                        jsonPath("$.replyTo.views").value(0),
+                        jsonPath("$.replyTo.retweets").exists(),
+                        jsonPath("$.replyTo.likes").exists(),
+                        jsonPath("$.replyTo.views").exists(),
                         jsonPath("$.replyTo.profile").exists(),
                         jsonPath("$.quoteTo").value(IsNull.nullValue()),
-                        jsonPath("$.text").value(DEFAULT_REPLY_TEXT.getConstant()),
-                        jsonPath("$.replies").value(0),
-                        jsonPath("$.retweets").value(0),
-                        jsonPath("$.likes").value(0),
-                        jsonPath("$.views").value(0),
+                        jsonPath("$.retweetTo").value(IsNull.nullValue()),
+                        jsonPath("$.text").value(replyText),
+                        jsonPath("$.replies").exists(),
+                        jsonPath("$.retweets").exists(),
+                        jsonPath("$.likes").exists(),
+                        jsonPath("$.views").exists(),
                         jsonPath("$.profile.email").value(EMAIL.getConstant()),
                         jsonPath("$.profile.username").value(USERNAME.getConstant()),
-                        jsonPath("$.creationDate").exists()
+                        jsonPath("$.creationDate").exists(),
+                        jsonPath("$.mediaUrls").value(IsNull.nullValue())
                 );
         checkNumberOfReplies(parentTweetId, repliesForTweet, repliesForUser);
     }
 
     private void replyAndExpectFailure(
-            Long parentTweetId,
-            String text,
+            Long replyToId,
+            String replyText,
             int repliesForTweet,
             int repliesForUser,
             HttpStatus status,
             String jsonPath,
             String message
     ) throws Exception {
-        mockMvc.perform(post(
-                        REPLIES_URL_WITH_ID.getConstant().formatted(parentTweetId))
-                        .header("loggedInUser", EMAIL.getConstant())
-                        .content(REQUEST_PATTERN.getConstant().formatted(text))
+        mockMvc.perform(multipart(
+                        HttpMethod.POST,
+                        REPLIES_URL_WITH_ID.getConstant().formatted(replyToId))
+                        .file(createRequest(replyText))
                         .contentType(MediaType.APPLICATION_JSON)
+                        .header("loggedInUser", EMAIL.getConstant())
                 )
                 .andExpectAll(
                         status().is(status.value()),
                         jsonPath(jsonPath).value(message)
                 );
-        checkNumberOfReplies(parentTweetId, repliesForTweet, repliesForUser);
+        checkNumberOfReplies(replyToId, repliesForTweet, repliesForUser);
     }
 
     private void checkNumberOfReplies(long parentTweetId, int repliesForTweet, int repliesForUser) {
         try {
             assertEquals(repliesForTweet, replyService.findAllRepliesForTweet(parentTweetId).size());
-        } catch (EntityNotFoundException ignored) {}
+        } catch (EntityNotFoundException ignored) {
+        }
         assertEquals(repliesForUser, replyService.findAllRepliesForUser(EMAIL.getConstant()).size());
     }
 }

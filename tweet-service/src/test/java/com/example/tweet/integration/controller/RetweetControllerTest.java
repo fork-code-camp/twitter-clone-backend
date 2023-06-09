@@ -1,12 +1,14 @@
 package com.example.tweet.integration.controller;
 
 import com.example.tweet.client.ProfileServiceClient;
+import com.example.tweet.client.StorageServiceClient;
 import com.example.tweet.integration.IntegrationTestBase;
 import com.example.tweet.integration.mocks.ProfileClientMock;
-import com.example.tweet.repository.RetweetRepository;
+import com.example.tweet.repository.TweetRepository;
 import com.example.tweet.service.MessageSourceService;
 import com.example.tweet.service.RetweetService;
 import lombok.RequiredArgsConstructor;
+import org.hamcrest.core.IsNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -32,12 +34,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class RetweetControllerTest extends IntegrationTestBase {
 
     private final MockMvc mockMvc;
+    private final TweetRepository tweetRepository;
     private final MessageSourceService messageSourceService;
-    private final RetweetRepository retweetRepository;
     private final RetweetService retweetService;
 
     @MockBean
     private final ProfileServiceClient profileServiceClient;
+
+    @MockBean
+    private final StorageServiceClient storageServiceClient;
 
     @BeforeEach
     public void setUp() {
@@ -64,13 +69,13 @@ public class RetweetControllerTest extends IntegrationTestBase {
     public void getRetweetTest() throws Exception {
         retweetDummyTweet();
 
-        getRetweetAndExpectSuccess(1L);
+        getRetweetAndExpectSuccess(2L);
         getRetweetAndExpectFailure(100L, NOT_FOUND, messageSourceService.generateMessage("error.entity.not_found", 100));
     }
 
-    private void retweetAndExpectSuccess(Long tweetId) throws Exception {
+    private void retweetAndExpectSuccess(Long retweetToId) throws Exception {
         mockMvc.perform(post(
-                        RETWEETS_URL_WITH_ID.getConstant().formatted(tweetId))
+                        RETWEETS_URL_WITH_ID.getConstant().formatted(retweetToId))
                         .header("loggedInUser", EMAIL.getConstant())
                 )
                 .andExpectAll(
@@ -78,12 +83,12 @@ public class RetweetControllerTest extends IntegrationTestBase {
                         content().string("true")
                 );
 
-        assertTrue(retweetRepository.findByParentTweetIdAndProfileId(tweetId, ID.getConstant()).isPresent());
+        assertTrue(tweetRepository.findByProfileIdAndRetweetToId(ID.getConstant(), retweetToId).isPresent());
     }
 
-    private void retweetAndExpectFailure(Long tweetId, HttpStatus status, String message) throws Exception {
+    private void retweetAndExpectFailure(Long retweetToId, HttpStatus status, String message) throws Exception {
         mockMvc.perform(post(
-                        RETWEETS_URL_WITH_ID.getConstant().formatted(tweetId))
+                        RETWEETS_URL_WITH_ID.getConstant().formatted(retweetToId))
                         .header("loggedInUser", EMAIL.getConstant())
                 )
                 .andExpectAll(
@@ -92,9 +97,9 @@ public class RetweetControllerTest extends IntegrationTestBase {
                 );
     }
 
-    private void undoRetweetAndExpectSuccess(Long tweetId) throws Exception {
+    private void undoRetweetAndExpectSuccess(Long retweetToId) throws Exception {
         mockMvc.perform(delete(
-                        RETWEETS_URL_WITH_ID.getConstant().formatted(tweetId))
+                        RETWEETS_URL_WITH_ID.getConstant().formatted(retweetToId))
                         .header("loggedInUser", EMAIL.getConstant())
                 )
                 .andExpectAll(
@@ -102,12 +107,12 @@ public class RetweetControllerTest extends IntegrationTestBase {
                         content().string("true")
                 );
 
-        assertFalse(retweetRepository.findByParentTweetIdAndProfileId(tweetId, ID.getConstant()).isPresent());
+        assertFalse(tweetRepository.findByProfileIdAndRetweetToId(ID.getConstant(), retweetToId).isPresent());
     }
 
-    private void undoRetweetAndExpectFailure(Long tweetId, HttpStatus status, String message) throws Exception {
+    private void undoRetweetAndExpectFailure(Long retweetToId, HttpStatus status, String message) throws Exception {
         mockMvc.perform(delete(
-                        RETWEETS_URL_WITH_ID.getConstant().formatted(tweetId))
+                        RETWEETS_URL_WITH_ID.getConstant().formatted(retweetToId))
                         .header("loggedInUser", EMAIL.getConstant())
                 )
                 .andExpectAll(
@@ -123,17 +128,19 @@ public class RetweetControllerTest extends IntegrationTestBase {
                 )
                 .andExpectAll(
                         status().isOk(),
-                        jsonPath("$.parentTweet.text").value(DEFAULT_TWEET_TEXT.getConstant()),
-                        jsonPath("$.parentTweet.profile.username").value(USERNAME.getConstant()),
-                        jsonPath("$.parentTweet.profile.email").value(EMAIL.getConstant()),
-                        jsonPath("$.parentTweet.replies").value(0),
-                        jsonPath("$.parentTweet.retweets").value(1),
-                        jsonPath("$.parentTweet.likes").value(0),
-                        jsonPath("$.parentTweet.views").value(0),
-                        jsonPath("$.parentTweet.creationDate").exists(),
+                        jsonPath("$.quoteTo").value(IsNull.nullValue()),
+                        jsonPath("$.replyTo").value(IsNull.nullValue()),
+                        jsonPath("$.retweetTo.text").value(DEFAULT_TWEET_TEXT.getConstant()),
+                        jsonPath("$.retweetTo.profile.username").value(USERNAME.getConstant()),
+                        jsonPath("$.retweetTo.profile.email").value(EMAIL.getConstant()),
+                        jsonPath("$.retweetTo.replies").exists(),
+                        jsonPath("$.retweetTo.retweets").value(1),
+                        jsonPath("$.retweetTo.likes").exists(),
+                        jsonPath("$.retweetTo.views").exists(),
+                        jsonPath("$.retweetTo.creationDate").exists(),
                         jsonPath("$.profile.username").value(USERNAME.getConstant()),
                         jsonPath("$.profile.email").value(EMAIL.getConstant()),
-                        jsonPath("$.retweetTime").exists()
+                        jsonPath("$.mediaUrls").value(IsNull.nullValue())
                 );
     }
 

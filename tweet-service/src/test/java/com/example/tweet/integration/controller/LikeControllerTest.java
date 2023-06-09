@@ -2,6 +2,7 @@ package com.example.tweet.integration.controller;
 
 
 import com.example.tweet.client.ProfileServiceClient;
+import com.example.tweet.client.StorageServiceClient;
 import com.example.tweet.integration.IntegrationTestBase;
 import com.example.tweet.integration.mocks.ProfileClientMock;
 import com.example.tweet.repository.LikeRepository;
@@ -43,6 +44,9 @@ public class LikeControllerTest extends IntegrationTestBase {
 
     @MockBean
     private final ProfileServiceClient profileServiceClient;
+
+    @MockBean
+    private final StorageServiceClient storageServiceClient;
 
     @BeforeEach
     public void setUp() {

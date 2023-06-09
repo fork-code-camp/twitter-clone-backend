@@ -12,6 +12,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Data
 @Builder
@@ -19,10 +20,12 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class TweetResponse {
 
-    private Long tweetId;
+    private Long id;
     private TweetResponse replyTo;
+    private TweetResponse retweetTo;
     private ProfileResponse profile;
     private String text;
+    private Set<String> mediaUrls;
     private TweetResponse quoteTo;
     private Integer retweets;
     private Integer replies;
