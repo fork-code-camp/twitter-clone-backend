@@ -16,13 +16,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
 
-import static com.example.tweet.service.FanoutService.EntityCachePrefix.TWEETS;
+import static com.example.tweet.service.FanoutService.EntityName.TWEETS;
 
 @Service
 @RequiredArgsConstructor
@@ -77,9 +78,9 @@ public class TweetService {
                 ));
     }
 
-    public List<TweetResponse> getAllTweetsForUser(String loggedInUser) {
+    public List<TweetResponse> getAllTweetsForUser(String loggedInUser, PageRequest page) {
         String profileId = profileServiceClient.getProfileIdByLoggedInUser(loggedInUser);
-        return tweetRepository.findAllByProfileIdAndReplyToIsNullAndRetweetToIsNullOrderByCreationDateDesc(profileId)
+        return tweetRepository.findAllByProfileIdAndReplyToIsNullAndRetweetToIsNullOrderByCreationDateDesc(profileId, page)
                 .stream()
                 .map(tweet -> tweetMapper.toResponse(tweet, tweetUtil, profileServiceClient))
                 .toList();

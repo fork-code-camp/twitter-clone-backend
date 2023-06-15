@@ -11,6 +11,7 @@ import com.example.tweet.util.MediaUtil;
 import com.example.tweet.util.TweetUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -18,7 +19,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static com.example.tweet.service.FanoutService.EntityCachePrefix.REPLIES;
+import static com.example.tweet.service.FanoutService.EntityName.REPLIES;
 
 @Service
 @RequiredArgsConstructor
@@ -46,9 +47,9 @@ public class ReplyService {
                 ));
     }
 
-    public List<TweetResponse> findAllRepliesForUser(String loggedInUser) {
+    public List<TweetResponse> findAllRepliesForUser(String loggedInUser, PageRequest page) {
         String profileId = profileServiceClient.getProfileIdByLoggedInUser(loggedInUser);
-        return tweetRepository.findAllByProfileIdAndReplyToIsNotNullOrderByCreationDateDesc(profileId)
+        return tweetRepository.findAllByProfileIdAndReplyToIsNotNullOrderByCreationDateDesc(profileId, page)
                 .stream()
                 .map(reply -> tweetMapper.toResponse(reply, tweetUtil, profileServiceClient))
                 .collect(Collectors.toList());

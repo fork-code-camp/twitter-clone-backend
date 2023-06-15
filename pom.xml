@@ -24,6 +24,7 @@
         <module>profile-service</module>
         <module>tweet-service</module>
         <module>spring-cloud-config-server</module>
+        <module>timeline-service</module>
         <module>storage-service</module>
     </modules>
 

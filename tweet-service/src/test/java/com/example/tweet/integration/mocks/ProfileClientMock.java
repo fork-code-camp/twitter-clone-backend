@@ -1,7 +1,7 @@
 package com.example.tweet.integration.mocks;
 
 import com.example.tweet.client.ProfileServiceClient;
-import com.example.tweet.client.response.ProfileResponse;
+import com.example.tweet.dto.response.ProfileResponse;
 
 import java.time.LocalDate;
 import java.util.Collections;

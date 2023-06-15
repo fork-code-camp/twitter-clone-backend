@@ -24,6 +24,7 @@ public class RedisConfig {
     @Value("${spring.data.redis.port}")
     private String redisPort;
 
+
     @Bean
     public JedisConnectionFactory jedisConnectionFactory() {
         RedisStandaloneConfiguration configuration = new RedisStandaloneConfiguration(redisHost, Integer.parseInt(redisPort));
@@ -34,7 +35,6 @@ public class RedisConfig {
     public RedisTemplate<String, Object> redisTemplate() {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(jedisConnectionFactory());
-        template.setDefaultSerializer(new GenericJackson2JsonRedisSerializer());
         return template;
     }
 

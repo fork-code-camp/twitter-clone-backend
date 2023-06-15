@@ -13,6 +13,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -134,6 +135,6 @@ public class ReplyControllerTest extends IntegrationTestBase {
             assertEquals(repliesForTweet, replyService.findAllRepliesForTweet(parentTweetId).size());
         } catch (EntityNotFoundException ignored) {
         }
-        assertEquals(repliesForUser, replyService.findAllRepliesForUser(EMAIL.getConstant()).size());
+        assertEquals(repliesForUser, replyService.findAllRepliesForUser(EMAIL.getConstant(), PageRequest.of(0, 20)).size());
     }
 }

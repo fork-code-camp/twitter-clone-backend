@@ -5,6 +5,7 @@ import com.example.tweet.dto.response.TweetResponse;
 import com.example.tweet.service.ReplyService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -29,12 +30,16 @@ public class ReplyController {
     }
 
     @GetMapping
-    public ResponseEntity<List<TweetResponse>> findAllRepliesForUser(@RequestHeader String loggedInUser) {
-        return ResponseEntity.ok(replyService.findAllRepliesForUser(loggedInUser));
+    public ResponseEntity<List<TweetResponse>> getAllRepliesForUser(
+            @RequestHeader String loggedInUser,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
+    ) {
+        return ResponseEntity.ok(replyService.findAllRepliesForUser(loggedInUser, PageRequest.of(page, size)));
     }
 
     @GetMapping("{parentTweetId}")
-    public ResponseEntity<List<TweetResponse>> findAllRepliesForTweet(@PathVariable Long parentTweetId) {
+    public ResponseEntity<List<TweetResponse>> getAllRepliesForTweet(@PathVariable Long parentTweetId) {
         return ResponseEntity.ok(replyService.findAllRepliesForTweet(parentTweetId));
     }
 

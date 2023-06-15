@@ -10,13 +10,14 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static com.example.tweet.service.FanoutService.EntityCachePrefix.RETWEETS;
+import static com.example.tweet.service.FanoutService.EntityName.RETWEETS;
 
 @Service
 @RequiredArgsConstructor
@@ -42,16 +43,15 @@ public class RetweetService {
     }
 
     @CacheEvict(cacheNames = "retweets", key = "#p0")
-    public boolean undoRetweet(Long retweetToId, String loggedInUser) {
-        String profileId = profileServiceClient.getProfileIdByLoggedInUser(loggedInUser);
-        tweetRepository.findByProfileIdAndRetweetToId(profileId, retweetToId)
+    public boolean undoRetweet(Long retweetId) {
+        tweetRepository.findByIdAndRetweetToIsNotNull(retweetId)
                 .ifPresentOrElse(retweet -> {
                     fanoutService.deleteFromUserTimeline(retweet, RETWEETS);
                     fanoutService.deleteFromHomeTimelines(retweet, RETWEETS);
                     tweetRepository.delete(retweet);
                 }, () -> {
                     throw new EntityNotFoundException(
-                            messageSourceService.generateMessage("error.entity.not_found", retweetToId)
+                            messageSourceService.generateMessage("error.entity.not_found", retweetId)
                     );
                 });
         return true;
@@ -63,16 +63,16 @@ public class RetweetService {
             unless = "#result.retweetTo.likes < 5000 && #result.retweetTo.views < 25000 && #result.retweetTo.replies < 1000 && #result.retweetTo.retweets < 1000"
     )
     public TweetResponse findRetweetById(Long retweetId) {
-        return tweetRepository.findById(retweetId)
+        return tweetRepository.findByIdAndRetweetToIsNotNull(retweetId)
                 .map(retweet -> tweetMapper.toResponse(retweet, tweetUtil, profileServiceClient))
                 .orElseThrow(() -> new EntityNotFoundException(
                         messageSourceService.generateMessage("error.entity.not_found", retweetId)
                 ));
     }
 
-    public List<TweetResponse> findRetweetsForUser(String loggedInUser) {
+    public List<TweetResponse> findRetweetsForUser(String loggedInUser, PageRequest page) {
         String profileId = profileServiceClient.getProfileIdByLoggedInUser(loggedInUser);
-        return tweetRepository.findAllByProfileIdAndRetweetToIsNotNullOrderByCreationDateDesc(profileId)
+        return tweetRepository.findAllByProfileIdAndRetweetToIsNotNullOrderByCreationDateDesc(profileId, page)
                 .stream()
                 .map(retweet -> tweetMapper.toResponse(retweet, tweetUtil, profileServiceClient))
                 .collect(Collectors.toList());

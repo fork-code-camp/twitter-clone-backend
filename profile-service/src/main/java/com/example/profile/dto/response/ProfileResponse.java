@@ -4,30 +4,37 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 
-public record ProfileResponse(
-        String profileId,
-        String username,
-        String email,
-        Integer followers,
-        Integer followees,
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class ProfileResponse {
+
+        private String profileId;
+        private String username;
+        private String email;
+        private Integer followers;
+        private Integer followees;
 
         @JsonSerialize(using = LocalDateSerializer.class)
         @JsonDeserialize(using = LocalDateDeserializer.class)
-        LocalDate joinDate,
+        private LocalDate joinDate;
 
-        String bio,
-        String location,
-        String website,
+        private String bio;
+        private String location;
+        private String website;
 
         @JsonSerialize(using = LocalDateSerializer.class)
         @JsonDeserialize(using = LocalDateDeserializer.class)
-        LocalDate birthDate,
+        private LocalDate birthDate;
 
-        String avatarUrl,
-        String bannerUrl
-) {
-
+        private String avatarUrl;
+        private String bannerUrl;
 }

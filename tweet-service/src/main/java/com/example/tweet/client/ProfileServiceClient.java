@@ -1,6 +1,6 @@
 package com.example.tweet.client;
 
-import com.example.tweet.client.response.ProfileResponse;
+import com.example.tweet.dto.response.ProfileResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;

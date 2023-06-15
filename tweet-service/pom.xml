@@ -27,6 +27,12 @@
             <artifactId>jackson-datatype-jsr310</artifactId>
         </dependency>
 
+        <!-- *** GSON *** -->
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+        </dependency>
+
         <!-- *** REDIS *** -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

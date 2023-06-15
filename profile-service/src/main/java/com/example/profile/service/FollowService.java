@@ -70,7 +70,7 @@ public class FollowService {
     public List<ProfileResponse> getFolloweesCelebrities(String profileId) {
         return getFollowees(profileId)
                 .stream()
-                .filter(followee -> followee.followers() > 10000)
+                .filter(followee -> followee.getFollowers() > 10000)
                 .collect(Collectors.toList());
     }
 

@@ -38,7 +38,7 @@ public class ProfileService {
                 ));
     }
 
-    @Cacheable(cacheNames = "profiles", key = "#p0", unless = "#result.followers() < 10000")
+    @Cacheable(cacheNames = "profiles", key = "#p0", unless = "#result.getFollowers() < 10000")
     public ProfileResponse getProfile(String id) {
         return profileRepository.findById(id)
                 .map(profile -> profileMapper.toResponse(profile, followsUtil))

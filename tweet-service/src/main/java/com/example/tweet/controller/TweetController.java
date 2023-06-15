@@ -6,6 +6,7 @@ import com.example.tweet.dto.response.TweetResponse;
 import com.example.tweet.service.TweetService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -44,8 +45,12 @@ public class TweetController {
     }
 
     @GetMapping
-    public ResponseEntity<List<TweetResponse>> getAllTweetsForUser(@RequestHeader String loggedInUser) {
-        return ResponseEntity.ok(tweetService.getAllTweetsForUser(loggedInUser));
+    public ResponseEntity<List<TweetResponse>> getAllTweetsForUser(
+            @RequestHeader String loggedInUser,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
+    ) {
+        return ResponseEntity.ok(tweetService.getAllTweetsForUser(loggedInUser, PageRequest.of(page, size)));
     }
 
     @PatchMapping(value = "/{tweetId}")

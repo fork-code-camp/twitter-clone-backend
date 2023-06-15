@@ -61,8 +61,8 @@ public class RetweetControllerTest extends IntegrationTestBase {
     public void undoRetweetTest() throws Exception {
         retweetDummyTweet();
 
-        undoRetweetAndExpectSuccess(1L);
-        undoRetweetAndExpectFailure(1L, NOT_FOUND, messageSourceService.generateMessage("error.entity.not_found", 1));
+        undoRetweetAndExpectSuccess(2L);
+        undoRetweetAndExpectFailure(2L, NOT_FOUND, messageSourceService.generateMessage("error.entity.not_found", 2));
     }
 
     @Test
@@ -83,7 +83,7 @@ public class RetweetControllerTest extends IntegrationTestBase {
                         content().string("true")
                 );
 
-        assertTrue(tweetRepository.findByProfileIdAndRetweetToId(ID.getConstant(), retweetToId).isPresent());
+        assertTrue(tweetRepository.findByIdAndRetweetToIsNotNull(retweetToId+1).isPresent());
     }
 
     private void retweetAndExpectFailure(Long retweetToId, HttpStatus status, String message) throws Exception {
@@ -107,7 +107,7 @@ public class RetweetControllerTest extends IntegrationTestBase {
                         content().string("true")
                 );
 
-        assertFalse(tweetRepository.findByProfileIdAndRetweetToId(ID.getConstant(), retweetToId).isPresent());
+        assertFalse(tweetRepository.findByIdAndRetweetToIsNotNull(retweetToId+1).isPresent());
     }
 
     private void undoRetweetAndExpectFailure(Long retweetToId, HttpStatus status, String message) throws Exception {

@@ -135,28 +135,28 @@ public class CachingTest extends IntegrationTestBase {
 
     @Test
     public void cacheRetweetTest() {
-        createStubForRetweet(1L, 1L, 25000, 5000, 1000, 1000);
+        createStubForRetweet(1L, 2L, 25000, 5000, 1000, 1000);
 
-        retweetService.findRetweetById(1L);
-        TweetResponse retweet = retweetService.findRetweetById(1L);
+        retweetService.findRetweetById(2L);
+        TweetResponse retweet = retweetService.findRetweetById(2L);
 
-        verify(tweetRepository, times(1)).findById(1L);
+        verify(tweetRepository, times(1)).findByIdAndRetweetToIsNotNull(2L);
 
-        TweetResponse retweetFromCache = getEntityFromCache(1L, RETWEETS_CACHE_NAME.getConstant());
+        TweetResponse retweetFromCache = getEntityFromCache(2L, RETWEETS_CACHE_NAME.getConstant());
         assertNotNull(retweetFromCache);
         assertEquals(retweet, retweetFromCache);
     }
 
     @Test
     public void deleteRetweetFromCache() {
-        createStubForRetweet(1L, 1L, 25000, 5000, 1000, 1000);
+        createStubForRetweet(1L, 2L, 25000, 5000, 1000, 1000);
 
-        retweetService.findRetweetById(1L);
-        TweetResponse retweetFromCache = getEntityFromCache(1L, RETWEETS_CACHE_NAME.getConstant());
+        retweetService.findRetweetById(2L);
+        TweetResponse retweetFromCache = getEntityFromCache(2L, RETWEETS_CACHE_NAME.getConstant());
         assertNotNull(retweetFromCache);
 
-        retweetService.undoRetweet(1L, EMAIL.getConstant());
-        TweetResponse deletedRetweetFromCache = getEntityFromCache(1L, RETWEETS_CACHE_NAME.getConstant());
+        retweetService.undoRetweet(2L);
+        TweetResponse deletedRetweetFromCache = getEntityFromCache(2L, RETWEETS_CACHE_NAME.getConstant());
         assertNull(deletedRetweetFromCache);
     }
 
@@ -189,7 +189,7 @@ public class CachingTest extends IntegrationTestBase {
         Tweet parentTweet = createStubForTweet(retweetToId, views, likes, retweets, replies);
         Tweet retweet = buildDefaultRetweet(retweetId, parentTweet);
 
-        when(tweetRepository.findById(retweetToId))
+        when(tweetRepository.findByIdAndRetweetToIsNotNull(retweetId))
                 .thenReturn(Optional.of(retweet));
 
         when(tweetRepository.findByProfileIdAndRetweetToId(ID.getConstant(), retweetToId))
