@@ -1,9 +1,11 @@
 package com.example.profile.integration.controller;
 
+import com.example.profile.client.StorageServiceClient;
 import com.example.profile.integration.IntegrationTestBase;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static com.example.profile.integration.constants.ProfileConstants.*;
@@ -14,9 +16,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @AutoConfigureMockMvc
 @RequiredArgsConstructor
+@SuppressWarnings("all")
 public class FollowControllerTest extends IntegrationTestBase {
 
     private final MockMvc mockMvc;
+
+    @MockBean
+    private final StorageServiceClient storageServiceClient;
 
     @Test
     public void isFollowedTest() throws Exception {

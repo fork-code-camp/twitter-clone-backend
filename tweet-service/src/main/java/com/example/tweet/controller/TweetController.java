@@ -6,8 +6,10 @@ import com.example.tweet.dto.response.TweetResponse;
 import com.example.tweet.service.TweetService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -20,19 +22,21 @@ public class TweetController {
 
     @PostMapping
     public ResponseEntity<TweetResponse> createTweet(
-            @Valid @RequestBody TweetCreateRequest request,
+            @Valid @RequestPart TweetCreateRequest request,
+            @RequestPart(required = false) MultipartFile[] files,
             @RequestHeader String loggedInUser
     ) {
-        return ResponseEntity.ok(tweetService.createTweet(request, loggedInUser));
+        return ResponseEntity.ok(tweetService.createTweet(request, loggedInUser, files));
     }
 
-    @PostMapping("/{tweetId}")
+    @PostMapping(value = "/{tweetId}")
     public ResponseEntity<TweetResponse> createQuoteTweet(
+            @Valid @RequestPart TweetCreateRequest request,
+            @RequestPart(required = false) MultipartFile[] files,
             @PathVariable Long tweetId,
-            @Valid @RequestBody TweetCreateRequest request,
             @RequestHeader String loggedInUser
     ) {
-        return ResponseEntity.ok(tweetService.createQuoteTweet(request, tweetId, loggedInUser));
+        return ResponseEntity.ok(tweetService.createQuoteTweet(request, tweetId, loggedInUser, files));
     }
 
     @GetMapping("/{tweetId}")
@@ -41,17 +45,22 @@ public class TweetController {
     }
 
     @GetMapping
-    public ResponseEntity<List<TweetResponse>> getAllTweets() {
-        return ResponseEntity.ok(tweetService.getAllTweets());
+    public ResponseEntity<List<TweetResponse>> getAllTweetsForUser(
+            @RequestHeader String loggedInUser,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
+    ) {
+        return ResponseEntity.ok(tweetService.getAllTweetsForUser(loggedInUser, PageRequest.of(page, size)));
     }
 
-    @PatchMapping("/{tweetId}")
+    @PatchMapping(value = "/{tweetId}")
     public ResponseEntity<TweetResponse> updateTweet(
-            @Valid @RequestBody TweetUpdateRequest request,
+            @Valid @RequestPart TweetUpdateRequest request,
+            @RequestPart(required = false) MultipartFile[] files,
             @PathVariable Long tweetId,
             @RequestHeader String loggedInUser
     ) {
-        return ResponseEntity.ok(tweetService.updateTweet(tweetId, request, loggedInUser));
+        return ResponseEntity.ok(tweetService.updateTweet(tweetId, request, loggedInUser, files));
     }
 
     @DeleteMapping("/{tweetId}")

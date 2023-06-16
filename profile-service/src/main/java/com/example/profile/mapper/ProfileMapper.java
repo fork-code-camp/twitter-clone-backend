@@ -4,19 +4,18 @@ import com.example.profile.dto.request.CreateProfileRequest;
 import com.example.profile.dto.request.UpdateProfileRequest;
 import com.example.profile.dto.response.ProfileResponse;
 import com.example.profile.entity.Profile;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
-import org.mapstruct.Mappings;
+import com.example.profile.util.FollowsUtil;
+import org.mapstruct.*;
 
 @Mapper(componentModel = "spring")
 public interface ProfileMapper {
 
     Profile toEntity(CreateProfileRequest createProfileRequest);
 
-    Profile toEntity(ProfileResponse profileResponse);
-
-    ProfileResponse toResponse(Profile profile);
+    @Mapping(target = "profileId", source = "id")
+    @Mapping(target = "followees", expression = "java(followsUtil.countFolloweesForProfile(profile.getId()))")
+    @Mapping(target = "followers", expression = "java(followsUtil.countFollowersForProfile(profile.getId()))")
+    ProfileResponse toResponse(Profile profile, @Context FollowsUtil followsUtil);
 
     @Mappings({
             @Mapping(target = "id", ignore = true),

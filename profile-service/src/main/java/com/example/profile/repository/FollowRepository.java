@@ -17,4 +17,8 @@ public interface FollowRepository extends MongoRepository<Follow, String> {
     List<Follow> findAllByFollowerProfile_Id(String followerId);
 
     List<Follow> findAllByFolloweeProfile_Id(String followeeId);
+
+    Integer countAllByFollowerProfile_Id(String followerId);
+
+    Integer countAllByFolloweeProfile_Id(String followeeId);
 }

@@ -1,8 +1,9 @@
 package com.example.tweet.controller;
 
-import com.example.tweet.dto.response.RetweetResponse;
+import com.example.tweet.dto.response.TweetResponse;
 import com.example.tweet.service.RetweetService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,17 +22,21 @@ public class RetweetController {
     }
 
     @DeleteMapping("/{tweetId}")
-    public ResponseEntity<Boolean> undoRetweet(@PathVariable Long tweetId, @RequestHeader String loggedInUser) {
-        return ResponseEntity.ok(retweetService.undoRetweet(tweetId, loggedInUser));
+    public ResponseEntity<Boolean> undoRetweet(@PathVariable Long tweetId) {
+        return ResponseEntity.ok(retweetService.undoRetweet(tweetId));
     }
 
-    @GetMapping("/{retweetId}")
-    public ResponseEntity<RetweetResponse> getRetweet(@PathVariable Long retweetId) {
-        return ResponseEntity.ok(retweetService.findRetweetById(retweetId));
+    @GetMapping("/{retweetToId}")
+    public ResponseEntity<TweetResponse> getRetweet(@PathVariable Long retweetToId) {
+        return ResponseEntity.ok(retweetService.findRetweetById(retweetToId));
     }
 
     @GetMapping
-    public ResponseEntity<List<RetweetResponse>> getRetweetsForUser(@RequestHeader String loggedInUser) {
-        return ResponseEntity.ok(retweetService.findRetweetsForUser(loggedInUser));
+    public ResponseEntity<List<TweetResponse>> getAllRetweetsForUser(
+            @RequestHeader String loggedInUser,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
+    ) {
+        return ResponseEntity.ok(retweetService.findRetweetsForUser(loggedInUser, PageRequest.of(page, size)));
     }
 }

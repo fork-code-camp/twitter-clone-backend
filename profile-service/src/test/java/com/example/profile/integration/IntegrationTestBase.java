@@ -16,6 +16,7 @@ import org.testcontainers.utility.DockerImageName;
 public class IntegrationTestBase {
 
     private static final MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:jammy"));
+    private static final GenericContainer<?> redisContainer = new GenericContainer<>(DockerImageName.parse("redis:7.2-rc-alpine3.18")).withExposedPorts(6379);
     private static final GenericContainer<?> configServerContainer = new FixedHostPortGenericContainer<>("twitterclone0/spring-cloud-config-server")
             .withFixedExposedPort(8888, 8888)
             .waitingFor(Wait.forHttp("/profile-service/test")
@@ -25,10 +26,13 @@ public class IntegrationTestBase {
     public static void runContainer() {
         configServerContainer.start();
         mongoDBContainer.start();
+        redisContainer.start();
     }
 
     @DynamicPropertySource
     static void mongoProperties(DynamicPropertyRegistry registry) {
         registry.add("spring.data.mongodb.uri", mongoDBContainer::getReplicaSetUrl);
+        registry.add("spring.data.redis.host", redisContainer::getHost);
+        registry.add("spring.data.redis.port", redisContainer::getFirstMappedPort);
     }
 }

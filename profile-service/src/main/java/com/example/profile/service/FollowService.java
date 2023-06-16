@@ -1,15 +1,20 @@
 package com.example.profile.service;
 
+import com.example.profile.dto.response.ProfileResponse;
 import com.example.profile.entity.Follow;
 import com.example.profile.entity.Profile;
+import com.example.profile.mapper.ProfileMapper;
 import com.example.profile.repository.FollowRepository;
 import com.example.profile.repository.ProfileRepository;
+import com.example.profile.util.FollowsUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -18,6 +23,8 @@ public class FollowService {
 
     private final FollowRepository followRepository;
     private final ProfileRepository profileRepository;
+    private final ProfileMapper profileMapper;
+    private final FollowsUtil followsUtil;
 
     public boolean follow(String followeeId, String loggedInUser) {
         return profileRepository.findByEmail(loggedInUser)
@@ -41,18 +48,30 @@ public class FollowService {
                 .isPresent();
     }
 
-    public List<Profile> getFollowers(String profileId) {
+    @Cacheable(cacheNames = "followers", key = "#p0", unless = "#result.size() < 10000")
+    public List<ProfileResponse> getFollowers(String profileId) {
         return followRepository.findAllByFolloweeProfile_Id(profileId)
                 .stream()
                 .map(Follow::getFollowerProfile)
-                .toList();
+                .map(profile -> profileMapper.toResponse(profile, followsUtil))
+                .collect(Collectors.toList());
     }
 
-    public List<Profile> getFollowees(String profileId) {
+    @Cacheable(cacheNames = "followees", key = "#p0", unless = "#result.size() < 1000")
+    public List<ProfileResponse> getFollowees(String profileId) {
         return followRepository.findAllByFollowerProfile_Id(profileId)
                 .stream()
                 .map(Follow::getFolloweeProfile)
-                .toList();
+                .map(profile -> profileMapper.toResponse(profile, followsUtil))
+                .collect(Collectors.toList());
+    }
+
+    @Cacheable(cacheNames = "followees_celebrities", key = "#p0")
+    public List<ProfileResponse> getFolloweesCelebrities(String profileId) {
+        return getFollowees(profileId)
+                .stream()
+                .filter(followee -> followee.getFollowers() > 10000)
+                .collect(Collectors.toList());
     }
 
     public boolean isFollowed(String followeeId, String loggedInUser) {

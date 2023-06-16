@@ -9,7 +9,10 @@ import com.example.profile.exception.ActionNotAllowedException;
 import com.example.profile.exception.EntityNotFoundException;
 import com.example.profile.mapper.ProfileMapper;
 import com.example.profile.repository.ProfileRepository;
+import com.example.profile.util.FollowsUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -22,6 +25,7 @@ public class ProfileService {
     private final ProfileRepository profileRepository;
     private final ProfileMapper profileMapper;
     private final MessageSourceService messageSourceService;
+    private final FollowsUtil followsUtil;
     private final StorageServiceClient storageServiceClient;
 
     public String createProfile(CreateProfileRequest createProfileRequest) {
@@ -34,20 +38,22 @@ public class ProfileService {
                 ));
     }
 
+    @Cacheable(cacheNames = "profiles", key = "#p0", unless = "#result.getFollowers() < 10000")
     public ProfileResponse getProfile(String id) {
         return profileRepository.findById(id)
-                .map(profileMapper::toResponse)
+                .map(profile -> profileMapper.toResponse(profile, followsUtil))
                 .orElseThrow(() -> new EntityNotFoundException(
                         messageSourceService.generateMessage("error.entity.not_found", id)
                 ));
     }
 
+    @CachePut(cacheNames = "profiles", key = "#p0")
     public ProfileResponse updateProfile(String id, UpdateProfileRequest updateProfileRequest, String loggedInUser) {
         return profileRepository.findById(id)
                 .filter(profile -> checkUpdateAvailabilityForUser(profile.getEmail(), loggedInUser))
                 .map(profile -> profileMapper.updateProfileFromUpdateProfileRequest(updateProfileRequest, profile))
                 .map(profileRepository::save)
-                .map(profileMapper::toResponse)
+                .map(profile -> profileMapper.toResponse(profile, followsUtil))
                 .orElseThrow(() -> new EntityNotFoundException(
                         messageSourceService.generateMessage("error.entity.not_found", id)
                 ));

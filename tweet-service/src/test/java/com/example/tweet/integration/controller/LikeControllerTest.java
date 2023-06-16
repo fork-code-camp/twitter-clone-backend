@@ -2,6 +2,7 @@ package com.example.tweet.integration.controller;
 
 
 import com.example.tweet.client.ProfileServiceClient;
+import com.example.tweet.client.StorageServiceClient;
 import com.example.tweet.integration.IntegrationTestBase;
 import com.example.tweet.integration.mocks.ProfileClientMock;
 import com.example.tweet.repository.LikeRepository;
@@ -32,6 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @RequiredArgsConstructor
 @Sql(value = "classpath:sql/data.sql")
+@SuppressWarnings("all")
 public class LikeControllerTest extends IntegrationTestBase {
 
     private final MockMvc mockMvc;
@@ -42,6 +44,9 @@ public class LikeControllerTest extends IntegrationTestBase {
 
     @MockBean
     private final ProfileServiceClient profileServiceClient;
+
+    @MockBean
+    private final StorageServiceClient storageServiceClient;
 
     @BeforeEach
     public void setUp() {

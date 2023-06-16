@@ -24,6 +24,7 @@
         <module>profile-service</module>
         <module>tweet-service</module>
         <module>spring-cloud-config-server</module>
+        <module>timeline-service</module>
         <module>storage-service</module>
     </modules>
 
@@ -37,6 +38,13 @@
         <jib.version>3.2.1</jib.version>
         <testcontainers.version>1.17.6</testcontainers.version>
         <spring.dotenv.version>3.0.0</spring.dotenv.version>
+        <mapstruct.version>1.5.3.Final</mapstruct.version>
+        <swagger.version>2.0.4</swagger.version>
+        <redis-container.version>1.4.6</redis-container.version>
+        <jwt.version>0.11.5</jwt.version>
+        <wiremock.version>2.27.2</wiremock.version>
+        <spring-cloud-starter-aws.version>2.2.6.RELEASE</spring-cloud-starter-aws.version>
+        <hibernate-validator.version>8.0.0.Final</hibernate-validator.version>
     </properties>
 
     <dependencyManagement>
@@ -89,7 +97,7 @@
                         <image>eclipse-temurin:17.0.6_10-jre-alpine</image>
                     </from>
                     <to>
-                        <image>registry.hub.docker.com/twitterclone0/${project.artifactId}</image>
+                        <image>registry.hub.docker.com/twitterclone0/twitter-${project.artifactId}</image>
                     </to>
                 </configuration>
             </plugin>

@@ -1,7 +1,6 @@
 package com.example.tweet.util;
 
 import com.example.tweet.repository.LikeRepository;
-import com.example.tweet.repository.RetweetRepository;
 import com.example.tweet.repository.TweetRepository;
 import com.example.tweet.repository.ViewRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +12,6 @@ public class TweetUtil {
 
     private final TweetRepository tweetRepository;
     private final LikeRepository likeRepository;
-    private final RetweetRepository retweetRepository;
     private final ViewRepository viewRepository;
 
     public int countRepliesForTweet(Long tweetId) {
@@ -25,7 +23,7 @@ public class TweetUtil {
     }
 
     public int countRetweetsForTweet(Long tweetId) {
-        return retweetRepository.countAllByParentTweetId(tweetId);
+        return tweetRepository.countAllByRetweetToId(tweetId);
     }
 
     public int countViewsForTweet(Long tweetId) {

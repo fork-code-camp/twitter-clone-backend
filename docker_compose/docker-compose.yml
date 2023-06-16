@@ -17,7 +17,7 @@ services:
   authentication-service:
     container_name: authentication-service
     hostname: authentication-service
-    image: twitterclone0/authentication-service
+    image: twitterclone0/twitter-authentication-service
     pull_policy: missing
     environment:
       - SPRING_PROFILES_ACTIVE=docker
@@ -42,7 +42,7 @@ services:
   profile-service:
     container_name: profile-service
     hostname: profile-service
-    image: twitterclone0/profile-service
+    image: twitterclone0/twitter-profile-service
     restart: unless-stopped
     pull_policy: missing
     environment:
@@ -69,7 +69,7 @@ services:
   tweet-service:
     container_name: tweet-service
     hostname: tweet-service
-    image: twitterclone0/tweet-service
+    image: twitterclone0/twitter-tweet-service
     restart: unless-stopped
     pull_policy: missing
     environment:
@@ -82,7 +82,7 @@ services:
   api-gateway:
     container_name: api-gateway
     hostname: api-gateway
-    image: twitterclone0/api-gateway
+    image: twitterclone0/twitter-api-gateway
     restart: unless-stopped
     pull_policy: missing
     ports:
@@ -94,7 +94,7 @@ services:
 
   discovery-server:
     container_name: discovery-server
-    image: twitterclone0/discovery-server
+    image: twitterclone0/twitter-discovery-server
     hostname: discovery-server
     restart: unless-stopped
     pull_policy: missing
@@ -104,15 +104,55 @@ services:
       - SPRING_PROFILES_ACTIVE=docker
     depends_on:
       - config-server
+      - zipkin
+      - redis
 
   config-server:
     container_name: config-server
     hostname: config-server
-    image: twitterclone0/spring-cloud-config-server
+    image: twitterclone0/twitter-spring-cloud-config-server
     restart: unless-stopped
     pull_policy: missing
     ports:
       - 8888:8888
+
+  storage-service:
+    container_name: storage-service
+    hostname: storage-service
+    image: twitterclone0/twitter-storage-service
+    restart: unless-stopped
+    pull_policy: missing
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+
+  timeline-service:
+    container_name: timeline-service
+    hostname: timeline-service
+    image: twitterclone0/twitter-timeline-service
+    restart: unless-stopped
+    pull_policy: missing
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      - api-gateway
+
+  redis:
+    container_name: redis
+    image: redis:7.2-rc-alpine3.18
+    hostname: redis
+    restart: unless-stopped
+    pull_policy: missing
+    ports:
+      - 6379:6379
+
+  zipkin:
+    container_name: zipkin
+    image: openzipkin/zipkin
+    hostname: zipkin
+    restart: unless-stopped
+    pull_policy: missing
+    ports:
+      - 9411:9411
 
 volumes:
   data-authentication-service: { }
