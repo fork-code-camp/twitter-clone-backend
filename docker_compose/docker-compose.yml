@@ -122,6 +122,14 @@ services:
     ports:
       - 6379:6379
 
+  zipkin:
+    container_name: zipkin
+    image: openzipkin/zipkin
+    hostname: zipkin
+    restart: unless-stopped
+    ports:
+      - 9411:9411
+
 volumes:
   data-authentication-service: { }
   mongo: { }
