@@ -17,7 +17,7 @@ services:
   authentication-service:
     container_name: authentication-service
     hostname: authentication-service
-    image: twitterclone0/twitter-authentication-service
+    image: twitterclone0/twitter-authentication-service:2.0.0
     pull_policy: missing
     environment:
       - SPRING_PROFILES_ACTIVE=docker
@@ -42,7 +42,7 @@ services:
   profile-service:
     container_name: profile-service
     hostname: profile-service
-    image: twitterclone0/twitter-profile-service
+    image: twitterclone0/twitter-profile-service:2.0.0
     restart: unless-stopped
     pull_policy: missing
     environment:
@@ -69,7 +69,7 @@ services:
   tweet-service:
     container_name: tweet-service
     hostname: tweet-service
-    image: twitterclone0/twitter-tweet-service
+    image: twitterclone0/twitter-tweet-service:2.0.0
     restart: unless-stopped
     pull_policy: missing
     environment:
@@ -82,7 +82,7 @@ services:
   api-gateway:
     container_name: api-gateway
     hostname: api-gateway
-    image: twitterclone0/twitter-api-gateway
+    image: twitterclone0/twitter-api-gateway:2.0.0
     restart: unless-stopped
     pull_policy: missing
     ports:
@@ -94,7 +94,7 @@ services:
 
   discovery-server:
     container_name: discovery-server
-    image: twitterclone0/twitter-discovery-server
+    image: twitterclone0/twitter-discovery-server:2.0.0
     hostname: discovery-server
     restart: unless-stopped
     pull_policy: missing
@@ -110,7 +110,7 @@ services:
   config-server:
     container_name: config-server
     hostname: config-server
-    image: twitterclone0/twitter-spring-cloud-config-server
+    image: twitterclone0/twitter-spring-cloud-config-server:2.0.0
     restart: unless-stopped
     pull_policy: missing
     ports:
@@ -119,7 +119,7 @@ services:
   storage-service:
     container_name: storage-service
     hostname: storage-service
-    image: twitterclone0/twitter-storage-service
+    image: twitterclone0/twitter-storage-service:2.0.0
     restart: unless-stopped
     pull_policy: missing
     environment:
@@ -128,7 +128,7 @@ services:
   timeline-service:
     container_name: timeline-service
     hostname: timeline-service
-    image: twitterclone0/twitter-timeline-service
+    image: twitterclone0/twitter-timeline-service:2.0.0
     restart: unless-stopped
     pull_policy: missing
     environment:
