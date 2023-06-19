@@ -21,7 +21,7 @@
 
 ## System Design
 
-![](images/system_design.png)
+![](images/system-design.png)
 
 ## Technology stack
 
