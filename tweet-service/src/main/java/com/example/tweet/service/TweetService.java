@@ -78,8 +78,7 @@ public class TweetService {
                 ));
     }
 
-    public List<TweetResponse> getAllTweetsForUser(String loggedInUser, PageRequest page) {
-        String profileId = profileServiceClient.getProfileIdByLoggedInUser(loggedInUser);
+    public List<TweetResponse> getAllTweetsForUser(String profileId, PageRequest page) {
         return tweetRepository.findAllByProfileIdAndReplyToIsNullAndRetweetToIsNullOrderByCreationDateDesc(profileId, page)
                 .stream()
                 .map(tweet -> tweetMapper.toResponse(tweet, tweetUtil, profileServiceClient))

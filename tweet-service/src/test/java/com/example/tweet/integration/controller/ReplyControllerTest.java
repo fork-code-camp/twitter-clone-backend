@@ -132,9 +132,9 @@ public class ReplyControllerTest extends IntegrationTestBase {
 
     private void checkNumberOfReplies(long parentTweetId, int repliesForTweet, int repliesForUser) {
         try {
-            assertEquals(repliesForTweet, replyService.findAllRepliesForTweet(parentTweetId).size());
+            assertEquals(repliesForTweet, replyService.getAllRepliesForTweet(parentTweetId).size());
         } catch (EntityNotFoundException ignored) {
         }
-        assertEquals(repliesForUser, replyService.findAllRepliesForUser(EMAIL.getConstant(), PageRequest.of(0, 20)).size());
+        assertEquals(repliesForUser, replyService.getAllRepliesForUser(ID.getConstant(), PageRequest.of(0, 20)).size());
     }
 }

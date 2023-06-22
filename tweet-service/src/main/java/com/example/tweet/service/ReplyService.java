@@ -47,8 +47,7 @@ public class ReplyService {
                 ));
     }
 
-    public List<TweetResponse> findAllRepliesForUser(String loggedInUser, PageRequest page) {
-        String profileId = profileServiceClient.getProfileIdByLoggedInUser(loggedInUser);
+    public List<TweetResponse> getAllRepliesForUser(String profileId, PageRequest page) {
         return tweetRepository.findAllByProfileIdAndReplyToIsNotNullOrderByCreationDateDesc(profileId, page)
                 .stream()
                 .map(reply -> tweetMapper.toResponse(reply, tweetUtil, profileServiceClient))
@@ -56,7 +55,7 @@ public class ReplyService {
     }
 
     @Cacheable(cacheNames = "repliesForTweet", key = "#p0", unless = "#result.size() < 1000")
-    public List<TweetResponse> findAllRepliesForTweet(Long replyToId) {
+    public List<TweetResponse> getAllRepliesForTweet(Long replyToId) {
         return tweetRepository.findAllByReplyToIdOrderByCreationDateDesc(replyToId)
                 .stream()
                 .map(reply -> tweetMapper.toResponse(reply, tweetUtil, profileServiceClient))

@@ -29,18 +29,18 @@ public class ReplyController {
         return ResponseEntity.ok(replyService.reply(request, parentTweetId, loggedInUser, files));
     }
 
-    @GetMapping
+    @GetMapping("/user/{profileId}")
     public ResponseEntity<List<TweetResponse>> getAllRepliesForUser(
-            @RequestHeader String loggedInUser,
+            @PathVariable String profileId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size
     ) {
-        return ResponseEntity.ok(replyService.findAllRepliesForUser(loggedInUser, PageRequest.of(page, size)));
+        return ResponseEntity.ok(replyService.getAllRepliesForUser(profileId, PageRequest.of(page, size)));
     }
 
-    @GetMapping("{parentTweetId}")
+    @GetMapping("/{parentTweetId}")
     public ResponseEntity<List<TweetResponse>> getAllRepliesForTweet(@PathVariable Long parentTweetId) {
-        return ResponseEntity.ok(replyService.findAllRepliesForTweet(parentTweetId));
+        return ResponseEntity.ok(replyService.getAllRepliesForTweet(parentTweetId));
     }
 
 }

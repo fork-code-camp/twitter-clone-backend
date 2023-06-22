@@ -62,7 +62,7 @@ public class RetweetService {
             key = "#p0",
             unless = "#result.retweetTo.likes < 5000 && #result.retweetTo.views < 25000 && #result.retweetTo.replies < 1000 && #result.retweetTo.retweets < 1000"
     )
-    public TweetResponse findRetweetById(Long retweetId) {
+    public TweetResponse getRetweetById(Long retweetId) {
         return tweetRepository.findByIdAndRetweetToIsNotNull(retweetId)
                 .map(retweet -> tweetMapper.toResponse(retweet, tweetUtil, profileServiceClient))
                 .orElseThrow(() -> new EntityNotFoundException(
@@ -70,8 +70,7 @@ public class RetweetService {
                 ));
     }
 
-    public List<TweetResponse> findRetweetsForUser(String loggedInUser, PageRequest page) {
-        String profileId = profileServiceClient.getProfileIdByLoggedInUser(loggedInUser);
+    public List<TweetResponse> getAllRetweetsForUser(String profileId, PageRequest page) {
         return tweetRepository.findAllByProfileIdAndRetweetToIsNotNullOrderByCreationDateDesc(profileId, page)
                 .stream()
                 .map(retweet -> tweetMapper.toResponse(retweet, tweetUtil, profileServiceClient))

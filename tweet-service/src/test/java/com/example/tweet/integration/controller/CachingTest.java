@@ -127,7 +127,7 @@ public class CachingTest extends IntegrationTestBase {
     public void cacheRepliesForTweetTest() {
         Tweet tweetWithReplies = createStubForTweetWithReplies(1L, 0, 0, 0, 1000);
 
-        replyService.findAllRepliesForTweet(1L);
+        replyService.getAllRepliesForTweet(1L);
         List<TweetResponse> repliesFromCache = getEntitiesFromCache(1L, REPLIES_CACHE_NAME.getConstant());
         assertNotNull(repliesFromCache);
         assertEquals(1000, repliesFromCache.size());
@@ -137,8 +137,8 @@ public class CachingTest extends IntegrationTestBase {
     public void cacheRetweetTest() {
         createStubForRetweet(1L, 2L, 25000, 5000, 1000, 1000);
 
-        retweetService.findRetweetById(2L);
-        TweetResponse retweet = retweetService.findRetweetById(2L);
+        retweetService.getRetweetById(2L);
+        TweetResponse retweet = retweetService.getRetweetById(2L);
 
         verify(tweetRepository, times(1)).findByIdAndRetweetToIsNotNull(2L);
 
@@ -151,7 +151,7 @@ public class CachingTest extends IntegrationTestBase {
     public void deleteRetweetFromCache() {
         createStubForRetweet(1L, 2L, 25000, 5000, 1000, 1000);
 
-        retweetService.findRetweetById(2L);
+        retweetService.getRetweetById(2L);
         TweetResponse retweetFromCache = getEntityFromCache(2L, RETWEETS_CACHE_NAME.getConstant());
         assertNotNull(retweetFromCache);
 

@@ -49,30 +49,45 @@ public class TimelineService {
     private final TweetServiceClient tweetServiceClient;
     private final CacheService cacheService;
 
-    public List<TweetResponse> getUserTimeline(String loggedInUser, PageRequest page) {
+    public List<TweetResponse> getUserTimelineForLoggedInUser(String loggedInUser, PageRequest page) {
         String profileId = profileServiceClient.getProfileIdByLoggedInUser(loggedInUser);
-        List<TweetResponse> tweets = getEntityUserTimeline(profileId, loggedInUser, page, TWEETS, tweetServiceClient::getAllTweetsForUser);
-        List<TweetResponse> retweets = getEntityUserTimeline(profileId, loggedInUser, page, RETWEETS, tweetServiceClient::getAllRetweetsForUser);
-        return mergeTwoSortedLists(tweets, retweets);
+        return getUserTimeline(profileId, page);
     }
 
-    public List<TweetResponse> getRepliesUserTimeline(String loggedInUser, PageRequest page) {
-        String profileId = profileServiceClient.getProfileIdByLoggedInUser(loggedInUser);
-        List<TweetResponse> replies = getEntityUserTimeline(profileId, loggedInUser, page, REPLIES, tweetServiceClient::getAllRepliesForUser);
-        List<TweetResponse> retweets = getEntityUserTimeline(profileId, loggedInUser, page, RETWEETS, tweetServiceClient::getAllRetweetsForUser);
-        return mergeTwoSortedLists(replies, retweets);
+    public List<TweetResponse> getUserTimelineForAnotherInUser(String profileId, PageRequest page) {
+        return getUserTimeline(profileId, page);
     }
 
-    public List<TweetResponse> getHomeTimeline(String loggedInUser, PageRequest page) {
+    public List<TweetResponse> getRepliesUserTimelineForLoggedInUser(String loggedInUser, PageRequest page) {
+        String profileId = profileServiceClient.getProfileIdByLoggedInUser(loggedInUser);
+        return getRepliesUserTimeline(profileId, page);
+    }
+
+    public List<TweetResponse> getRepliesUserTimelineForAnotherInUser(String profileId, PageRequest page) {
+        return getRepliesUserTimeline(profileId, page);
+    }
+
+    public List<TweetResponse> getHomeTimelineForLoggedInUser(String loggedInUser, PageRequest page) {
         String profileId = profileServiceClient.getProfileIdByLoggedInUser(loggedInUser);
         List<TweetResponse> tweets = getEntityHomeTimeline(profileId, page, TWEETS, tweetServiceClient::getAllTweetsForUser);
         List<TweetResponse> retweets = getEntityHomeTimeline(profileId, page, RETWEETS, tweetServiceClient::getAllRetweetsForUser);
         return mergeTwoSortedLists(tweets, retweets);
     }
 
+    private List<TweetResponse> getUserTimeline(String profileId, PageRequest page) {
+        List<TweetResponse> tweets = getEntityUserTimeline(profileId, page, TWEETS, tweetServiceClient::getAllTweetsForUser);
+        List<TweetResponse> retweets = getEntityUserTimeline(profileId, page, RETWEETS, tweetServiceClient::getAllRetweetsForUser);
+        return mergeTwoSortedLists(tweets, retweets);
+    }
+
+    private List<TweetResponse> getRepliesUserTimeline(String profileId, PageRequest page) {
+        List<TweetResponse> replies = getEntityUserTimeline(profileId, page, REPLIES, tweetServiceClient::getAllRepliesForUser);
+        List<TweetResponse> retweets = getEntityUserTimeline(profileId, page, RETWEETS, tweetServiceClient::getAllRetweetsForUser);
+        return mergeTwoSortedLists(replies, retweets);
+    }
+
     private List<TweetResponse> getEntityUserTimeline(
             String profileId,
-            String loggedInUser,
             PageRequest page,
             EntityName entityName,
             Function3<String, Integer, Integer, List<TweetResponse>> function
@@ -86,7 +101,7 @@ public class TimelineService {
         if (userTimeline == null || userTimeline.size() <= seenNumberOfEntities) {
             log.info("{} userTimeline is null or its size is too small", entityName.getName());
 
-            userTimeline = function.apply(loggedInUser, 0, seenNumberOfEntities+100);
+            userTimeline = function.apply(profileId, 0, seenNumberOfEntities+100);
             cacheService.cacheTimeline(userTimeline, timelineKey);
 
             log.info("{} userTimeline has been cached with size {}", entityName.getName(), userTimeline.size());
@@ -117,7 +132,7 @@ public class TimelineService {
             for (ProfileResponse followee : profileServiceClient.getFollowees(profileId)) {
                 if (followee.getFollowers() < 10000) {
                     lists.add(getEntityUserTimeline(
-                            followee.getProfileId(), followee.getEmail(), PageRequest.of(0, seenNumberOfEntities+page.getPageSize()), entityName, function
+                            followee.getProfileId(), PageRequest.of(0, seenNumberOfEntities+page.getPageSize()), entityName, function
                     ));
                 }
             }
@@ -136,7 +151,7 @@ public class TimelineService {
         }
 
         for (ProfileResponse celebrity : profileServiceClient.getFolloweesCelebrities(profileId)) {
-            homeTimeline.addAll(getEntityUserTimeline(celebrity.getProfileId(), celebrity.getEmail(), page, entityName, function));
+            homeTimeline.addAll(getEntityUserTimeline(celebrity.getProfileId(), page, entityName, function));
         }
 
         homeTimeline.sort((a,b) -> b.getCreationDate().compareTo(a.getCreationDate()));
