@@ -43,6 +43,11 @@ public class ProfileController {
         return ResponseEntity.ok(profileService.getProfileIdByEmail(email));
     }
 
+    @GetMapping("/images/avatar")
+    public ResponseEntity<String> getProfileAvatar(@RequestHeader String loggedInUser) {
+        return ResponseEntity.ok(profileService.getProfileAvatar(loggedInUser));
+    }
+
     @PostMapping("/images/avatar")
     public ResponseEntity<Boolean> uploadAvatarImage(@RequestParam MultipartFile file, @RequestHeader String loggedInUser) {
         return ResponseEntity.ok(profileService.uploadAvatarImage(file, loggedInUser));

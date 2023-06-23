@@ -129,4 +129,12 @@ public class ProfileService {
                 .map(storageServiceClient::deleteFile)
                 .isPresent();
     }
+
+    public String getProfileAvatar(String loggedInUser) {
+        return profileRepository.findByEmail(loggedInUser)
+                .map(Profile::getAvatarUrl)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        messageSourceService.generateMessage("error.image.not_found", loggedInUser)
+                ));
+    }
 }
