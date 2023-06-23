@@ -1,6 +1,7 @@
 package com.example.profile.service;
 
 import com.example.profile.client.StorageServiceClient;
+import com.example.profile.dto.filter.ProfileFilter;
 import com.example.profile.dto.request.CreateProfileRequest;
 import com.example.profile.dto.request.UpdateProfileRequest;
 import com.example.profile.dto.response.ProfileResponse;
@@ -13,6 +14,8 @@ import com.example.profile.util.FollowsUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -136,5 +139,10 @@ public class ProfileService {
                 .orElseThrow(() -> new EntityNotFoundException(
                         messageSourceService.generateMessage("error.image.not_found", loggedInUser)
                 ));
+    }
+
+    public Page<ProfileResponse> findAllByUsername(ProfileFilter filter, Pageable pageable) {
+        return profileRepository.findByUsernameContaining(filter.username(), pageable)
+                .map(profile -> profileMapper.toResponse(profile, followsUtil));
     }
 }

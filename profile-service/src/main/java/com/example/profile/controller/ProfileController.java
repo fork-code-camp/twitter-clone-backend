@@ -1,11 +1,14 @@
 package com.example.profile.controller;
 
+import com.example.profile.dto.filter.ProfileFilter;
 import com.example.profile.dto.request.CreateProfileRequest;
 import com.example.profile.dto.request.UpdateProfileRequest;
+import com.example.profile.dto.response.PageResponse;
 import com.example.profile.dto.response.ProfileResponse;
 import com.example.profile.service.ProfileService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -27,6 +30,15 @@ public class ProfileController {
     @GetMapping("/{id}")
     public ResponseEntity<ProfileResponse> getProfile(@PathVariable String id) {
         return ResponseEntity.ok(profileService.getProfile(id));
+    }
+
+    @GetMapping("/")
+    public ResponseEntity<PageResponse<ProfileResponse>> findAllByUsername(
+            @RequestBody ProfileFilter filter,
+            Pageable pageable
+    ) {
+        var response = PageResponse.of(profileService.findAllByUsername(filter, pageable));
+        return ResponseEntity.ok(response);
     }
 
     @PatchMapping("/{id}")
