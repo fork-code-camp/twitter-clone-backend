@@ -38,28 +38,32 @@ public class Tweet implements BaseEntity<Long> {
     @OneToMany(
             targetEntity = Like.class,
             mappedBy = "parentTweet",
-            cascade = CascadeType.ALL
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
     )
     private Set<Like> likes = new HashSet<>();
 
     @OneToMany(
             targetEntity = Tweet.class,
             mappedBy = "retweetTo",
-            cascade = CascadeType.ALL
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
     )
     private Set<Tweet> retweets = new HashSet<>();
 
     @OneToMany(
             targetEntity = Tweet.class,
             mappedBy = "replyTo",
-            cascade = CascadeType.ALL
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
     )
     private Set<Tweet> replies = new HashSet<>();
 
     @OneToMany(
             targetEntity = View.class,
             mappedBy = "parentTweet",
-            cascade = CascadeType.ALL
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
     )
     private Set<View> views = new HashSet<>();
 

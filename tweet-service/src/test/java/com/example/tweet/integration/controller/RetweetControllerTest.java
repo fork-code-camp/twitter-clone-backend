@@ -53,6 +53,7 @@ public class RetweetControllerTest extends IntegrationTestBase {
     public void retweetTest() throws Exception {
         retweetAndExpectSuccess(1L);
 
+        getRetweetAndExpectSuccess(2L);
         retweetAndExpectFailure(100L, NOT_FOUND, messageSourceService.generateMessage("error.entity.not_found", 100));
         retweetAndExpectFailure(1L, BAD_REQUEST, ERROR_DUPLICATE_ENTITY.getConstant());
     }
@@ -62,6 +63,7 @@ public class RetweetControllerTest extends IntegrationTestBase {
         retweetDummyTweet();
 
         undoRetweetAndExpectSuccess(2L);
+        getRetweetAndExpectFailure(2L, NOT_FOUND, messageSourceService.generateMessage("error.entity.not_found", 2));
         undoRetweetAndExpectFailure(2L, NOT_FOUND, messageSourceService.generateMessage("error.entity.not_found", 2));
     }
 
@@ -97,9 +99,9 @@ public class RetweetControllerTest extends IntegrationTestBase {
                 );
     }
 
-    private void undoRetweetAndExpectSuccess(Long retweetToId) throws Exception {
+    private void undoRetweetAndExpectSuccess(Long retweetId) throws Exception {
         mockMvc.perform(delete(
-                        RETWEETS_URL_WITH_ID.getConstant().formatted(retweetToId))
+                        RETWEETS_URL_WITH_ID.getConstant().formatted(retweetId))
                         .header("loggedInUser", EMAIL.getConstant())
                 )
                 .andExpectAll(
@@ -107,12 +109,12 @@ public class RetweetControllerTest extends IntegrationTestBase {
                         content().string("true")
                 );
 
-        assertFalse(tweetRepository.findByIdAndRetweetToIsNotNull(retweetToId+1).isPresent());
+        assertFalse(tweetRepository.findByIdAndRetweetToIsNotNull(retweetId+1).isPresent());
     }
 
-    private void undoRetweetAndExpectFailure(Long retweetToId, HttpStatus status, String message) throws Exception {
+    private void undoRetweetAndExpectFailure(Long retweetId, HttpStatus status, String message) throws Exception {
         mockMvc.perform(delete(
-                        RETWEETS_URL_WITH_ID.getConstant().formatted(retweetToId))
+                        RETWEETS_URL_WITH_ID.getConstant().formatted(retweetId))
                         .header("loggedInUser", EMAIL.getConstant())
                 )
                 .andExpectAll(

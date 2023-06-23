@@ -192,9 +192,6 @@ public class CachingTest extends IntegrationTestBase {
         when(tweetRepository.findByIdAndRetweetToIsNotNull(retweetId))
                 .thenReturn(Optional.of(retweet));
 
-        when(tweetRepository.findByProfileIdAndRetweetToId(ID.getConstant(), retweetToId))
-                .thenReturn(Optional.of(retweet));
-
         doNothing()
                 .when(tweetRepository)
                 .delete(retweet);

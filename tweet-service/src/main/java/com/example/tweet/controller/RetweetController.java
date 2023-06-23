@@ -21,9 +21,9 @@ public class RetweetController {
         return ResponseEntity.ok(retweetService.retweet(tweetId, loggedInUser));
     }
 
-    @DeleteMapping("/{tweetId}")
-    public ResponseEntity<Boolean> undoRetweet(@PathVariable Long tweetId) {
-        return ResponseEntity.ok(retweetService.undoRetweet(tweetId));
+    @DeleteMapping("/{retweetId}")
+    public ResponseEntity<Boolean> undoRetweet(@PathVariable Long retweetId) {
+        return ResponseEntity.ok(retweetService.undoRetweet(retweetId));
     }
 
     @GetMapping("/{retweetId}")
