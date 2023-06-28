@@ -34,4 +34,6 @@ public class TweetResponse {
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime creationDate;
+    private Boolean isRetweeted;
+    private Boolean isLiked;
 }

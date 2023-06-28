@@ -9,7 +9,7 @@ import java.util.Optional;
 @Repository
 public interface LikeRepository extends JpaRepository<Like, Long> {
 
-    Optional<Like> findByProfileIdAndParentTweetId(String profileId, Long parentTweetId);
+    Optional<Like> findByParentTweetIdAndProfileId(Long parentTweetId, String profileId);
 
     Integer countAllByParentTweetId(Long parentTweetId);
 }

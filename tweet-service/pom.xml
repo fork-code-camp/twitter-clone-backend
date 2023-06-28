@@ -8,6 +8,7 @@
     </parent>
 
     <artifactId>tweet-service</artifactId>
+    <version>2.0.1</version>
     <packaging>jar</packaging>
 
     <name>tweet-service</name>
@@ -18,6 +19,12 @@
     </properties>
 
     <dependencies>
+        <!-- *** KAFKA *** -->
+        <dependency>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka</artifactId>
+        </dependency>
+
         <!-- *** JACKSON *** -->
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
@@ -159,7 +166,16 @@
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
+            <artifactId>kafka</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
             <artifactId>postgresql</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka-test</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

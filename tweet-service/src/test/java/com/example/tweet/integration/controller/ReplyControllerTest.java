@@ -2,6 +2,7 @@ package com.example.tweet.integration.controller;
 
 import com.example.tweet.client.ProfileServiceClient;
 import com.example.tweet.client.StorageServiceClient;
+import com.example.tweet.dto.request.TweetCreateRequest;
 import com.example.tweet.integration.IntegrationTestBase;
 import com.example.tweet.integration.mocks.ProfileClientMock;
 import com.example.tweet.service.MessageSourceService;
@@ -25,9 +26,8 @@ import static com.example.tweet.integration.constants.UrlConstants.REPLIES_URL_W
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @AutoConfigureMockMvc
 @RequiredArgsConstructor
@@ -76,10 +76,96 @@ public class ReplyControllerTest extends IntegrationTestBase {
         );
     }
 
-    private void replyAndExpectSuccess(String replyText, Long parentTweetId, String replyToText, int repliesForTweet, int repliesForUser) throws Exception {
+    @Test
+    public void updateReplyTest() throws Exception {
+        replyDummyTweet(new TweetCreateRequest(DEFAULT_REPLY_TEXT.getConstant()), 1L);
+
+        updateReplyAndExpectSuccess(2L, UPDATE_REPLY_TEXT.getConstant(), 1);
+        updateReplyAndExpectFailure(
+                100L,
+                UPDATE_REPLY_TEXT.getConstant(),
+                NOT_FOUND,
+                "$.message",
+                messageSourceService.generateMessage("error.entity.not_found", 100)
+        );
+        updateReplyAndExpectFailure(
+                2L,
+                "",
+                BAD_REQUEST,
+                "$.text",
+                TEXT_EMPTY_MESSAGE.getConstant()
+        );
+    }
+
+    @Test
+    public void deleteReplyTest() throws Exception {
+        replyDummyTweet(new TweetCreateRequest(DEFAULT_REPLY_TEXT.getConstant()), 1L);
+
+        deleteReplyAndExpectSuccess(2L);
+        deleteReplyAndExpectFailure(2L, NOT_FOUND, "$.message", messageSourceService.generateMessage("error.entity.not_found", 2));
+    }
+
+    private void deleteReplyAndExpectSuccess(Long replyId) throws Exception {
+        mockMvc.perform(delete(
+                        REPLIES_URL_WITH_ID.getConstant().formatted(replyId))
+                        .header("loggedInUser", EMAIL.getConstant())
+                )
+                .andExpectAll(
+                        status().isOk(),
+                        content().string("true")
+                );
+    }
+
+    private void deleteReplyAndExpectFailure(Long replyId, HttpStatus status, String jsonPath, String message) throws Exception {
+        mockMvc.perform(delete(
+                        REPLIES_URL_WITH_ID.getConstant().formatted(replyId))
+                        .header("loggedInUser", EMAIL.getConstant())
+                )
+                .andExpectAll(
+                        status().is(status.value()),
+                        jsonPath(jsonPath).value(message)
+                );
+    }
+
+    private void updateReplyAndExpectSuccess(Long replyId, String updatedReplyText, int repliesForTweet) throws Exception {
+        mockMvc.perform(multipart(
+                        HttpMethod.PATCH,
+                        REPLIES_URL_WITH_ID.getConstant().formatted(replyId))
+                        .file(createRequest(updatedReplyText))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("loggedInUser", EMAIL.getConstant())
+                )
+                .andExpectAll(
+                        status().isOk(),
+                        jsonPath("$.replyTo.replies").value(repliesForTweet),
+                        jsonPath("$.quoteTo").value(IsNull.nullValue()),
+                        jsonPath("$.retweetTo").value(IsNull.nullValue()),
+                        jsonPath("$.text").value(updatedReplyText),
+                        jsonPath("$.profile.email").value(EMAIL.getConstant()),
+                        jsonPath("$.profile.username").value(USERNAME.getConstant()),
+                        jsonPath("$.creationDate").exists(),
+                        jsonPath("$.mediaUrls").value(IsNull.nullValue())
+                );
+    }
+
+    private void updateReplyAndExpectFailure(Long replyId, String updatedReplyText, HttpStatus status, String jsonPath, String message) throws Exception {
+        mockMvc.perform(multipart(
+                        HttpMethod.PATCH,
+                        REPLIES_URL_WITH_ID.getConstant().formatted(replyId))
+                        .file(createRequest(updatedReplyText))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("loggedInUser", EMAIL.getConstant())
+                )
+                .andExpectAll(
+                        status().is(status.value()),
+                        jsonPath(jsonPath).value(message)
+                );
+    }
+
+    private void replyAndExpectSuccess(String replyText, Long replyToId, String replyToText, int repliesForTweet, int repliesForUser) throws Exception {
         mockMvc.perform(multipart(
                         HttpMethod.POST,
-                        REPLIES_URL_WITH_ID.getConstant().formatted(parentTweetId))
+                        REPLIES_URL_WITH_ID.getConstant().formatted(replyToId))
                         .file(createRequest(replyText))
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("loggedInUser", EMAIL.getConstant())
@@ -104,7 +190,7 @@ public class ReplyControllerTest extends IntegrationTestBase {
                         jsonPath("$.creationDate").exists(),
                         jsonPath("$.mediaUrls").value(IsNull.nullValue())
                 );
-        checkNumberOfReplies(parentTweetId, repliesForTweet, repliesForUser);
+        checkNumberOfReplies(replyToId, repliesForTweet, repliesForUser);
     }
 
     private void replyAndExpectFailure(
@@ -130,11 +216,15 @@ public class ReplyControllerTest extends IntegrationTestBase {
         checkNumberOfReplies(replyToId, repliesForTweet, repliesForUser);
     }
 
-    private void checkNumberOfReplies(long parentTweetId, int repliesForTweet, int repliesForUser) {
+    private void checkNumberOfReplies(long replyToId, int repliesForTweet, int repliesForUser) {
         try {
-            assertEquals(repliesForTweet, replyService.findAllRepliesForTweet(parentTweetId).size());
+            assertEquals(repliesForTweet, replyService.getAllRepliesForTweet(replyToId, EMAIL.getConstant()).size());
         } catch (EntityNotFoundException ignored) {
         }
-        assertEquals(repliesForUser, replyService.findAllRepliesForUser(EMAIL.getConstant(), PageRequest.of(0, 20)).size());
+        assertEquals(repliesForUser, replyService.getAllRepliesForUser(ID.getConstant(), PageRequest.of(0, 20)).size());
+    }
+
+    private void replyDummyTweet(TweetCreateRequest request, Long replyToId) {
+        replyService.reply(request, replyToId, EMAIL.getConstant(), null);
     }
 }

@@ -1,6 +1,7 @@
 package com.example.tweet.controller;
 
 import com.example.tweet.dto.request.TweetCreateRequest;
+import com.example.tweet.dto.request.TweetUpdateRequest;
 import com.example.tweet.dto.response.TweetResponse;
 import com.example.tweet.service.ReplyService;
 import jakarta.validation.Valid;
@@ -19,28 +20,42 @@ public class ReplyController {
 
     private final ReplyService replyService;
 
-    @PostMapping("/{parentTweetId}")
+    @PostMapping("/{replyToId}")
     public ResponseEntity<TweetResponse> reply(
             @RequestPart(required = false) MultipartFile[] files,
             @Valid @RequestPart TweetCreateRequest request,
-            @PathVariable Long parentTweetId,
+            @PathVariable Long replyToId,
             @RequestHeader String loggedInUser
     ) {
-        return ResponseEntity.ok(replyService.reply(request, parentTweetId, loggedInUser, files));
+        return ResponseEntity.ok(replyService.reply(request, replyToId, loggedInUser, files));
     }
 
-    @GetMapping
+    @GetMapping("/user/{profileId}")
     public ResponseEntity<List<TweetResponse>> getAllRepliesForUser(
-            @RequestHeader String loggedInUser,
+            @PathVariable String profileId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size
     ) {
-        return ResponseEntity.ok(replyService.findAllRepliesForUser(loggedInUser, PageRequest.of(page, size)));
+        return ResponseEntity.ok(replyService.getAllRepliesForUser(profileId, PageRequest.of(page, size)));
     }
 
-    @GetMapping("{parentTweetId}")
-    public ResponseEntity<List<TweetResponse>> getAllRepliesForTweet(@PathVariable Long parentTweetId) {
-        return ResponseEntity.ok(replyService.findAllRepliesForTweet(parentTweetId));
+    @GetMapping("/{replyToId}")
+    public ResponseEntity<List<TweetResponse>> getAllRepliesForTweet(@PathVariable Long replyToId, @RequestHeader String loggedInUser) {
+        return ResponseEntity.ok(replyService.getAllRepliesForTweet(replyToId, loggedInUser));
     }
 
+    @PatchMapping("/{replyId}")
+    public ResponseEntity<TweetResponse> updateReply(
+            @Valid @RequestPart TweetUpdateRequest request,
+            @RequestPart(required = false) MultipartFile[] files,
+            @PathVariable Long replyId,
+            @RequestHeader String loggedInUser
+    ) {
+        return ResponseEntity.ok(replyService.updateReply(replyId, request, loggedInUser, files));
+    }
+
+    @DeleteMapping("/{replyId}")
+    public ResponseEntity<Boolean> deleteReply(@PathVariable Long replyId, @RequestHeader String loggedInUser) {
+        return ResponseEntity.ok(replyService.deleteReply(replyId, loggedInUser));
+    }
 }

@@ -19,9 +19,9 @@ public interface TweetRepository extends JpaRepository<Tweet, Long> {
 
     List<Tweet> findAllByReplyToIdOrderByCreationDateDesc(Long replyToId);
 
-    Optional<Tweet> findByProfileIdAndRetweetToId(String profileId, Long retweetToId);
+    Optional<Tweet> findByIdAndRetweetToIsNotNull(Long retweetId);
 
-    Optional<Tweet> findByIdAndRetweetToIsNotNull(Long retweetToId);
+    Optional<Tweet> findByRetweetToIdAndProfileId(Long retweetToId, String profileId);
 
     Integer countAllByReplyToId(Long replyToId);
 

@@ -25,9 +25,4 @@ public class LikeController {
         likeService.unlikeTweet(tweetId, loggedInUser);
         return ResponseEntity.ok().build();
     }
-
-    @GetMapping("/{tweetId}")
-    public ResponseEntity<Boolean> isLiked(@PathVariable Long tweetId, @RequestHeader String loggedInUser) {
-        return ResponseEntity.ok(likeService.isLiked(tweetId, loggedInUser));
-    }
 }

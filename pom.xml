@@ -26,6 +26,7 @@
         <module>spring-cloud-config-server</module>
         <module>timeline-service</module>
         <module>storage-service</module>
+        <module>fanout-service</module>
     </modules>
 
     <properties>

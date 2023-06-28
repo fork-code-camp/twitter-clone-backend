@@ -2,10 +2,11 @@ package com.example.timeline.integration.controller;
 
 import com.example.timeline.client.ProfileServiceClient;
 import com.example.timeline.client.TweetServiceClient;
+import com.example.timeline.constants.EntityName;
 import com.example.timeline.dto.response.ProfileResponse;
 import com.example.timeline.dto.response.TweetResponse;
 import com.example.timeline.integration.IntegrationTestBase;
-import com.example.timeline.integration.constants.UrlConstants;
+import com.example.timeline.integration.constants.TimelineCachePrefix;
 import com.example.timeline.service.CacheService;
 import com.example.timeline.service.TimelineService;
 import lombok.RequiredArgsConstructor;
@@ -21,8 +22,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 import static com.example.timeline.integration.constants.UrlConstants.*;
-import static com.example.timeline.service.TimelineService.TimelineCachePrefix.*;
-import static com.example.timeline.service.TimelineService.EntityName.*;
+import static com.example.timeline.integration.constants.TimelineCachePrefix.*;
+import static com.example.timeline.constants.EntityName.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
@@ -54,9 +55,11 @@ public class TimelineControllerTest extends IntegrationTestBase {
         buildRetweetsTimeline(10, profile);
         buildRepliesTimeline(10, profile);
 
-        getTimelineAndExpectSuccess(profile, USER_TIMELINE_URL, 0, 20, 20);
-        getTimelineAndExpectSuccess(profile, USER_TIMELINE_URL, 0, 10, 10);
-        getTimelineAndExpectSuccess(profile, USER_TIMELINE_URL, 0, 50, 20);
+        getTimelineAndExpectSuccess(profile, USER_TIMELINE_URL.getConstant(), 0, 20, 20);
+        getTimelineAndExpectSuccess(profile, USER_TIMELINE_URL.getConstant(), 0, 10, 10);
+        getTimelineAndExpectSuccess(profile, USER_TIMELINE_URL.getConstant(), 0, 50, 20);
+        getTimelineAndExpectSuccess(profile, USER_TIMELINE_URL_FOR_USER.getConstant().formatted(profile.getProfileId()), 0, 20, 20);
+
         getTimelinesFromCacheAndExpectSuccess(USER_TIMELINE_PREFIX, TWEETS,10, RETWEETS, 10, profile);
     }
 
@@ -67,9 +70,11 @@ public class TimelineControllerTest extends IntegrationTestBase {
         buildRetweetsTimeline(10, profile);
         buildTweetsTimeline(10, profile);
 
-        getTimelineAndExpectSuccess(profile, USER_REPLIES_TIMELINE_URL, 0, 20, 20);
-        getTimelineAndExpectSuccess(profile, USER_REPLIES_TIMELINE_URL, 0, 10, 10);
-        getTimelineAndExpectSuccess(profile, USER_REPLIES_TIMELINE_URL, 0, 50, 20);
+        getTimelineAndExpectSuccess(profile, USER_REPLIES_TIMELINE_URL.getConstant(), 0, 20, 20);
+        getTimelineAndExpectSuccess(profile, USER_REPLIES_TIMELINE_URL.getConstant(), 0, 10, 10);
+        getTimelineAndExpectSuccess(profile, USER_REPLIES_TIMELINE_URL.getConstant(), 0, 50, 20);
+        getTimelineAndExpectSuccess(profile, USER_REPLIES_TIMELINE_URL_FOR_USER.getConstant().formatted(profile.getProfileId()), 0, 20, 20);
+
         getTimelinesFromCacheAndExpectSuccess(USER_TIMELINE_PREFIX, REPLIES,10, RETWEETS, 10, profile);
     }
 
@@ -90,15 +95,16 @@ public class TimelineControllerTest extends IntegrationTestBase {
             buildRepliesTimeline(5, followeeCelebrity);
         }
 
-        getTimelineAndExpectSuccess(follower, HOME_TIMELINE_URL, 0, 20, 70);
-        getTimelineAndExpectSuccess(follower, HOME_TIMELINE_URL, 0, 100, 150);
-        getTimelineAndExpectSuccess(follower, HOME_TIMELINE_URL, 0, 200, 150);
+        getTimelineAndExpectSuccess(follower, HOME_TIMELINE_URL.getConstant(), 0, 20, 70);
+        getTimelineAndExpectSuccess(follower, HOME_TIMELINE_URL.getConstant(), 0, 100, 150);
+        getTimelineAndExpectSuccess(follower, HOME_TIMELINE_URL.getConstant(), 0, 200, 150);
+
         getTimelinesFromCacheAndExpectSuccess(HOME_TIMELINE_PREFIX, TWEETS, 50, RETWEETS, 50, follower);
     }
 
-    private void getTimelineAndExpectSuccess(ProfileResponse profile, UrlConstants url, int page, int size, int numberOfEntities) throws Exception {
+    private void getTimelineAndExpectSuccess(ProfileResponse profile, String url, int page, int size, int numberOfEntities) throws Exception {
         mockMvc.perform(get(
-                        url.getConstant())
+                        url)
                         .header("loggedInUser", profile.getEmail())
                         .param("page", Integer.toString(page))
                         .param("size", Integer.toString(size))
@@ -109,10 +115,10 @@ public class TimelineControllerTest extends IntegrationTestBase {
     }
 
     private void getTimelinesFromCacheAndExpectSuccess(
-            TimelineService.TimelineCachePrefix cachePrefix,
-            TimelineService.EntityName entityName1,
+            TimelineCachePrefix cachePrefix,
+            EntityName entityName1,
             int timelineSize1,
-            TimelineService.EntityName entityName2,
+            EntityName entityName2,
             int timelineSize2,
             ProfileResponse profile
     ) {
@@ -160,7 +166,7 @@ public class TimelineControllerTest extends IntegrationTestBase {
             repliesForUser.add(buildDefaultTweet(RandomUtils.nextLong()));
         }
 
-        when(tweetServiceClient.getAllRepliesForUser(eq(profile.getEmail()), anyInt(), anyInt()))
+        when(tweetServiceClient.getAllRepliesForUser(eq(profile.getProfileId()), anyInt(), anyInt()))
                 .thenReturn(repliesForUser);
     }
 
@@ -170,7 +176,7 @@ public class TimelineControllerTest extends IntegrationTestBase {
             retweetsForUser.add(buildDefaultTweet(RandomUtils.nextLong()));
         }
 
-        when(tweetServiceClient.getAllRetweetsForUser(eq(profile.getEmail()), anyInt(), anyInt()))
+        when(tweetServiceClient.getAllRetweetsForUser(eq(profile.getProfileId()), anyInt(), anyInt()))
                 .thenReturn(retweetsForUser);
     }
 
@@ -180,7 +186,7 @@ public class TimelineControllerTest extends IntegrationTestBase {
             tweetsForUser.add(buildDefaultTweet(RandomUtils.nextLong()));
         }
 
-        when(tweetServiceClient.getAllTweetsForUser(eq(profile.getEmail()), anyInt(), anyInt()))
+        when(tweetServiceClient.getAllTweetsForUser(eq(profile.getProfileId()), anyInt(), anyInt()))
                 .thenReturn(tweetsForUser);
     }
 

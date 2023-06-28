@@ -42,7 +42,7 @@ services:
   profile-service:
     container_name: profile-service
     hostname: profile-service
-    image: twitterclone0/twitter-profile-service:2.0.0
+    image: twitterclone0/twitter-profile-service:2.0.1
     restart: unless-stopped
     pull_policy: missing
     environment:
@@ -69,7 +69,7 @@ services:
   tweet-service:
     container_name: tweet-service
     hostname: tweet-service
-    image: twitterclone0/twitter-tweet-service:2.0.0
+    image: twitterclone0/twitter-tweet-service:2.0.1
     restart: unless-stopped
     pull_policy: missing
     environment:
@@ -103,6 +103,7 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=docker
     depends_on:
+      - kafka
       - config-server
       - zipkin
       - redis
@@ -128,7 +129,18 @@ services:
   timeline-service:
     container_name: timeline-service
     hostname: timeline-service
-    image: twitterclone0/twitter-timeline-service:2.0.0
+    image: twitterclone0/twitter-timeline-service:2.0.1
+    restart: unless-stopped
+    pull_policy: missing
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      - api-gateway
+
+  fanout-service:
+    container_name: fanout-service
+    hostname: fanout-service
+    image: twitterclone0/twitter-fanout-service:2.0.0
     restart: unless-stopped
     pull_policy: missing
     environment:
@@ -153,6 +165,35 @@ services:
     pull_policy: missing
     ports:
       - 9411:9411
+
+  zookeeper:
+    container_name: zookeeper
+    image: confluentinc/cp-zookeeper:7.3.2
+    hostname: zookeeper
+    ports:
+      - 2181:2181
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_SERVER_ID: 1
+      ZOOKEEPER_TICK_TIME: 2000
+
+  kafka:
+    container_name: kafka
+    image: confluentinc/cp-kafka:7.3.2
+    hostname: kafka
+    ports:
+      - 9092:9092
+    environment:
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:29092,EXTERNAL://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_BROKER_ID: 1
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+    depends_on:
+        - zookeeper
 
 volumes:
   data-authentication-service: { }

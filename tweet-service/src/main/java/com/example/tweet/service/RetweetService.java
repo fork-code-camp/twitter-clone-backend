@@ -1,80 +1,95 @@
 package com.example.tweet.service;
 
 import com.example.tweet.client.ProfileServiceClient;
+import com.example.tweet.dto.response.ProfileResponse;
 import com.example.tweet.dto.response.TweetResponse;
-import com.example.tweet.entity.Tweet;
 import com.example.tweet.mapper.TweetMapper;
 import com.example.tweet.repository.TweetRepository;
 import com.example.tweet.util.TweetUtil;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static com.example.tweet.service.FanoutService.EntityName.RETWEETS;
+import static com.example.tweet.constants.CacheName.RETWEETS_CACHE_NAME;
+import static com.example.tweet.constants.EntityName.RETWEETS;
+import static com.example.tweet.constants.EntityName.TWEETS;
+import static com.example.tweet.constants.Operation.*;
+import static com.example.tweet.constants.TopicName.HOME_TIMELINE_TOPIC;
+import static com.example.tweet.constants.TopicName.USER_TIMELINE_TOPIC;
 
 @Service
 @RequiredArgsConstructor
 public class RetweetService {
 
     private final TweetMapper tweetMapper;
-    private final TweetService tweetService;
     private final TweetUtil tweetUtil;
     private final TweetRepository tweetRepository;
     private final ProfileServiceClient profileServiceClient;
     private final MessageSourceService messageSourceService;
-    private final FanoutService fanoutService;
+    private final CacheManager cacheManager;
 
     public boolean retweet(Long retweetToId, String loggedInUser) {
-        Tweet retweetTo = tweetService.getTweetEntityById(retweetToId);
-        return Optional.of(retweetTo)
+        tweetRepository.findById(retweetToId)
                 .map(tweet -> tweetMapper.toEntity(tweet, profileServiceClient, loggedInUser))
                 .map(tweetRepository::saveAndFlush)
-                .map(retweet -> tweetMapper.toResponse(retweet, tweetUtil, profileServiceClient))
-                .map(retweet -> fanoutService.addToUserTimeline(retweet, RETWEETS))
-                .map(retweet -> fanoutService.addToHomeTimelines(retweet, RETWEETS))
-                .isPresent();
+                .map(retweet -> tweetMapper.toResponse(retweet, loggedInUser, tweetUtil, profileServiceClient))
+                .map(retweet -> {
+                    tweetUtil.sendMessageToKafka(USER_TIMELINE_TOPIC, retweet, RETWEETS, ADD);
+                    tweetUtil.sendMessageToKafka(HOME_TIMELINE_TOPIC, retweet, RETWEETS, ADD);
+                    tweetUtil.sendMessageToKafka(USER_TIMELINE_TOPIC, retweet.getRetweetTo(), TWEETS, UPDATE);
+                    tweetUtil.sendMessageToKafka(HOME_TIMELINE_TOPIC, retweet.getRetweetTo(), TWEETS, UPDATE);
+                    return retweet;
+                })
+                .orElseThrow(() -> new EntityNotFoundException(
+                        messageSourceService.generateMessage("error.entity.not_found", retweetToId)
+                ));
+        return true;
     }
 
-    @CacheEvict(cacheNames = "retweets", key = "#p0")
-    public boolean undoRetweet(Long retweetId) {
-        tweetRepository.findByIdAndRetweetToIsNotNull(retweetId)
+    public boolean undoRetweet(Long retweetToId, String loggedInUser) {
+        String profileId = profileServiceClient.getProfileIdByLoggedInUser(loggedInUser);
+        tweetRepository.findByRetweetToIdAndProfileId(retweetToId, profileId)
                 .ifPresentOrElse(retweet -> {
-                    fanoutService.deleteFromUserTimeline(retweet, RETWEETS);
-                    fanoutService.deleteFromHomeTimelines(retweet, RETWEETS);
+                    Objects.requireNonNull(cacheManager.getCache(RETWEETS_CACHE_NAME)).evictIfPresent(Long.toString(retweet.getId()));
                     tweetRepository.delete(retweet);
+                    TweetResponse retweetResponse = tweetMapper.toResponse(retweet, loggedInUser, tweetUtil, profileServiceClient);
+                    tweetUtil.sendMessageToKafka(USER_TIMELINE_TOPIC, retweetResponse, RETWEETS, DELETE);
+                    tweetUtil.sendMessageToKafka(HOME_TIMELINE_TOPIC, retweetResponse, RETWEETS, DELETE);
+                    tweetUtil.sendMessageToKafka(HOME_TIMELINE_TOPIC, retweetResponse.getRetweetTo(), TWEETS, UPDATE);
+                    tweetUtil.sendMessageToKafka(HOME_TIMELINE_TOPIC, retweetResponse.getRetweetTo(), TWEETS, UPDATE);
                 }, () -> {
                     throw new EntityNotFoundException(
-                            messageSourceService.generateMessage("error.entity.not_found", retweetId)
+                            messageSourceService.generateMessage("error.entity.not_found", retweetToId)
                     );
                 });
         return true;
     }
 
     @Cacheable(
-            cacheNames = "retweets",
+            cacheNames = RETWEETS_CACHE_NAME,
             key = "#p0",
             unless = "#result.retweetTo.likes < 5000 && #result.retweetTo.views < 25000 && #result.retweetTo.replies < 1000 && #result.retweetTo.retweets < 1000"
     )
-    public TweetResponse findRetweetById(Long retweetId) {
+    public TweetResponse getRetweetById(Long retweetId, String loggedInUser) {
         return tweetRepository.findByIdAndRetweetToIsNotNull(retweetId)
-                .map(retweet -> tweetMapper.toResponse(retweet, tweetUtil, profileServiceClient))
+                .map(retweet -> tweetMapper.toResponse(retweet, loggedInUser, tweetUtil, profileServiceClient))
                 .orElseThrow(() -> new EntityNotFoundException(
                         messageSourceService.generateMessage("error.entity.not_found", retweetId)
                 ));
     }
 
-    public List<TweetResponse> findRetweetsForUser(String loggedInUser, PageRequest page) {
-        String profileId = profileServiceClient.getProfileIdByLoggedInUser(loggedInUser);
+    public List<TweetResponse> getAllRetweetsForUser(String profileId, PageRequest page) {
+        ProfileResponse profile = profileServiceClient.getProfileById(profileId);
         return tweetRepository.findAllByProfileIdAndRetweetToIsNotNullOrderByCreationDateDesc(profileId, page)
                 .stream()
-                .map(retweet -> tweetMapper.toResponse(retweet, tweetUtil, profileServiceClient))
+                .map(retweet -> tweetMapper.toResponse(retweet, profile.getEmail(), tweetUtil, profileServiceClient))
                 .collect(Collectors.toList());
     }
 }

@@ -22,21 +22,21 @@ public class RetweetController {
     }
 
     @DeleteMapping("/{tweetId}")
-    public ResponseEntity<Boolean> undoRetweet(@PathVariable Long tweetId) {
-        return ResponseEntity.ok(retweetService.undoRetweet(tweetId));
+    public ResponseEntity<Boolean> undoRetweet(@PathVariable Long tweetId, @RequestHeader String loggedInUser) {
+        return ResponseEntity.ok(retweetService.undoRetweet(tweetId, loggedInUser));
     }
 
-    @GetMapping("/{retweetToId}")
-    public ResponseEntity<TweetResponse> getRetweet(@PathVariable Long retweetToId) {
-        return ResponseEntity.ok(retweetService.findRetweetById(retweetToId));
+    @GetMapping("/{retweetId}")
+    public ResponseEntity<TweetResponse> getRetweet(@PathVariable Long retweetId, @RequestHeader String loggedInUser) {
+        return ResponseEntity.ok(retweetService.getRetweetById(retweetId, loggedInUser));
     }
 
-    @GetMapping
+    @GetMapping("/user/{profileId}")
     public ResponseEntity<List<TweetResponse>> getAllRetweetsForUser(
-            @RequestHeader String loggedInUser,
+            @PathVariable String profileId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size
     ) {
-        return ResponseEntity.ok(retweetService.findRetweetsForUser(loggedInUser, PageRequest.of(page, size)));
+        return ResponseEntity.ok(retweetService.getAllRetweetsForUser(profileId, PageRequest.of(page, size)));
     }
 }

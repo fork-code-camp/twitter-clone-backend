@@ -21,7 +21,7 @@
 
 ## Architecture Diagram
 
-![](images/system-design.png)
+![](images/architecture-diagram.png)
 
 ## Technology stack
 
@@ -39,6 +39,8 @@
 
 ## Additional tools
 
+- Apache Kafka
+- AWS blob storage
 - OpenFeign
 - Discovery Server
 - Spring Api Gateway
@@ -46,7 +48,6 @@
 - Spring cloud config server
 - Mapstruct
 - Swagger docs
-- AWS blob storage
 - Testcontainers
 - Mockito
 
@@ -75,26 +76,30 @@ utilizes caching to store popular user profiles for improved performance.
 
 ### Tweet service
 
-Provides users to create/update/delete tweets, as well as retweet/like/reply on them. Also, there is views
-system, so when user get any tweet, views counter is incremented by 1, and cache system that will cache popular tweets.
-When user creates new tweet, it will be added to user's user timeline and home timelines of his followers in cache, but
-if user has a lot of followers, it will be added only to user timeline.
+Allows users to create/update/delete tweets, as well as retweet/like/reply on them. Also, there is views
+system, so when user gets any tweet, views counter is incremented by 1, and cache system that will cache popular tweets.
+When user creates new tweet, it will be added to user's user timeline and home timelines of his followers in cache, 
+however if user has a lot of followers, it will be added only to user timeline to reduce time and improve performance.
 
 ### Timeline service
 
 Provides any type of timeline for user. When user gets his user timeline, then it will
 be received from cache, but if it's absent there, it will be requested from tweet service which will obtain it from
-database and give it back sorted by chronological order. When user gets his home timeline, service tries to obtain it
-from cache, but if there was nothing, then it will take user timeline of every followee of that user, sort resulted list
-and cache it for further usage. As is known celebrities don't push created tweets to home timelines of followers, so
-that service take user timeline of every followee celebrity and add those tweets to the response as well as sort it by
-chronological order.
+database and give it back sorted by reversed chronological order. When user gets his home timeline, service tries to 
+obtain it from cache, but if there was nothing, then it will take user timeline of every followee of that user, sort 
+resulted list and cache it for further usage. As is known celebrities don't push created tweets to home timelines of followers,
+so that service take user timeline of every followee celebrity and add those tweets to the response as well as sort it by
+reversed chronological order.
 
 ## Auxiliary services
 
+* [Fanout Service](fanout-service)
 * [Api Gateway](#api-gateway)
 * [Discovery server](#discovery-server-and-loadbalancer)
 * [Cloud config server](#cloud-config-server)
+
+### Fanout service
+This service receives messages with entities from the message queue and store them in cache for particular user.
 
 ### Api Gateway
 
