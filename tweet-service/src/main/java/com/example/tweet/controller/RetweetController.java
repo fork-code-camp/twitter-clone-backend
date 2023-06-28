@@ -21,14 +21,14 @@ public class RetweetController {
         return ResponseEntity.ok(retweetService.retweet(tweetId, loggedInUser));
     }
 
-    @DeleteMapping("/{retweetId}")
-    public ResponseEntity<Boolean> undoRetweet(@PathVariable Long retweetId) {
-        return ResponseEntity.ok(retweetService.undoRetweet(retweetId));
+    @DeleteMapping("/{tweetId}")
+    public ResponseEntity<Boolean> undoRetweet(@PathVariable Long tweetId, @RequestHeader String loggedInUser) {
+        return ResponseEntity.ok(retweetService.undoRetweet(tweetId, loggedInUser));
     }
 
     @GetMapping("/{retweetId}")
-    public ResponseEntity<TweetResponse> getRetweet(@PathVariable Long retweetId) {
-        return ResponseEntity.ok(retweetService.getRetweetById(retweetId));
+    public ResponseEntity<TweetResponse> getRetweet(@PathVariable Long retweetId, @RequestHeader String loggedInUser) {
+        return ResponseEntity.ok(retweetService.getRetweetById(retweetId, loggedInUser));
     }
 
     @GetMapping("/user/{profileId}")

@@ -79,13 +79,8 @@ public class LikeControllerTest extends IntegrationTestBase {
                         status().isCreated()
                 );
 
-        assertTrue(likeService.isLiked(tweetId, EMAIL.getConstant()));
         assertTrue(likeRepository.existsById(1L));
-        assertFalse(tweetService
-                .getTweetEntityById(tweetId)
-                .getLikes()
-                .isEmpty()
-        );
+        assertTrue(tweetService.getTweet(tweetId, EMAIL.getConstant()).getIsLiked());
     }
 
     private void likeTweetAndExpectFailure(Long tweetId, HttpStatus status, String jsonPath, String message) throws Exception {
@@ -109,8 +104,8 @@ public class LikeControllerTest extends IntegrationTestBase {
                         content().string("")
                 );
 
-        assertFalse(likeService.isLiked(tweetId, EMAIL.getConstant()));
         assertFalse(likeRepository.existsById(1L));
+        assertFalse(tweetService.getTweet(tweetId, EMAIL.getConstant()).getIsLiked());
     }
 
     private void unlikeTweetAndExpectFailure(Long tweetId) throws Exception {

@@ -2,9 +2,11 @@ package com.example.timeline.integration.controller;
 
 import com.example.timeline.client.ProfileServiceClient;
 import com.example.timeline.client.TweetServiceClient;
+import com.example.timeline.constants.EntityName;
 import com.example.timeline.dto.response.ProfileResponse;
 import com.example.timeline.dto.response.TweetResponse;
 import com.example.timeline.integration.IntegrationTestBase;
+import com.example.timeline.integration.constants.TimelineCachePrefix;
 import com.example.timeline.service.CacheService;
 import com.example.timeline.service.TimelineService;
 import lombok.RequiredArgsConstructor;
@@ -20,8 +22,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 import static com.example.timeline.integration.constants.UrlConstants.*;
-import static com.example.timeline.service.TimelineService.TimelineCachePrefix.*;
-import static com.example.timeline.service.TimelineService.EntityName.*;
+import static com.example.timeline.integration.constants.TimelineCachePrefix.*;
+import static com.example.timeline.constants.EntityName.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
@@ -113,10 +115,10 @@ public class TimelineControllerTest extends IntegrationTestBase {
     }
 
     private void getTimelinesFromCacheAndExpectSuccess(
-            TimelineService.TimelineCachePrefix cachePrefix,
-            TimelineService.EntityName entityName1,
+            TimelineCachePrefix cachePrefix,
+            EntityName entityName1,
             int timelineSize1,
-            TimelineService.EntityName entityName2,
+            EntityName entityName2,
             int timelineSize2,
             ProfileResponse profile
     ) {

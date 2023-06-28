@@ -1,6 +1,6 @@
-package com.example.tweet.service;
+package com.example.fanout.service;
 
-import com.example.tweet.dto.response.TweetResponse;
+import com.example.fanout.dto.response.TweetResponse;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import lombok.RequiredArgsConstructor;

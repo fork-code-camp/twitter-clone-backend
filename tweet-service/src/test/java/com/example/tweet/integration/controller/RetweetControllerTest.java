@@ -62,9 +62,9 @@ public class RetweetControllerTest extends IntegrationTestBase {
     public void undoRetweetTest() throws Exception {
         retweetDummyTweet();
 
-        undoRetweetAndExpectSuccess(2L);
+        undoRetweetAndExpectSuccess(1L);
         getRetweetAndExpectFailure(2L, NOT_FOUND, messageSourceService.generateMessage("error.entity.not_found", 2));
-        undoRetweetAndExpectFailure(2L, NOT_FOUND, messageSourceService.generateMessage("error.entity.not_found", 2));
+        undoRetweetAndExpectFailure(1L, NOT_FOUND, messageSourceService.generateMessage("error.entity.not_found", 1));
     }
 
     @Test
@@ -99,9 +99,9 @@ public class RetweetControllerTest extends IntegrationTestBase {
                 );
     }
 
-    private void undoRetweetAndExpectSuccess(Long retweetId) throws Exception {
+    private void undoRetweetAndExpectSuccess(Long retweetToId) throws Exception {
         mockMvc.perform(delete(
-                        RETWEETS_URL_WITH_ID.getConstant().formatted(retweetId))
+                        RETWEETS_URL_WITH_ID.getConstant().formatted(retweetToId))
                         .header("loggedInUser", EMAIL.getConstant())
                 )
                 .andExpectAll(
@@ -109,12 +109,12 @@ public class RetweetControllerTest extends IntegrationTestBase {
                         content().string("true")
                 );
 
-        assertFalse(tweetRepository.findByIdAndRetweetToIsNotNull(retweetId+1).isPresent());
+        assertFalse(tweetRepository.findByRetweetToIdAndProfileId(retweetToId, ID.getConstant()).isPresent());
     }
 
-    private void undoRetweetAndExpectFailure(Long retweetId, HttpStatus status, String message) throws Exception {
+    private void undoRetweetAndExpectFailure(Long retweetToId, HttpStatus status, String message) throws Exception {
         mockMvc.perform(delete(
-                        RETWEETS_URL_WITH_ID.getConstant().formatted(retweetId))
+                        RETWEETS_URL_WITH_ID.getConstant().formatted(retweetToId))
                         .header("loggedInUser", EMAIL.getConstant())
                 )
                 .andExpectAll(
@@ -140,6 +140,7 @@ public class RetweetControllerTest extends IntegrationTestBase {
                         jsonPath("$.retweetTo.likes").exists(),
                         jsonPath("$.retweetTo.views").exists(),
                         jsonPath("$.retweetTo.creationDate").exists(),
+                        jsonPath("$.retweetTo.isRetweeted").value("true"),
                         jsonPath("$.profile.username").value(USERNAME.getConstant()),
                         jsonPath("$.profile.email").value(EMAIL.getConstant()),
                         jsonPath("$.mediaUrls").value(IsNull.nullValue())

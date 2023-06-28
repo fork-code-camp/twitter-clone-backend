@@ -2,6 +2,7 @@ package com.example.timeline.service;
 
 import com.example.timeline.client.ProfileServiceClient;
 import com.example.timeline.client.TweetServiceClient;
+import com.example.timeline.constants.EntityName;
 import com.example.timeline.dto.response.ProfileResponse;
 import com.example.timeline.dto.response.TweetResponse;
 import lombok.AllArgsConstructor;
@@ -16,9 +17,7 @@ import reactor.function.Function3;
 import java.util.LinkedList;
 import java.util.List;
 
-import static com.example.timeline.service.TimelineService.EntityName.*;
-import static com.example.timeline.service.TimelineService.TimelineCachePrefix.HOME_TIMELINE_PREFIX;
-import static com.example.timeline.service.TimelineService.TimelineCachePrefix.USER_TIMELINE_PREFIX;
+import static com.example.timeline.constants.EntityName.*;
 
 @Service
 @RequiredArgsConstructor
@@ -28,21 +27,11 @@ public class TimelineService {
     @Getter
     @AllArgsConstructor
     @ToString
-    public enum TimelineCachePrefix {
+    private enum TimelineCachePrefix {
         USER_TIMELINE_PREFIX("%s_user_timeline:"),
         HOME_TIMELINE_PREFIX("%s_home_timeline:");
 
         private final String prefix;
-    }
-
-    @Getter
-    @AllArgsConstructor
-    @ToString
-    public enum EntityName {
-        TWEETS("tweets"),
-        RETWEETS("retweets"),
-        REPLIES("replies");
-        private final String name;
     }
 
     private final ProfileServiceClient profileServiceClient;
@@ -92,13 +81,13 @@ public class TimelineService {
             EntityName entityName,
             Function3<String, Integer, Integer, List<TweetResponse>> function
     ) {
-        String timelineKey = USER_TIMELINE_PREFIX.getPrefix().formatted(entityName.getName()) + profileId;
+        String timelineKey = TimelineCachePrefix.USER_TIMELINE_PREFIX.getPrefix().formatted(entityName.getName()) + profileId;
         int seenNumberOfEntities = page.getPageNumber() * (page.getPageSize() / 2);
 
         List<TweetResponse> userTimeline = cacheService.getTimelineFromCache(timelineKey);
         log.info("{} userTimeline received from cache", entityName.getName());
 
-        if (userTimeline == null || userTimeline.size() <= seenNumberOfEntities) {
+        if (userTimeline == null || (userTimeline.size() <= seenNumberOfEntities && userTimeline.size() > 0)) {
             log.info("{} userTimeline is null or its size is too small", entityName.getName());
 
             userTimeline = function.apply(profileId, 0, seenNumberOfEntities+100);
@@ -119,13 +108,13 @@ public class TimelineService {
             EntityName entityName,
             Function3<String, Integer, Integer, List<TweetResponse>> function
     ) {
-        String timelineKey = HOME_TIMELINE_PREFIX.getPrefix().formatted(entityName.getName()) + profileId;
+        String timelineKey = TimelineCachePrefix.HOME_TIMELINE_PREFIX.getPrefix().formatted(entityName.getName()) + profileId;
         int seenNumberOfEntities = page.getPageNumber() * (page.getPageSize() / 2);
 
         List<TweetResponse> homeTimeline = cacheService.getTimelineFromCache(timelineKey);
         log.info("{} homeTimeline received from cache", entityName.getName());
 
-        if (homeTimeline == null || homeTimeline.size() <= seenNumberOfEntities) {
+        if (homeTimeline == null || (homeTimeline.size() <= seenNumberOfEntities && homeTimeline.size() > 0)) {
             log.info("{} homeTimeline is null or its size is too small", entityName.getName());
 
             List<List<TweetResponse>> lists = new LinkedList<>();
