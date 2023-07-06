@@ -140,10 +140,11 @@ public class RetweetControllerTest extends IntegrationTestBase {
                         jsonPath("$.retweetTo.likes").exists(),
                         jsonPath("$.retweetTo.views").exists(),
                         jsonPath("$.retweetTo.creationDate").exists(),
-                        jsonPath("$.retweetTo.isRetweeted").value("true"),
+                        jsonPath("$.retweetTo.isRetweeted").value(Boolean.TRUE),
                         jsonPath("$.profile.username").value(USERNAME.getConstant()),
                         jsonPath("$.profile.email").value(EMAIL.getConstant()),
-                        jsonPath("$.mediaUrls").value(IsNull.nullValue())
+                        jsonPath("$.mediaUrls").value(IsNull.nullValue()),
+                        jsonPath("$.isBelongs").value(Boolean.TRUE)
                 );
     }
 

@@ -144,7 +144,8 @@ public class ReplyControllerTest extends IntegrationTestBase {
                         jsonPath("$.profile.email").value(EMAIL.getConstant()),
                         jsonPath("$.profile.username").value(USERNAME.getConstant()),
                         jsonPath("$.creationDate").exists(),
-                        jsonPath("$.mediaUrls").value(IsNull.nullValue())
+                        jsonPath("$.mediaUrls").value(IsNull.nullValue()),
+                        jsonPath("$.isBelongs").value(Boolean.TRUE)
                 );
     }
 
@@ -188,7 +189,8 @@ public class ReplyControllerTest extends IntegrationTestBase {
                         jsonPath("$.profile.email").value(EMAIL.getConstant()),
                         jsonPath("$.profile.username").value(USERNAME.getConstant()),
                         jsonPath("$.creationDate").exists(),
-                        jsonPath("$.mediaUrls").value(IsNull.nullValue())
+                        jsonPath("$.mediaUrls").value(IsNull.nullValue()),
+                        jsonPath("$.isBelongs").value(Boolean.TRUE)
                 );
         checkNumberOfReplies(replyToId, repliesForTweet, repliesForUser);
     }
