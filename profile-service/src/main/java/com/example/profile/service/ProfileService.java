@@ -145,4 +145,12 @@ public class ProfileService {
         return profileRepository.findByUsernameContaining(filter.username(), pageable)
                 .map(profile -> profileMapper.toResponse(profile, followsUtil));
     }
+
+    public ProfileResponse getAuthProfile(String loggedInUser) {
+        return profileRepository.findByEmail(loggedInUser)
+                .map(profile -> profileMapper.toResponse(profile, followsUtil))
+                .orElseThrow(() -> new EntityNotFoundException(
+                        messageSourceService.generateMessage("error.entity.not_found", loggedInUser)
+                ));
+    }
 }

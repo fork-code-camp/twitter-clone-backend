@@ -32,6 +32,11 @@ public class ProfileController {
         return ResponseEntity.ok(profileService.getProfile(id));
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<ProfileResponse> getAuthProfile(@RequestHeader String loggedInUser) {
+        return ResponseEntity.ok(profileService.getAuthProfile(loggedInUser));
+    }
+
     @GetMapping("/")
     public ResponseEntity<PageResponse<ProfileResponse>> findAllByUsername(
             @RequestBody ProfileFilter filter,
