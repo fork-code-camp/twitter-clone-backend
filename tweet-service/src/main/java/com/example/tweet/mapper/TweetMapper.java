@@ -62,6 +62,7 @@ public interface TweetMapper {
     @Mapping(target = "retweets", expression = "java(tweetUtil.countRetweetsForTweet(tweet.getId()))")
     @Mapping(target = "isRetweeted", expression = "java(tweetUtil.isTweetRetweetedByLoggedInUser(tweet.getId(), loggedInUser, profileServiceClient))")
     @Mapping(target = "isLiked", expression = "java(tweetUtil.isTweetLikedByLoggedInUser(tweet.getId(), loggedInUser, profileServiceClient))")
+    @Mapping(target = "isBelongs", expression = "java(profileServiceClient.getProfileById(tweet.getProfileId()).getEmail().equals(loggedInUser))")
     TweetResponse toResponse(
             Tweet tweet,
             @Context String loggedInUser,

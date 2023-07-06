@@ -76,7 +76,7 @@ public class TweetService {
                 .map(tweet -> viewService.createViewEntity(tweet, loggedInUser, profileServiceClient))
                 .map(tweet -> tweetMapper.toResponse(tweet, loggedInUser, tweetUtil, profileServiceClient))
                 .map(tweet -> tweetUtil.sendMessageToKafka(USER_TIMELINE_TOPIC, tweet, TWEETS, UPDATE))
-                .map(tweet -> tweetUtil.sendMessageToKafka(HOME_TIMELINE_TOPIC, tweet, TWEETS, UPDATE))
+                .map(tweet ->  tweetUtil.sendMessageToKafka(HOME_TIMELINE_TOPIC, tweet, TWEETS, UPDATE))
                 .orElseThrow(() -> new EntityNotFoundException(
                         messageSourceService.generateMessage("error.entity.not_found", tweetId)
                 ));
