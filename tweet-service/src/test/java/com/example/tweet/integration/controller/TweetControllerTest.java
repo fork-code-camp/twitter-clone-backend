@@ -232,7 +232,8 @@ public class TweetControllerTest extends IntegrationTestBase {
                         jsonPath("$.likes").exists(),
                         jsonPath("$.views").value(views),
                         jsonPath("$.creationDate").exists(),
-                        jsonPath("$.mediaUrls").value(IsNull.nullValue())
+                        jsonPath("$.mediaUrls").value(IsNull.nullValue()),
+                        jsonPath("$.isBelongs").value(Boolean.TRUE)
                 );
     }
 
@@ -257,7 +258,8 @@ public class TweetControllerTest extends IntegrationTestBase {
                         jsonPath("$.likes").exists(),
                         jsonPath("$.views").value(views),
                         jsonPath("$.creationDate").exists(),
-                        jsonPath("$.mediaUrls").value(IsNull.nullValue())
+                        jsonPath("$.mediaUrls").value(IsNull.nullValue()),
+                        jsonPath("$.isBelongs").value(Boolean.TRUE)
                 );
     }
 

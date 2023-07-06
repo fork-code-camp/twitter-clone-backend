@@ -36,4 +36,5 @@ public class TweetResponse {
     private LocalDateTime creationDate;
     private Boolean isRetweeted;
     private Boolean isLiked;
+    private Boolean isBelongs;
 }
