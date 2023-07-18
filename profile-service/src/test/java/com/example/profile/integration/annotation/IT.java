@@ -1,7 +1,7 @@
 package com.example.profile.integration.annotation;
 
-import com.example.profile.integration.TestApplicationRunner;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -10,6 +10,7 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-@SpringBootTest(classes = TestApplicationRunner.class)
+@Testcontainers(parallel = true)
+@SpringBootTest
 public @interface IT {
 }
