@@ -22,11 +22,9 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.Optional;
 
-import static com.example.tweet.constants.CacheName.TWEETS_CACHE_NAME;
-import static com.example.tweet.constants.EntityName.TWEETS;
-import static com.example.tweet.constants.Operation.*;
-import static com.example.tweet.constants.TopicName.HOME_TIMELINE_TOPIC;
-import static com.example.tweet.constants.TopicName.USER_TIMELINE_TOPIC;
+import static com.example.tweet.constant.CacheName.TWEETS_CACHE_NAME;
+import static com.example.tweet.constant.Operation.ADD;
+import static com.example.tweet.constant.Operation.DELETE;
 
 @Service
 @RequiredArgsConstructor
@@ -45,9 +43,11 @@ public class TweetService {
                 .map(req -> tweetMapper.toEntity(req, null, null, profileServiceClient, loggedInUser))
                 .map(tweet -> mediaUtil.addMedia(tweet, files))
                 .map(tweetRepository::saveAndFlush)
-                .map(tweet -> tweetMapper.toResponse(tweet, loggedInUser, tweetUtil, profileServiceClient))
-                .map(tweet -> tweetUtil.sendMessageToKafka(USER_TIMELINE_TOPIC, tweet, TWEETS, ADD))
-                .map(tweet -> tweetUtil.sendMessageToKafka(HOME_TIMELINE_TOPIC, tweet, TWEETS, ADD))
+                .map(tweet -> {
+                    TweetResponse tweetResponse = tweetMapper.toResponse(tweet, loggedInUser, tweetUtil, profileServiceClient);
+                    tweetUtil.sendMessageWithTweet(tweetResponse, ADD);
+                    return tweetResponse;
+                })
                 .orElseThrow(() -> new CreateEntityException(
                         messageSourceService.generateMessage("error.entity.unsuccessful_creation")
                 ));
@@ -58,9 +58,11 @@ public class TweetService {
                 .map(quoteToTweet -> tweetMapper.toEntity(request, quoteToTweet, null, profileServiceClient, loggedInUser))
                 .map(tweet -> mediaUtil.addMedia(tweet, files))
                 .map(tweetRepository::saveAndFlush)
-                .map(quoteTweet -> tweetMapper.toResponse(quoteTweet, loggedInUser, tweetUtil, profileServiceClient))
-                .map(tweet -> tweetUtil.sendMessageToKafka(USER_TIMELINE_TOPIC, tweet, TWEETS, ADD))
-                .map(tweet -> tweetUtil.sendMessageToKafka(HOME_TIMELINE_TOPIC, tweet, TWEETS, ADD))
+                .map(tweet -> {
+                    TweetResponse tweetResponse = tweetMapper.toResponse(tweet, loggedInUser, tweetUtil, profileServiceClient);
+                    tweetUtil.sendMessageWithTweet(tweetResponse, ADD);
+                    return tweetResponse;
+                })
                 .orElseThrow(() -> new EntityNotFoundException(
                         messageSourceService.generateMessage("error.entity.not_found", tweetId)
                 ));
@@ -75,8 +77,6 @@ public class TweetService {
         return tweetRepository.findById(tweetId)
                 .map(tweet -> viewService.createViewEntity(tweet, loggedInUser, profileServiceClient))
                 .map(tweet -> tweetMapper.toResponse(tweet, loggedInUser, tweetUtil, profileServiceClient))
-                .map(tweet -> tweetUtil.sendMessageToKafka(USER_TIMELINE_TOPIC, tweet, TWEETS, UPDATE))
-                .map(tweet ->  tweetUtil.sendMessageToKafka(HOME_TIMELINE_TOPIC, tweet, TWEETS, UPDATE))
                 .orElseThrow(() -> new EntityNotFoundException(
                         messageSourceService.generateMessage("error.entity.not_found", tweetId)
                 ));
@@ -98,8 +98,6 @@ public class TweetService {
                 .map(tweet -> mediaUtil.updateMedia(tweet, files))
                 .map(tweetRepository::saveAndFlush)
                 .map(tweet -> tweetMapper.toResponse(tweet, loggedInUser, tweetUtil, profileServiceClient))
-                .map(tweet -> tweetUtil.sendMessageToKafka(USER_TIMELINE_TOPIC, tweet, TWEETS, UPDATE))
-                .map(tweet -> tweetUtil.sendMessageToKafka(HOME_TIMELINE_TOPIC, tweet, TWEETS, UPDATE))
                 .orElseThrow(() -> new EntityNotFoundException(
                         messageSourceService.generateMessage("error.entity.not_found", tweetId)
                 ));
@@ -111,8 +109,7 @@ public class TweetService {
                 .filter(tweet -> tweetUtil.isTweetOwnedByLoggedInUser(tweet, loggedInUser, profileServiceClient, messageSourceService))
                 .map(tweet -> {
                     TweetResponse response = tweetMapper.toResponse(tweet, loggedInUser, tweetUtil, profileServiceClient);
-                    tweetUtil.sendMessageToKafka(USER_TIMELINE_TOPIC, response, TWEETS, DELETE);
-                    tweetUtil.sendMessageToKafka(HOME_TIMELINE_TOPIC, response, TWEETS, DELETE);
+                    tweetUtil.sendMessageWithTweet(response, DELETE);
                     tweetRepository.delete(tweet);
                     return tweet;
                 })

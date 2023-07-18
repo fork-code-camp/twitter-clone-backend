@@ -15,12 +15,12 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/tweets")
+@RequestMapping("/api/v1")
 public class TweetController {
 
     private final TweetService tweetService;
 
-    @PostMapping
+    @PostMapping("/tweet")
     public ResponseEntity<TweetResponse> createTweet(
             @Valid @RequestPart TweetCreateRequest request,
             @RequestPart(required = false) MultipartFile[] files,
@@ -29,7 +29,7 @@ public class TweetController {
         return ResponseEntity.ok(tweetService.createTweet(request, loggedInUser, files));
     }
 
-    @PostMapping(value = "/{tweetId}")
+    @PostMapping(value = "/tweet/{tweetId}")
     public ResponseEntity<TweetResponse> createQuoteTweet(
             @Valid @RequestPart TweetCreateRequest request,
             @RequestPart(required = false) MultipartFile[] files,
@@ -39,12 +39,12 @@ public class TweetController {
         return ResponseEntity.ok(tweetService.createQuoteTweet(request, tweetId, loggedInUser, files));
     }
 
-    @GetMapping("/{tweetId}")
+    @GetMapping("/tweet/{tweetId}")
     public ResponseEntity<TweetResponse> getTweet(@PathVariable Long tweetId, @RequestHeader String loggedInUser) {
         return ResponseEntity.ok(tweetService.getTweet(tweetId, loggedInUser));
     }
 
-    @GetMapping("/user/{profileId}")
+    @GetMapping("/tweets/user/{profileId}")
     public ResponseEntity<List<TweetResponse>> getAllTweetsForUser(
             @PathVariable String profileId,
             @RequestParam(defaultValue = "0") int page,
@@ -53,7 +53,7 @@ public class TweetController {
         return ResponseEntity.ok(tweetService.getAllTweetsForUser(profileId, PageRequest.of(page, size)));
     }
 
-    @PatchMapping(value = "/{tweetId}")
+    @PatchMapping(value = "/tweet/{tweetId}")
     public ResponseEntity<TweetResponse> updateTweet(
             @Valid @RequestPart TweetUpdateRequest request,
             @RequestPart(required = false) MultipartFile[] files,
@@ -63,7 +63,7 @@ public class TweetController {
         return ResponseEntity.ok(tweetService.updateTweet(tweetId, request, loggedInUser, files));
     }
 
-    @DeleteMapping("/{tweetId}")
+    @DeleteMapping("/tweet/{tweetId}")
     public ResponseEntity<Boolean> deleteTweet(
             @PathVariable Long tweetId,
             @RequestHeader String loggedInUser

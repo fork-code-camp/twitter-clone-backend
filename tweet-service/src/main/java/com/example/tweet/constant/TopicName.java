@@ -1,4 +1,4 @@
-package com.example.tweet.constants;
+package com.example.tweet.constant;
 
 import org.springframework.stereotype.Component;
 

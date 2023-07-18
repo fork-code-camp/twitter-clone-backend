@@ -20,7 +20,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static com.example.tweet.integration.constants.GlobalConstants.EMAIL;
 import static com.example.tweet.integration.constants.GlobalConstants.ERROR_DUPLICATE_ENTITY;
-import static com.example.tweet.integration.constants.UrlConstants.LIKES_URL_WITH_ID;
+import static com.example.tweet.integration.constants.UrlConstants.LIKE_URL_WITH_ID;
 import static org.hamcrest.Matchers.containsStringIgnoringCase;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -73,7 +73,7 @@ public class LikeControllerTest extends IntegrationTestBase {
 
     private void likeTweetAndExpectSuccess(Long tweetId) throws Exception {
         mockMvc.perform(post(
-                        LIKES_URL_WITH_ID.getConstant().formatted(tweetId))
+                        LIKE_URL_WITH_ID.getConstant().formatted(tweetId))
                         .header("loggedInUser", EMAIL.getConstant()))
                 .andExpectAll(
                         status().isCreated()
@@ -85,7 +85,7 @@ public class LikeControllerTest extends IntegrationTestBase {
 
     private void likeTweetAndExpectFailure(Long tweetId, HttpStatus status, String jsonPath, String message) throws Exception {
         mockMvc.perform(post(
-                        LIKES_URL_WITH_ID.getConstant().formatted(tweetId))
+                        LIKE_URL_WITH_ID.getConstant().formatted(tweetId))
                         .header("loggedInUser", EMAIL.getConstant())
                 )
                 .andExpectAll(
@@ -96,7 +96,7 @@ public class LikeControllerTest extends IntegrationTestBase {
 
     private void unlikeTweetAndExpectSuccess(Long tweetId) throws Exception {
         mockMvc.perform(delete(
-                        LIKES_URL_WITH_ID.getConstant().formatted(tweetId))
+                        LIKE_URL_WITH_ID.getConstant().formatted(tweetId))
                         .header("loggedInUser", EMAIL.getConstant())
                 )
                 .andExpectAll(
@@ -110,7 +110,7 @@ public class LikeControllerTest extends IntegrationTestBase {
 
     private void unlikeTweetAndExpectFailure(Long tweetId) throws Exception {
         mockMvc.perform(delete(
-                        LIKES_URL_WITH_ID.getConstant().formatted(tweetId))
+                        LIKE_URL_WITH_ID.getConstant().formatted(tweetId))
                         .header("loggedInUser", EMAIL.getConstant())
                 )
                 .andExpectAll(

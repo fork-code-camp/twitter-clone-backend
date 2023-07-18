@@ -1,6 +1,5 @@
 package com.example.fanout.service;
 
-import com.example.fanout.dto.response.TweetResponse;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import lombok.RequiredArgsConstructor;
@@ -20,20 +19,20 @@ public class CacheService {
 
     @Nullable
     @SuppressWarnings("all")
-    public List<TweetResponse> getTimelineFromCache(String timelineKey) {
+    public List<Long> getTimelineFromCache(String timelineKey) {
         String json = (String) redisTemplate.opsForValue().get(timelineKey);
-        List<TweetResponse> list = null;
+        List<Long> list = null;
 
         if (json != null) {
-            list = gson.fromJson(json, new TypeToken<List<TweetResponse>>(){}.getType());
+            list = gson.fromJson(json, new TypeToken<List<Long>>(){}.getType());
         }
 
         return list;
     }
 
     @SuppressWarnings("all")
-    public void cacheTimeline(List<TweetResponse> timeline, String timelineKey) {
-        String json = gson.toJson(timeline, new TypeToken<List<TweetResponse>>(){}.getType());
+    public void cacheTimeline(List<Long> timeline, String timelineKey) {
+        String json = gson.toJson(timeline, new TypeToken<List<Long>>(){}.getType());
         redisTemplate.opsForValue().set(timelineKey, json, 14, TimeUnit.DAYS);
     }
 }

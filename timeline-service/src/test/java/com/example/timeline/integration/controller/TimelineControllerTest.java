@@ -8,25 +8,25 @@ import com.example.timeline.dto.response.TweetResponse;
 import com.example.timeline.integration.IntegrationTestBase;
 import com.example.timeline.integration.constants.TimelineCachePrefix;
 import com.example.timeline.service.CacheService;
-import com.example.timeline.service.TimelineService;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
-import static com.example.timeline.integration.constants.UrlConstants.*;
-import static com.example.timeline.integration.constants.TimelineCachePrefix.*;
 import static com.example.timeline.constants.EntityName.*;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.eq;
+import static com.example.timeline.integration.constants.TimelineCachePrefix.HOME_TIMELINE_PREFIX;
+import static com.example.timeline.integration.constants.TimelineCachePrefix.USER_TIMELINE_PREFIX;
+import static com.example.timeline.integration.constants.UrlConstants.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -38,19 +38,16 @@ import static org.testcontainers.utility.Base58.randomString;
 public class TimelineControllerTest extends IntegrationTestBase {
 
     private final MockMvc mockMvc;
-    private final RedisTemplate<String, Object> redisTemplate;
-    private final TimelineService timelineService;
     private final CacheService cacheService;
-
     @MockBean
     private final TweetServiceClient tweetServiceClient;
-
     @MockBean
     private final ProfileServiceClient profileServiceClient;
 
+
     @Test
     public void getUserTimelineTest() throws Exception {
-        ProfileResponse profile = buildDefaultProfile("id", "email");
+        ProfileResponse profile = buildDefaultProfile(randomString(10), randomString(5));
         buildTweetsTimeline(10, profile);
         buildRetweetsTimeline(10, profile);
         buildRepliesTimeline(10, profile);
@@ -60,12 +57,12 @@ public class TimelineControllerTest extends IntegrationTestBase {
         getTimelineAndExpectSuccess(profile, USER_TIMELINE_URL.getConstant(), 0, 50, 20);
         getTimelineAndExpectSuccess(profile, USER_TIMELINE_URL_FOR_USER.getConstant().formatted(profile.getProfileId()), 0, 20, 20);
 
-        getTimelinesFromCacheAndExpectSuccess(USER_TIMELINE_PREFIX, TWEETS,10, RETWEETS, 10, profile);
+        getTimelinesFromCacheAndExpectSuccess(USER_TIMELINE_PREFIX, Map.of(TWEETS, 10, RETWEETS, 10), profile);
     }
 
     @Test
     public void getUserRepliesTimelineTest() throws Exception {
-        ProfileResponse profile = buildDefaultProfile("id", "email");
+        ProfileResponse profile = buildDefaultProfile(randomString(10), randomString(5));
         buildRepliesTimeline(10, profile);
         buildRetweetsTimeline(10, profile);
         buildTweetsTimeline(10, profile);
@@ -75,12 +72,12 @@ public class TimelineControllerTest extends IntegrationTestBase {
         getTimelineAndExpectSuccess(profile, USER_REPLIES_TIMELINE_URL.getConstant(), 0, 50, 20);
         getTimelineAndExpectSuccess(profile, USER_REPLIES_TIMELINE_URL_FOR_USER.getConstant().formatted(profile.getProfileId()), 0, 20, 20);
 
-        getTimelinesFromCacheAndExpectSuccess(USER_TIMELINE_PREFIX, REPLIES,10, RETWEETS, 10, profile);
+        getTimelinesFromCacheAndExpectSuccess(USER_TIMELINE_PREFIX, Map.of(REPLIES, 10, RETWEETS, 10), profile);
     }
 
     @Test
     public void getHomeTimelineTest() throws Exception {
-        ProfileResponse follower = buildDefaultProfile("follower id", "follower email");
+        ProfileResponse follower = buildDefaultProfile(randomString(10), randomString(5));
         List<ProfileResponse> followees = buildFolloweesForProfile(follower, 10, 1);
         List<ProfileResponse> followeesCelebrities = buildFolloweesForProfile(follower, 5, 10000);
 
@@ -99,12 +96,11 @@ public class TimelineControllerTest extends IntegrationTestBase {
         getTimelineAndExpectSuccess(follower, HOME_TIMELINE_URL.getConstant(), 0, 100, 150);
         getTimelineAndExpectSuccess(follower, HOME_TIMELINE_URL.getConstant(), 0, 200, 150);
 
-        getTimelinesFromCacheAndExpectSuccess(HOME_TIMELINE_PREFIX, TWEETS, 50, RETWEETS, 50, follower);
+        getTimelinesFromCacheAndExpectSuccess(HOME_TIMELINE_PREFIX, Map.of(TWEETS, 50, RETWEETS, 50), follower);
     }
 
     private void getTimelineAndExpectSuccess(ProfileResponse profile, String url, int page, int size, int numberOfEntities) throws Exception {
-        mockMvc.perform(get(
-                        url)
+        mockMvc.perform(get(url)
                         .header("loggedInUser", profile.getEmail())
                         .param("page", Integer.toString(page))
                         .param("size", Integer.toString(size))
@@ -116,37 +112,27 @@ public class TimelineControllerTest extends IntegrationTestBase {
 
     private void getTimelinesFromCacheAndExpectSuccess(
             TimelineCachePrefix cachePrefix,
-            EntityName entityName1,
-            int timelineSize1,
-            EntityName entityName2,
-            int timelineSize2,
+            Map<EntityName, Integer> entityToSizeMap,
             ProfileResponse profile
     ) {
-        List<TweetResponse> timeline1 = cacheService.getTimelineFromCache(
-                cachePrefix.getPrefix().formatted(entityName1.getName()) + profile.getProfileId()
-        );
-        List<TweetResponse> timeline2 = cacheService.getTimelineFromCache(
-                cachePrefix.getPrefix().formatted(entityName2.getName()) + profile.getProfileId()
-        );
+        for (var entry : entityToSizeMap.entrySet()) {
+            EntityName entityName = entry.getKey();
+            int timelineSize = entry.getValue();
 
-        assertNotNull(timeline1);
-        assertEquals(timelineSize1, timeline1.size());
-        assertNotNull(timeline2);
-        assertEquals(timelineSize2, timeline2.size());
+            List<Long> timeline = cacheService.getTimelineFromCache(
+                    cachePrefix.getPrefix().formatted(entityName.getName()) + profile.getProfileId()
+            );
+            assertNotNull(timeline);
+            assertEquals(timelineSize, timeline.size());
+        }
     }
 
     private List<ProfileResponse> buildFolloweesForProfile(ProfileResponse profile, int followees, int followersForFollowee) {
         List<ProfileResponse> followeeList = new LinkedList<>();
         for (int i = 0; i < followees; i++) {
-            ProfileResponse followee = buildDefaultProfile(randomString(10), randomString(10));
+            ProfileResponse followee = buildDefaultProfile(randomString(10), randomString(5));
             followee.setFollowers(followersForFollowee);
             followeeList.add(followee);
-
-            when(profileServiceClient.getProfileIdByLoggedInUser(followee.getEmail()))
-                    .thenReturn(followee.getProfileId());
-
-            when(profileServiceClient.getProfileById(followee.getProfileId()))
-                    .thenReturn(followee);
         }
 
         if (followersForFollowee < 10000) {
@@ -162,8 +148,13 @@ public class TimelineControllerTest extends IntegrationTestBase {
 
     private void buildRepliesTimeline(int replies, ProfileResponse profile) {
         List<TweetResponse> repliesForUser = new LinkedList<>();
+        TweetResponse replyTo = buildDefaultTweet(
+                RandomUtils.nextLong(),
+                buildDefaultProfile(randomString(10), randomString(5))
+        );
+
         for (int i = 0; i < replies; i++) {
-            repliesForUser.add(buildDefaultTweet(RandomUtils.nextLong()));
+            repliesForUser.add(buildDefaultReply(RandomUtils.nextLong(), profile, replyTo));
         }
 
         when(tweetServiceClient.getAllRepliesForUser(eq(profile.getProfileId()), anyInt(), anyInt()))
@@ -172,8 +163,13 @@ public class TimelineControllerTest extends IntegrationTestBase {
 
     private void buildRetweetsTimeline(int retweets, ProfileResponse profile) {
         List<TweetResponse> retweetsForUser = new LinkedList<>();
+        TweetResponse retweetTo = buildDefaultTweet(
+                RandomUtils.nextLong(),
+                buildDefaultProfile(randomString(15), randomString(5))
+        );
+
         for (int i = 0; i < retweets; i++) {
-            retweetsForUser.add(buildDefaultTweet(RandomUtils.nextLong()));
+            retweetsForUser.add(buildDefaultRetweet(RandomUtils.nextLong(), profile, retweetTo));
         }
 
         when(tweetServiceClient.getAllRetweetsForUser(eq(profile.getProfileId()), anyInt(), anyInt()))
@@ -183,7 +179,7 @@ public class TimelineControllerTest extends IntegrationTestBase {
     private void buildTweetsTimeline(int tweets, ProfileResponse profile) {
         List<TweetResponse> tweetsForUser = new LinkedList<>();
         for (int i = 0; i < tweets; i++) {
-            tweetsForUser.add(buildDefaultTweet(RandomUtils.nextLong()));
+            tweetsForUser.add(buildDefaultTweet(RandomUtils.nextLong(), profile));
         }
 
         when(tweetServiceClient.getAllTweetsForUser(eq(profile.getProfileId()), anyInt(), anyInt()))
@@ -202,32 +198,53 @@ public class TimelineControllerTest extends IntegrationTestBase {
         when(profileServiceClient.getProfileIdByLoggedInUser(email))
                 .thenReturn(id);
 
+        when(profileServiceClient.getAuthProfile(email))
+                .thenReturn(profile);
+
         return profile;
     }
 
-    private TweetResponse buildDefaultReply(Long id, TweetResponse replyTo) {
-        return TweetResponse.builder()
+    private TweetResponse buildDefaultReply(Long id, ProfileResponse profile, TweetResponse replyTo) {
+        TweetResponse reply = TweetResponse.builder()
                 .id(id)
+                .profile(profile)
                 .text(randomString(10))
                 .replyTo(replyTo)
                 .creationDate(LocalDateTime.now())
                 .build();
+
+        when(tweetServiceClient.getReply(eq(id), anyString()))
+                .thenReturn(reply);
+
+        return reply;
     }
 
-    private TweetResponse buildDefaultRetweet(Long id, TweetResponse retweetTo) {
-        return TweetResponse.builder()
+    private TweetResponse buildDefaultRetweet(Long id, ProfileResponse profile, TweetResponse retweetTo) {
+        TweetResponse retweet = TweetResponse.builder()
                 .id(id)
+                .profile(profile)
                 .text(randomString(10))
                 .retweetTo(retweetTo)
                 .creationDate(LocalDateTime.now())
                 .build();
+
+        when(tweetServiceClient.getRetweet(eq(id), anyString()))
+                .thenReturn(retweet);
+
+        return retweet;
     }
 
-    private TweetResponse buildDefaultTweet(Long id) {
-        return TweetResponse.builder()
+    private TweetResponse buildDefaultTweet(Long id, ProfileResponse profile) {
+        TweetResponse tweet = TweetResponse.builder()
                 .id(id)
+                .profile(profile)
                 .text(randomString(10))
                 .creationDate(LocalDateTime.now())
                 .build();
+
+        when(tweetServiceClient.getTweet(eq(id), anyString()))
+                .thenReturn(tweet);
+
+        return tweet;
     }
 }

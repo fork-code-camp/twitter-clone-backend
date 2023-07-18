@@ -10,7 +10,6 @@ import lombok.ToString;
 public enum Operation {
 
     ADD("ADD"),
-    UPDATE("UPDATE"),
     DELETE("DELETE");
 
     private final String operation;

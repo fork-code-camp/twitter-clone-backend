@@ -2,10 +2,8 @@ package com.example.fanout.service;
 
 import com.example.fanout.client.ProfileServiceClient;
 import com.example.fanout.constants.Operation;
-import com.example.fanout.dto.message.Message;
+import com.example.fanout.dto.message.EntityMessage;
 import com.example.fanout.dto.response.ProfileResponse;
-import com.example.fanout.dto.response.TweetResponse;
-import com.example.fanout.mapper.EntityMapper;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -17,8 +15,6 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class FanoutService {
-
-    private final EntityMapper entityMapper;
 
     @AllArgsConstructor
     @Getter
@@ -32,61 +28,47 @@ public class FanoutService {
     private final ProfileServiceClient profileServiceClient;
     private final CacheService cacheService;
 
-    public void processMessageForUserTimeline(Message<TweetResponse> message) {
-        final TweetResponse entity = message.getEntity();
-        final String timelineKey = TimelineCachePrefix.USER_TIMELINE_PREFIX.getPrefix().formatted(message.getEntityName()) + entity.getProfile().getProfileId();
+    public void processMessageForUserTimeline(EntityMessage entityMessage) {
+        final Long entityId = entityMessage.entityId();
+        final String timelineKey = TimelineCachePrefix.USER_TIMELINE_PREFIX.getPrefix().formatted(entityMessage.entityName()) + entityMessage.profileId();
 
-        final Operation operation = Operation.valueOf(message.getOperation());
+        final Operation operation = Operation.valueOf(entityMessage.operation());
         switch (operation) {
-            case ADD -> addEntityToTimeline(entity, timelineKey);
-            case UPDATE -> updateEntityInTimeline(entity, timelineKey);
-            case DELETE -> deleteEntityFromTimeline(entity.getId(), timelineKey);
+            case ADD -> addEntityToTimeline(entityId, timelineKey);
+            case DELETE -> deleteEntityFromTimeline(entityId, timelineKey);
         }
     }
 
-    public void processMessageForHomeTimeline(Message<TweetResponse> message) {
-        final TweetResponse entity = message.getEntity();
-        List<ProfileResponse> followers = profileServiceClient.getFollowers(entity.getProfile().getProfileId());
-        String prefix = TimelineCachePrefix.HOME_TIMELINE_PREFIX.getPrefix().formatted(message.getEntityName());
+    public void processMessageForHomeTimeline(EntityMessage entityMessage) {
+        final Long entityId = entityMessage.entityId();
+        List<ProfileResponse> followers = profileServiceClient.getFollowers(entityMessage.profileId());
+        String prefix = TimelineCachePrefix.HOME_TIMELINE_PREFIX.getPrefix().formatted(entityMessage.entityName());
 
-        final Operation operation = Operation.valueOf(message.getOperation());
+        final Operation operation = Operation.valueOf(entityMessage.operation());
         if (followers.size() < 10000) {
             for (ProfileResponse follower : followers) {
                 final String timelineKey = prefix + follower.getProfileId();
 
                 switch (operation) {
-                    case ADD -> addEntityToTimeline(entity, timelineKey);
-                    case UPDATE -> updateEntityInTimeline(entity, timelineKey);
-                    case DELETE -> deleteEntityFromTimeline(entity.getId(), timelineKey);
+                    case ADD -> addEntityToTimeline(entityId, timelineKey);
+                    case DELETE -> deleteEntityFromTimeline(entityId, timelineKey);
                 }
             }
         }
     }
 
-    private void addEntityToTimeline(TweetResponse entity, String timelineKey) {
-        List<TweetResponse> timeline = cacheService.getTimelineFromCache(timelineKey);
+    private void addEntityToTimeline(Long entityId, String timelineKey) {
+        List<Long> timeline = cacheService.getTimelineFromCache(timelineKey);
         if (timeline != null) {
-            timeline.add(0, entity);
+            timeline.add(0, entityId);
             cacheService.cacheTimeline(timeline, timelineKey);
         }
     }
 
-    private void deleteEntityFromTimeline(Long id, String timelineKey) {
-        List<TweetResponse> timeline = cacheService.getTimelineFromCache(timelineKey);
+    private void deleteEntityFromTimeline(Long entityId, String timelineKey) {
+        List<Long> timeline = cacheService.getTimelineFromCache(timelineKey);
         if (timeline != null) {
-            timeline.removeIf(it -> it.getId().equals(id));
-            cacheService.cacheTimeline(timeline, timelineKey);
-        }
-    }
-
-    private void updateEntityInTimeline(TweetResponse entity, String timelineKey) {
-        List<TweetResponse> timeline = cacheService.getTimelineFromCache(timelineKey);
-        if (timeline != null) {
-            timeline
-                    .stream()
-                    .filter(it -> it.getId().equals(entity.getId()))
-                    .findFirst()
-                    .ifPresent(entityToUpdate -> entityMapper.updateEntity(entity, entityToUpdate));
+            timeline.removeIf(id -> id.equals(entityId));
             cacheService.cacheTimeline(timeline, timelineKey);
         }
     }
