@@ -1,20 +1,23 @@
 package com.example.tweet.util;
 
 import com.example.tweet.client.ProfileServiceClient;
-import com.example.tweet.constants.EntityName;
-import com.example.tweet.constants.Operation;
-import com.example.tweet.dto.message.Message;
+import com.example.tweet.constant.EntityName;
+import com.example.tweet.constant.Operation;
+import com.example.tweet.dto.message.EntityMessage;
 import com.example.tweet.dto.response.TweetResponse;
 import com.example.tweet.entity.Tweet;
 import com.example.tweet.exception.ActionNotAllowedException;
-import com.example.tweet.producers.KafkaProducer;
 import com.example.tweet.repository.LikeRepository;
 import com.example.tweet.repository.TweetRepository;
 import com.example.tweet.repository.ViewRepository;
+import com.example.tweet.service.KafkaProducerService;
 import com.example.tweet.service.MessageSourceService;
-import com.google.common.reflect.TypeToken;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+
+import static com.example.tweet.constant.EntityName.*;
+import static com.example.tweet.constant.TopicName.HOME_TIMELINE_TOPIC;
+import static com.example.tweet.constant.TopicName.USER_TIMELINE_TOPIC;
 
 @RequiredArgsConstructor
 @Component
@@ -23,7 +26,7 @@ public class TweetUtil {
     private final TweetRepository tweetRepository;
     private final LikeRepository likeRepository;
     private final ViewRepository viewRepository;
-    private final KafkaProducer kafkaProducer;
+    private final KafkaProducerService kafkaProducerService;
 
     public int countRepliesForTweet(Long tweetId) {
         return tweetRepository.countAllByReplyToId(tweetId);
@@ -66,10 +69,22 @@ public class TweetUtil {
         return likeRepository.findByParentTweetIdAndProfileId(parentTweetId, profileIdOfLoggedInUser).isPresent();
     }
 
-    @SuppressWarnings("all")
-    public TweetResponse sendMessageToKafka(String topic, TweetResponse entity, EntityName entityName, Operation operation) {
-        Message<TweetResponse> message = Message.of(entity, entityName, operation);
-        kafkaProducer.send(message, topic, new TypeToken<Message<TweetResponse>>(){}.getType());
-        return entity;
+    public void sendMessageToKafka(String topic, TweetResponse entity, EntityName entityName, Operation operation) {
+        EntityMessage entityMessage = EntityMessage.valueOf(entity.getId(), entity.getProfile().getProfileId(), entityName, operation);
+        kafkaProducerService.send(entityMessage, topic);
+    }
+
+    public void sendMessageWithTweet(TweetResponse tweet,  Operation operation) {
+        sendMessageToKafka(USER_TIMELINE_TOPIC, tweet, TWEETS, operation);
+        sendMessageToKafka(HOME_TIMELINE_TOPIC, tweet, TWEETS, operation);
+    }
+
+    public void sendMessageWithRetweet(TweetResponse retweet, Operation operation) {
+        sendMessageToKafka(USER_TIMELINE_TOPIC, retweet, RETWEETS, operation);
+        sendMessageToKafka(HOME_TIMELINE_TOPIC, retweet, RETWEETS, operation);
+    }
+
+    public void sendMessageWithReply(TweetResponse reply, Operation operation) {
+        sendMessageToKafka(USER_TIMELINE_TOPIC, reply, REPLIES, operation);
     }
 }

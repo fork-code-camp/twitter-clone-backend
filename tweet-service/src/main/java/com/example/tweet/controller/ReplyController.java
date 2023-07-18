@@ -15,12 +15,12 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/replies")
+@RequestMapping("/api/v1")
 public class ReplyController {
 
     private final ReplyService replyService;
 
-    @PostMapping("/{replyToId}")
+    @PostMapping("/reply/{replyToId}")
     public ResponseEntity<TweetResponse> reply(
             @RequestPart(required = false) MultipartFile[] files,
             @Valid @RequestPart TweetCreateRequest request,
@@ -30,7 +30,7 @@ public class ReplyController {
         return ResponseEntity.ok(replyService.reply(request, replyToId, loggedInUser, files));
     }
 
-    @GetMapping("/user/{profileId}")
+    @GetMapping("/replies/user/{profileId}")
     public ResponseEntity<List<TweetResponse>> getAllRepliesForUser(
             @PathVariable String profileId,
             @RequestParam(defaultValue = "0") int page,
@@ -39,12 +39,17 @@ public class ReplyController {
         return ResponseEntity.ok(replyService.getAllRepliesForUser(profileId, PageRequest.of(page, size)));
     }
 
-    @GetMapping("/{replyToId}")
+    @GetMapping("/replies/{replyToId}")
     public ResponseEntity<List<TweetResponse>> getAllRepliesForTweet(@PathVariable Long replyToId, @RequestHeader String loggedInUser) {
         return ResponseEntity.ok(replyService.getAllRepliesForTweet(replyToId, loggedInUser));
     }
 
-    @PatchMapping("/{replyId}")
+    @GetMapping("/reply/{replyId}")
+    public ResponseEntity<TweetResponse> getReply(@PathVariable Long replyId, @RequestHeader String loggedInUser) {
+        return ResponseEntity.ok(replyService.getReply(replyId, loggedInUser));
+    }
+
+    @PatchMapping("/reply/{replyId}")
     public ResponseEntity<TweetResponse> updateReply(
             @Valid @RequestPart TweetUpdateRequest request,
             @RequestPart(required = false) MultipartFile[] files,
@@ -54,7 +59,7 @@ public class ReplyController {
         return ResponseEntity.ok(replyService.updateReply(replyId, request, loggedInUser, files));
     }
 
-    @DeleteMapping("/{replyId}")
+    @DeleteMapping("/reply/{replyId}")
     public ResponseEntity<Boolean> deleteReply(@PathVariable Long replyId, @RequestHeader String loggedInUser) {
         return ResponseEntity.ok(replyService.deleteReply(replyId, loggedInUser));
     }

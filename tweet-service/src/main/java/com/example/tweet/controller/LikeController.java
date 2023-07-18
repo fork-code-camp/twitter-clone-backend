@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import static org.springframework.http.HttpStatus.CREATED;
 
 @RestController
-@RequestMapping("/api/v1/likes")
+@RequestMapping("/api/v1/like")
 @RequiredArgsConstructor
 public class LikeController {
 

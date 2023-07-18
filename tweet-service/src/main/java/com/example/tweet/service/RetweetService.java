@@ -17,12 +17,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static com.example.tweet.constants.CacheName.RETWEETS_CACHE_NAME;
-import static com.example.tweet.constants.EntityName.RETWEETS;
-import static com.example.tweet.constants.EntityName.TWEETS;
-import static com.example.tweet.constants.Operation.*;
-import static com.example.tweet.constants.TopicName.HOME_TIMELINE_TOPIC;
-import static com.example.tweet.constants.TopicName.USER_TIMELINE_TOPIC;
+import static com.example.tweet.constant.CacheName.RETWEETS_CACHE_NAME;
+import static com.example.tweet.constant.Operation.ADD;
+import static com.example.tweet.constant.Operation.DELETE;
 
 @Service
 @RequiredArgsConstructor
@@ -41,10 +38,7 @@ public class RetweetService {
                 .map(tweetRepository::saveAndFlush)
                 .map(retweet -> tweetMapper.toResponse(retweet, loggedInUser, tweetUtil, profileServiceClient))
                 .map(retweet -> {
-                    tweetUtil.sendMessageToKafka(USER_TIMELINE_TOPIC, retweet, RETWEETS, ADD);
-                    tweetUtil.sendMessageToKafka(HOME_TIMELINE_TOPIC, retweet, RETWEETS, ADD);
-                    tweetUtil.sendMessageToKafka(USER_TIMELINE_TOPIC, retweet.getRetweetTo(), TWEETS, UPDATE);
-                    tweetUtil.sendMessageToKafka(HOME_TIMELINE_TOPIC, retweet.getRetweetTo(), TWEETS, UPDATE);
+                    tweetUtil.sendMessageWithRetweet(retweet, ADD);
                     return retweet;
                 })
                 .orElseThrow(() -> new EntityNotFoundException(
@@ -58,12 +52,9 @@ public class RetweetService {
         tweetRepository.findByRetweetToIdAndProfileId(retweetToId, profileId)
                 .ifPresentOrElse(retweet -> {
                     Objects.requireNonNull(cacheManager.getCache(RETWEETS_CACHE_NAME)).evictIfPresent(Long.toString(retweet.getId()));
-                    tweetRepository.delete(retweet);
                     TweetResponse retweetResponse = tweetMapper.toResponse(retweet, loggedInUser, tweetUtil, profileServiceClient);
-                    tweetUtil.sendMessageToKafka(USER_TIMELINE_TOPIC, retweetResponse, RETWEETS, DELETE);
-                    tweetUtil.sendMessageToKafka(HOME_TIMELINE_TOPIC, retweetResponse, RETWEETS, DELETE);
-                    tweetUtil.sendMessageToKafka(HOME_TIMELINE_TOPIC, retweetResponse.getRetweetTo(), TWEETS, UPDATE);
-                    tweetUtil.sendMessageToKafka(HOME_TIMELINE_TOPIC, retweetResponse.getRetweetTo(), TWEETS, UPDATE);
+                    tweetUtil.sendMessageWithRetweet(retweetResponse, DELETE);
+                    tweetRepository.delete(retweet);
                 }, () -> {
                     throw new EntityNotFoundException(
                             messageSourceService.generateMessage("error.entity.not_found", retweetToId)

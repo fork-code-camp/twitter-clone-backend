@@ -23,8 +23,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
 import static com.example.tweet.integration.constants.GlobalConstants.*;
-import static com.example.tweet.integration.constants.UrlConstants.TWEETS_URL;
-import static com.example.tweet.integration.constants.UrlConstants.TWEETS_URL_WITH_ID;
+import static com.example.tweet.integration.constants.UrlConstants.*;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
@@ -123,7 +122,7 @@ public class TweetControllerTest extends IntegrationTestBase {
     private void createTweetAndExpectSuccess(String text) throws Exception {
         ResultActions resultActions = mockMvc.perform(multipart(
                 HttpMethod.POST,
-                TWEETS_URL.getConstant())
+                TWEET_URL.getConstant())
                 .file(createRequest(text))
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("loggedInUser", EMAIL.getConstant()));
@@ -134,7 +133,7 @@ public class TweetControllerTest extends IntegrationTestBase {
     private void createTweetAndExpectFailure(String text) throws Exception {
         ResultActions resultActions = mockMvc.perform(multipart(
                 HttpMethod.POST,
-                TWEETS_URL.getConstant())
+                TWEET_URL.getConstant())
                 .file(createRequest(text))
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("loggedInUser", EMAIL.getConstant()));
@@ -145,7 +144,7 @@ public class TweetControllerTest extends IntegrationTestBase {
     private void createQuoteTweetAndExpectSuccess(String text, Long quoteToId) throws Exception {
         ResultActions resultActions = mockMvc.perform(multipart(
                 HttpMethod.POST,
-                TWEETS_URL_WITH_ID.getConstant().formatted(quoteToId))
+                TWEET_URL_WITH_ID.getConstant().formatted(quoteToId))
                 .file(createRequest(text))
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("loggedInUser", EMAIL.getConstant())
@@ -157,7 +156,7 @@ public class TweetControllerTest extends IntegrationTestBase {
     private void createQuoteTweetAndExpectFailure(String text, Long quoteToId, HttpStatus status, String jsonPath, String message) throws Exception {
         ResultActions resultActions = mockMvc.perform(multipart(
                 HttpMethod.POST,
-                TWEETS_URL_WITH_ID.getConstant().formatted(quoteToId))
+                TWEET_URL_WITH_ID.getConstant().formatted(quoteToId))
                 .file(createRequest(text))
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("loggedInUser", EMAIL.getConstant())
@@ -168,7 +167,7 @@ public class TweetControllerTest extends IntegrationTestBase {
 
     private void getTweetAndExpectSuccess(Long id, int views) throws Exception {
         ResultActions resultActions = mockMvc.perform(get(
-                TWEETS_URL_WITH_ID.getConstant().formatted(id))
+                TWEET_URL_WITH_ID.getConstant().formatted(id))
                 .header("loggedInUser", EMAIL.getConstant()));
 
         expectOkTweetResponse(resultActions, DEFAULT_TWEET_TEXT.getConstant(), views);
@@ -176,7 +175,7 @@ public class TweetControllerTest extends IntegrationTestBase {
 
     private void getTweetAndExpectFailure(Long id) throws Exception {
         ResultActions resultActions = mockMvc.perform(get(
-                TWEETS_URL_WITH_ID.getConstant().formatted(id))
+                TWEET_URL_WITH_ID.getConstant().formatted(id))
                 .header("loggedInUser", EMAIL.getConstant()));
 
         expectFailResponse(resultActions, NOT_FOUND, "$.message", messageSourceService.generateMessage("error.entity.not_found", id));
@@ -185,7 +184,7 @@ public class TweetControllerTest extends IntegrationTestBase {
     private void updateTweetAndExpectSuccess(Long id, String text) throws Exception {
         ResultActions resultActions = mockMvc.perform(multipart(
                 HttpMethod.PATCH,
-                TWEETS_URL_WITH_ID.getConstant().formatted(id))
+                TWEET_URL_WITH_ID.getConstant().formatted(id))
                 .file(createRequest(text))
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("loggedInUser", EMAIL.getConstant()));
@@ -196,7 +195,7 @@ public class TweetControllerTest extends IntegrationTestBase {
     private void updateTweetAndExpectFailure(Long id, String text, HttpStatus status, String jsonPath, String message) throws Exception {
         ResultActions resultActions = mockMvc.perform(multipart(
                 HttpMethod.PATCH,
-                TWEETS_URL_WITH_ID.getConstant().formatted(id))
+                TWEET_URL_WITH_ID.getConstant().formatted(id))
                 .file(createRequest(text))
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("loggedInUser", EMAIL.getConstant()));
@@ -206,7 +205,7 @@ public class TweetControllerTest extends IntegrationTestBase {
 
     private void deleteTweet(Long id, Boolean value) throws Exception {
         mockMvc.perform(delete(
-                        TWEETS_URL_WITH_ID.getConstant().formatted(id))
+                        TWEET_URL_WITH_ID.getConstant().formatted(id))
                         .header("loggedInUser", EMAIL.getConstant()))
                 .andExpectAll(
                         status().isOk(),

@@ -1,12 +1,10 @@
-package com.example.tweet.constants;
+package com.example.tweet.constant;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.ToString;
 
 @Getter
 @AllArgsConstructor
-@ToString
 public enum EntityName {
     TWEETS("tweets"),
     RETWEETS("retweets"),

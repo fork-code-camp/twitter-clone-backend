@@ -9,8 +9,8 @@ import org.springframework.kafka.core.KafkaAdmin;
 
 import java.util.Map;
 
-import static com.example.tweet.constants.TopicName.HOME_TIMELINE_TOPIC;
-import static com.example.tweet.constants.TopicName.USER_TIMELINE_TOPIC;
+import static com.example.tweet.constant.TopicName.HOME_TIMELINE_TOPIC;
+import static com.example.tweet.constant.TopicName.USER_TIMELINE_TOPIC;
 
 @Configuration
 public class KafkaTopicConfig {

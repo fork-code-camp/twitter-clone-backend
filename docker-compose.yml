@@ -17,7 +17,7 @@ services:
   authentication-service:
     container_name: authentication-service
     hostname: authentication-service
-    image: twitterclone0/twitter-authentication-service:2.0.0
+    image: twitterclone0/twitter-authentication-service:2.0.1
     pull_policy: missing
     environment:
       - SPRING_PROFILES_ACTIVE=docker
@@ -50,6 +50,7 @@ services:
     depends_on:
       - mongo
       - api-gateway
+      - redis
 
   postgres-tweet-service:
     container_name: postgres-tweet-service
@@ -78,11 +79,13 @@ services:
     depends_on:
       - postgres-tweet-service
       - api-gateway
+      - redis
+      - kafka
 
   api-gateway:
     container_name: api-gateway
     hostname: api-gateway
-    image: twitterclone0/twitter-api-gateway:2.0.0
+    image: twitterclone0/twitter-api-gateway:2.0.1
     restart: unless-stopped
     pull_policy: missing
     ports:
@@ -94,7 +97,7 @@ services:
 
   discovery-server:
     container_name: discovery-server
-    image: twitterclone0/twitter-discovery-server:2.0.0
+    image: twitterclone0/twitter-discovery-server:2.0.1
     hostname: discovery-server
     restart: unless-stopped
     pull_policy: missing
@@ -103,15 +106,13 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=docker
     depends_on:
-      - kafka
       - config-server
       - zipkin
-      - redis
 
   config-server:
     container_name: config-server
     hostname: config-server
-    image: twitterclone0/twitter-spring-cloud-config-server:2.0.0
+    image: twitterclone0/twitter-spring-cloud-config-server:2.0.1
     restart: unless-stopped
     pull_policy: missing
     ports:
@@ -120,33 +121,39 @@ services:
   storage-service:
     container_name: storage-service
     hostname: storage-service
-    image: twitterclone0/twitter-storage-service:2.0.0
+    image: twitterclone0/twitter-storage-service:2.0.1
     restart: unless-stopped
     pull_policy: missing
     environment:
       - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      - config-server
+      - discovery-server
 
   timeline-service:
     container_name: timeline-service
     hostname: timeline-service
-    image: twitterclone0/twitter-timeline-service:2.0.2
+    image: twitterclone0/twitter-timeline-service:2.0.3
     restart: unless-stopped
     pull_policy: missing
     environment:
       - SPRING_PROFILES_ACTIVE=docker
     depends_on:
       - api-gateway
+      - redis
 
   fanout-service:
     container_name: fanout-service
     hostname: fanout-service
-    image: twitterclone0/twitter-fanout-service:2.0.1
+    image: twitterclone0/twitter-fanout-service:2.0.2
     restart: unless-stopped
     pull_policy: missing
     environment:
       - SPRING_PROFILES_ACTIVE=docker
     depends_on:
       - api-gateway
+      - kafka
+      - redis
 
   redis:
     container_name: redis

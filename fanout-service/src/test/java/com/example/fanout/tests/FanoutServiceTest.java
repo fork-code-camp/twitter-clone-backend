@@ -4,7 +4,7 @@ import com.example.fanout.IntegrationTestBase;
 import com.example.fanout.client.ProfileServiceClient;
 import com.example.fanout.constants.EntityName;
 import com.example.fanout.constants.Operation;
-import com.example.fanout.dto.message.Message;
+import com.example.fanout.dto.message.EntityMessage;
 import com.example.fanout.dto.response.ProfileResponse;
 import com.example.fanout.dto.response.TweetResponse;
 import com.example.fanout.service.CacheService;
@@ -16,14 +16,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.test.context.EmbeddedKafka;
-import org.testcontainers.shaded.com.google.common.reflect.TypeToken;
 
 import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.List;
 
 import static com.example.fanout.constants.EntityName.TWEETS;
-import static com.example.fanout.constants.Operation.*;
+import static com.example.fanout.constants.Operation.ADD;
+import static com.example.fanout.constants.Operation.DELETE;
 import static com.example.fanout.constants.TimelineCachePrefix.HOME_TIMELINE_PREFIX;
 import static com.example.fanout.constants.TimelineCachePrefix.USER_TIMELINE_PREFIX;
 import static com.example.fanout.constants.TopicName.HOME_TIMELINE_TOPIC;
@@ -60,13 +60,6 @@ public class FanoutServiceTest extends IntegrationTestBase {
         sendMessageToKafka(USER_TIMELINE_TOPIC, buildDefaultMessage(tweet, TWEETS, ADD));
         validateTimelineFromCache(tweet, cacheService.getTimelineFromCache(timelineKey), 1);
 
-        tweet.setText(randomString(5));
-        tweet.setLikes(RandomUtils.nextInt());
-        tweet.setViews(RandomUtils.nextInt());
-        tweet.setReplies(RandomUtils.nextInt());
-        sendMessageToKafka(USER_TIMELINE_TOPIC, buildDefaultMessage(tweet, TWEETS, UPDATE));
-        validateTimelineFromCache(tweet, cacheService.getTimelineFromCache(timelineKey), 1);
-
         sendMessageToKafka(USER_TIMELINE_TOPIC, buildDefaultMessage(tweet, TWEETS, DELETE));
         validateTimelineFromCache(null, cacheService.getTimelineFromCache(timelineKey), 0);
     }
@@ -80,13 +73,6 @@ public class FanoutServiceTest extends IntegrationTestBase {
         sendMessageToKafka(HOME_TIMELINE_TOPIC, buildDefaultMessage(tweet, TWEETS, ADD));
         validateHomeTimelines(followers, tweet, 1);
 
-        tweet.setText(randomString(5));
-        tweet.setLikes(RandomUtils.nextInt());
-        tweet.setViews(RandomUtils.nextInt());
-        tweet.setReplies(RandomUtils.nextInt());
-        sendMessageToKafka(HOME_TIMELINE_TOPIC, buildDefaultMessage(tweet, TWEETS, UPDATE));
-        validateHomeTimelines(followers, tweet, 1);
-
         sendMessageToKafka(HOME_TIMELINE_TOPIC, buildDefaultMessage(tweet, TWEETS, DELETE));
         validateHomeTimelines(followers, null, 0);
     }
@@ -98,25 +84,25 @@ public class FanoutServiceTest extends IntegrationTestBase {
         }
     }
 
-    private static void validateTimelineFromCache(TweetResponse tweetResponse, List<TweetResponse> tweetsFromCache, int timelineSize) {
+    private static void validateTimelineFromCache(TweetResponse tweetResponse, List<Long> tweetsFromCache, int timelineSize) {
         assertNotNull(tweetsFromCache);
         assertEquals(timelineSize, tweetsFromCache.size());
         if (tweetResponse != null) {
-            assertEquals(tweetResponse, tweetsFromCache.get(0));
+            assertEquals(tweetResponse.getId(), tweetsFromCache.get(0));
         }
     }
 
     @SneakyThrows
-    private void sendMessageToKafka(String topic, Message<TweetResponse> message) {
-        String msg = gson.toJson(message, new TypeToken<Message<TweetResponse>>(){}.getType());
+    private void sendMessageToKafka(String topic, EntityMessage message) {
+        String msg = gson.toJson(message);
         kafkaTemplate.send(topic, msg);
         Thread.sleep(500);
     }
 
-    private Message<TweetResponse> buildDefaultMessage(TweetResponse entity, EntityName entityName, Operation operation) {
-        Message.MessageBuilder<TweetResponse> messageBuilder = Message.builder();
-        return messageBuilder
-                .entity(entity)
+    private EntityMessage buildDefaultMessage(TweetResponse entity, EntityName entityName, Operation operation) {
+        return EntityMessage.builder()
+                .entityId(entity.getId())
+                .profileId(entity.getProfile().getProfileId())
                 .entityName(entityName.getName())
                 .operation(operation.getOperation())
                 .build();

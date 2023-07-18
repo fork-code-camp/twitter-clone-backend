@@ -22,7 +22,7 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static com.example.tweet.integration.constants.GlobalConstants.*;
-import static com.example.tweet.integration.constants.UrlConstants.REPLIES_URL_WITH_ID;
+import static com.example.tweet.integration.constants.UrlConstants.REPLY_URL_WITH_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
@@ -77,6 +77,14 @@ public class ReplyControllerTest extends IntegrationTestBase {
     }
 
     @Test
+    public void getReplyTest() throws Exception {
+        replyDummyTweet(new TweetCreateRequest(DEFAULT_REPLY_TEXT.getConstant()), 1L);
+
+        getReplyAndExpectSuccess(2L, 1L, DEFAULT_REPLY_TEXT.getConstant(), 1, 1);
+        getReplyAndExpectFailure(100L, NOT_FOUND, "$.message", messageSourceService.generateMessage("error.entity.not_found", 100));
+    }
+
+    @Test
     public void updateReplyTest() throws Exception {
         replyDummyTweet(new TweetCreateRequest(DEFAULT_REPLY_TEXT.getConstant()), 1L);
 
@@ -105,9 +113,40 @@ public class ReplyControllerTest extends IntegrationTestBase {
         deleteReplyAndExpectFailure(2L, NOT_FOUND, "$.message", messageSourceService.generateMessage("error.entity.not_found", 2));
     }
 
+    private void getReplyAndExpectSuccess(Long replyId, Long replyToId, String replyText, int repliesForTweet, int repliesForUser) throws Exception {
+        mockMvc.perform(get(
+                        REPLY_URL_WITH_ID.getConstant().formatted(replyId))
+                        .header("loggedInUser", EMAIL.getConstant())
+                )
+                .andExpectAll(
+                        status().isOk(),
+                        jsonPath("$.replyTo.replies").value(repliesForTweet),
+                        jsonPath("$.quoteTo").value(IsNull.nullValue()),
+                        jsonPath("$.retweetTo").value(IsNull.nullValue()),
+                        jsonPath("$.text").value(replyText),
+                        jsonPath("$.profile.email").value(EMAIL.getConstant()),
+                        jsonPath("$.profile.username").value(USERNAME.getConstant()),
+                        jsonPath("$.creationDate").exists(),
+                        jsonPath("$.mediaUrls").value(IsNull.nullValue()),
+                        jsonPath("$.isBelongs").value(Boolean.TRUE)
+                );
+        checkNumberOfReplies(replyToId, repliesForTweet, repliesForUser);
+    }
+
+    private void getReplyAndExpectFailure(Long replyId, HttpStatus status, String jsonPath, String message) throws Exception {
+        mockMvc.perform(get(
+                        REPLY_URL_WITH_ID.getConstant().formatted(replyId))
+                        .header("loggedInUser", EMAIL.getConstant())
+                )
+                .andExpectAll(
+                        status().is(status.value()),
+                        jsonPath(jsonPath).value(message)
+                );
+    }
+
     private void deleteReplyAndExpectSuccess(Long replyId) throws Exception {
         mockMvc.perform(delete(
-                        REPLIES_URL_WITH_ID.getConstant().formatted(replyId))
+                        REPLY_URL_WITH_ID.getConstant().formatted(replyId))
                         .header("loggedInUser", EMAIL.getConstant())
                 )
                 .andExpectAll(
@@ -118,7 +157,7 @@ public class ReplyControllerTest extends IntegrationTestBase {
 
     private void deleteReplyAndExpectFailure(Long replyId, HttpStatus status, String jsonPath, String message) throws Exception {
         mockMvc.perform(delete(
-                        REPLIES_URL_WITH_ID.getConstant().formatted(replyId))
+                        REPLY_URL_WITH_ID.getConstant().formatted(replyId))
                         .header("loggedInUser", EMAIL.getConstant())
                 )
                 .andExpectAll(
@@ -130,7 +169,7 @@ public class ReplyControllerTest extends IntegrationTestBase {
     private void updateReplyAndExpectSuccess(Long replyId, String updatedReplyText, int repliesForTweet) throws Exception {
         mockMvc.perform(multipart(
                         HttpMethod.PATCH,
-                        REPLIES_URL_WITH_ID.getConstant().formatted(replyId))
+                        REPLY_URL_WITH_ID.getConstant().formatted(replyId))
                         .file(createRequest(updatedReplyText))
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("loggedInUser", EMAIL.getConstant())
@@ -152,7 +191,7 @@ public class ReplyControllerTest extends IntegrationTestBase {
     private void updateReplyAndExpectFailure(Long replyId, String updatedReplyText, HttpStatus status, String jsonPath, String message) throws Exception {
         mockMvc.perform(multipart(
                         HttpMethod.PATCH,
-                        REPLIES_URL_WITH_ID.getConstant().formatted(replyId))
+                        REPLY_URL_WITH_ID.getConstant().formatted(replyId))
                         .file(createRequest(updatedReplyText))
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("loggedInUser", EMAIL.getConstant())
@@ -166,7 +205,7 @@ public class ReplyControllerTest extends IntegrationTestBase {
     private void replyAndExpectSuccess(String replyText, Long replyToId, String replyToText, int repliesForTweet, int repliesForUser) throws Exception {
         mockMvc.perform(multipart(
                         HttpMethod.POST,
-                        REPLIES_URL_WITH_ID.getConstant().formatted(replyToId))
+                        REPLY_URL_WITH_ID.getConstant().formatted(replyToId))
                         .file(createRequest(replyText))
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("loggedInUser", EMAIL.getConstant())
@@ -206,7 +245,7 @@ public class ReplyControllerTest extends IntegrationTestBase {
     ) throws Exception {
         mockMvc.perform(multipart(
                         HttpMethod.POST,
-                        REPLIES_URL_WITH_ID.getConstant().formatted(replyToId))
+                        REPLY_URL_WITH_ID.getConstant().formatted(replyToId))
                         .file(createRequest(replyText))
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("loggedInUser", EMAIL.getConstant())
