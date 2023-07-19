@@ -141,6 +141,14 @@ public class ProfileService {
                 ));
     }
 
+    public String getProfileBanner(String loggedInUser) {
+        return profileRepository.findByEmail(loggedInUser)
+                .map(Profile::getBannerUrl)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        messageSourceService.generateMessage("error.image.not_found", loggedInUser)
+                ));
+    }
+
     public Page<ProfileResponse> findAllByUsername(ProfileFilter filter, Pageable pageable) {
         return profileRepository.findByUsernameContaining(filter.username(), pageable)
                 .map(profile -> profileMapper.toResponse(profile, followsUtil));
