@@ -75,6 +75,11 @@ public class ProfileController {
         return ResponseEntity.ok(profileService.deleteAvatarImage(loggedInUser));
     }
 
+    @GetMapping("/images/banner")
+    public ResponseEntity<String> getProfileBanner(@RequestHeader String loggedInUser) {
+        return ResponseEntity.ok(profileService.getProfileBanner(loggedInUser));
+    }
+
     @PostMapping("/images/banner")
     public ResponseEntity<Boolean> uploadBannerImage(@RequestParam MultipartFile file, @RequestHeader String loggedInUser) {
         return ResponseEntity.ok(profileService.uploadBannerImage(file, loggedInUser));
