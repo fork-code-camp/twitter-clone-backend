@@ -57,10 +57,10 @@ public class FanoutServiceTest extends IntegrationTestBase {
         String timelineKey = USER_TIMELINE_PREFIX.getPrefix().formatted(TWEETS.getName()) + profile.getProfileId();
         cacheService.cacheTimeline(new LinkedList<>(), timelineKey);
 
-        sendMessageToKafka(USER_TIMELINE_TOPIC, buildDefaultMessage(tweet, TWEETS, ADD));
+        sendEntityMessageToKafka(USER_TIMELINE_TOPIC, buildDefaultMessage(tweet, TWEETS, ADD));
         validateTimelineFromCache(tweet, cacheService.getTimelineFromCache(timelineKey), 1);
 
-        sendMessageToKafka(USER_TIMELINE_TOPIC, buildDefaultMessage(tweet, TWEETS, DELETE));
+        sendEntityMessageToKafka(USER_TIMELINE_TOPIC, buildDefaultMessage(tweet, TWEETS, DELETE));
         validateTimelineFromCache(null, cacheService.getTimelineFromCache(timelineKey), 0);
     }
 
@@ -70,10 +70,10 @@ public class FanoutServiceTest extends IntegrationTestBase {
         List<ProfileResponse> followers = buildFollowersForProfile(followee, 3);
         TweetResponse tweet = buildDefaultTweet(RandomUtils.nextLong(), followee);
 
-        sendMessageToKafka(HOME_TIMELINE_TOPIC, buildDefaultMessage(tweet, TWEETS, ADD));
+        sendEntityMessageToKafka(HOME_TIMELINE_TOPIC, buildDefaultMessage(tweet, TWEETS, ADD));
         validateHomeTimelines(followers, tweet, 1);
 
-        sendMessageToKafka(HOME_TIMELINE_TOPIC, buildDefaultMessage(tweet, TWEETS, DELETE));
+        sendEntityMessageToKafka(HOME_TIMELINE_TOPIC, buildDefaultMessage(tweet, TWEETS, DELETE));
         validateHomeTimelines(followers, null, 0);
     }
 
@@ -93,9 +93,9 @@ public class FanoutServiceTest extends IntegrationTestBase {
     }
 
     @SneakyThrows
-    private void sendMessageToKafka(String topic, EntityMessage message) {
+    private void sendEntityMessageToKafka(String topic, EntityMessage message) {
         String msg = gson.toJson(message);
-        kafkaTemplate.send(topic, msg);
+        kafkaTemplate.send(topic, msg).get();
         Thread.sleep(500);
     }
 
