@@ -4,7 +4,6 @@ import com.example.tweet.client.ProfileServiceClient;
 import com.example.tweet.constant.EntityName;
 import com.example.tweet.constant.Operation;
 import com.example.tweet.dto.message.EntityMessage;
-import com.example.tweet.dto.response.TweetResponse;
 import com.example.tweet.entity.Tweet;
 import com.example.tweet.exception.ActionNotAllowedException;
 import com.example.tweet.repository.LikeRepository;
@@ -27,6 +26,8 @@ public class TweetUtil {
     private final LikeRepository likeRepository;
     private final ViewRepository viewRepository;
     private final KafkaProducerService kafkaProducerService;
+    private final ProfileServiceClient profileServiceClient;
+    private final MessageSourceService messageSourceService;
 
     public int countRepliesForTweet(Long tweetId) {
         return tweetRepository.countAllByReplyToId(tweetId);
@@ -44,14 +45,9 @@ public class TweetUtil {
         return viewRepository.countAllByParentTweetId(tweetId);
     }
 
-    public boolean isTweetOwnedByLoggedInUser(
-            Tweet tweet,
-            String loggedInUser,
-            ProfileServiceClient profileServiceClient,
-            MessageSourceService messageSourceService
-    ) {
+    public boolean isEntityOwnedByLoggedInUser(Tweet entity, String loggedInUser) {
         String profileIdOfLoggedInUser = profileServiceClient.getProfileIdByLoggedInUser(loggedInUser);
-        if (!profileIdOfLoggedInUser.equals(tweet.getProfileId())) {
+        if (!profileIdOfLoggedInUser.equals(entity.getProfileId())) {
             throw new ActionNotAllowedException(
                     messageSourceService.generateMessage("error.action_not_allowed")
             );
@@ -69,22 +65,22 @@ public class TweetUtil {
         return likeRepository.findByParentTweetIdAndProfileId(parentTweetId, profileIdOfLoggedInUser).isPresent();
     }
 
-    public void sendMessageToKafka(String topic, TweetResponse entity, EntityName entityName, Operation operation) {
-        EntityMessage entityMessage = EntityMessage.valueOf(entity.getId(), entity.getProfile().getProfileId(), entityName, operation);
+    public void sendMessageToKafka(String topic, Tweet entity, EntityName entityName, Operation operation) {
+        EntityMessage entityMessage = EntityMessage.valueOf(entity.getId(), entity.getProfileId(), entityName, operation);
         kafkaProducerService.send(entityMessage, topic);
     }
 
-    public void sendMessageWithTweet(TweetResponse tweet,  Operation operation) {
+    public void sendMessageWithTweet(Tweet tweet,  Operation operation) {
         sendMessageToKafka(USER_TIMELINE_TOPIC, tweet, TWEETS, operation);
         sendMessageToKafka(HOME_TIMELINE_TOPIC, tweet, TWEETS, operation);
     }
 
-    public void sendMessageWithRetweet(TweetResponse retweet, Operation operation) {
+    public void sendMessageWithRetweet(Tweet retweet, Operation operation) {
         sendMessageToKafka(USER_TIMELINE_TOPIC, retweet, RETWEETS, operation);
         sendMessageToKafka(HOME_TIMELINE_TOPIC, retweet, RETWEETS, operation);
     }
 
-    public void sendMessageWithReply(TweetResponse reply, Operation operation) {
+    public void sendMessageWithReply(Tweet reply, Operation operation) {
         sendMessageToKafka(USER_TIMELINE_TOPIC, reply, REPLIES, operation);
     }
 }

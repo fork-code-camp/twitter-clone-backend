@@ -1,9 +1,16 @@
 package com.example.tweet.integration;
 
+import com.example.tweet.client.ProfileServiceClient;
+import com.example.tweet.client.StorageServiceClient;
 import com.example.tweet.integration.annotation.IT;
+import com.example.tweet.integration.mocks.ProfileClientMock;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.BeforeEach;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestComponent;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.cache.CacheManager;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -46,6 +53,24 @@ public class IntegrationTestBase {
             .withFixedExposedPort(8888, 8888)
             .waitingFor(Wait.forHttp("/tweet-service/test")
                     .forStatusCodeMatching(port -> port >= 200 && port < 400));
+
+    @MockBean
+    protected ProfileServiceClient profileServiceClient;
+    @MockBean
+    @SuppressWarnings("unused")
+    protected StorageServiceClient storageServiceClient;
+    @Autowired
+    private CacheManager cacheManager;
+
+    @BeforeEach
+    @SuppressWarnings("DataFlowIssue")
+    public void setUp() {
+        ProfileClientMock.setupProfileClientResponse(profileServiceClient);
+        cacheManager.getCache("tweets").clear();
+        cacheManager.getCache("retweets").clear();
+        cacheManager.getCache("replies").clear();
+        cacheManager.getCache("repliesForTweet").clear();
+    }
 
     @DynamicPropertySource
     static void dataSourcesProperties(DynamicPropertyRegistry registry) {

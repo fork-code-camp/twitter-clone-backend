@@ -1,19 +1,14 @@
 package com.example.tweet.integration.controller;
 
-import com.example.tweet.client.ProfileServiceClient;
-import com.example.tweet.client.StorageServiceClient;
 import com.example.tweet.dto.request.TweetCreateRequest;
 import com.example.tweet.integration.IntegrationTestBase;
-import com.example.tweet.integration.mocks.ProfileClientMock;
 import com.example.tweet.service.MessageSourceService;
 import com.example.tweet.service.ReplyService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.hamcrest.core.IsNull;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -32,23 +27,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @RequiredArgsConstructor
 @Sql(value = "classpath:/sql/data.sql")
-@SuppressWarnings("all")
+@SuppressWarnings("SameParameterValue")
 public class ReplyControllerTest extends IntegrationTestBase {
 
     private final MockMvc mockMvc;
     private final ReplyService replyService;
     private final MessageSourceService messageSourceService;
-
-    @MockBean
-    private final ProfileServiceClient profileServiceClient;
-
-    @MockBean
-    private final StorageServiceClient storageServiceClient;
-
-    @BeforeEach
-    public void setUp() {
-        ProfileClientMock.setupProfileClientResponse(profileServiceClient);
-    }
 
     @Test
     public void replyTest() throws Exception {

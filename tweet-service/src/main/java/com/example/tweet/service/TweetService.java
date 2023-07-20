@@ -44,10 +44,10 @@ public class TweetService {
                 .map(tweet -> mediaUtil.addMedia(tweet, files))
                 .map(tweetRepository::saveAndFlush)
                 .map(tweet -> {
-                    TweetResponse tweetResponse = tweetMapper.toResponse(tweet, loggedInUser, tweetUtil, profileServiceClient);
-                    tweetUtil.sendMessageWithTweet(tweetResponse, ADD);
-                    return tweetResponse;
+                    tweetUtil.sendMessageWithTweet(tweet, ADD);
+                    return tweet;
                 })
+                .map(tweet -> tweetMapper.toResponse(tweet, loggedInUser, tweetUtil, profileServiceClient))
                 .orElseThrow(() -> new CreateEntityException(
                         messageSourceService.generateMessage("error.entity.unsuccessful_creation")
                 ));
@@ -59,20 +59,16 @@ public class TweetService {
                 .map(tweet -> mediaUtil.addMedia(tweet, files))
                 .map(tweetRepository::saveAndFlush)
                 .map(tweet -> {
-                    TweetResponse tweetResponse = tweetMapper.toResponse(tweet, loggedInUser, tweetUtil, profileServiceClient);
-                    tweetUtil.sendMessageWithTweet(tweetResponse, ADD);
-                    return tweetResponse;
+                    tweetUtil.sendMessageWithTweet(tweet, ADD);
+                    return tweet;
                 })
+                .map(tweet -> tweetMapper.toResponse(tweet, loggedInUser, tweetUtil, profileServiceClient))
                 .orElseThrow(() -> new EntityNotFoundException(
                         messageSourceService.generateMessage("error.entity.not_found", tweetId)
                 ));
     }
 
-    @Cacheable(
-            cacheNames = TWEETS_CACHE_NAME,
-            key = "#p0",
-            unless = "#result.likes < 5000 && #result.views < 25000 && #result.replies < 1000 && #result.retweets < 1000"
-    )
+    @Cacheable(cacheNames = TWEETS_CACHE_NAME, key = "#p0")
     public TweetResponse getTweet(Long tweetId, String loggedInUser) {
         return tweetRepository.findById(tweetId)
                 .map(tweet -> viewService.createViewEntity(tweet, loggedInUser, profileServiceClient))
@@ -93,7 +89,7 @@ public class TweetService {
     @CachePut(cacheNames = TWEETS_CACHE_NAME, key = "#p0")
     public TweetResponse updateTweet(Long tweetId, TweetUpdateRequest request, String loggedInUser, MultipartFile[] files) {
         return tweetRepository.findById(tweetId)
-                .filter(tweet -> tweetUtil.isTweetOwnedByLoggedInUser(tweet, loggedInUser, profileServiceClient, messageSourceService))
+                .filter(tweet -> tweetUtil.isEntityOwnedByLoggedInUser(tweet, loggedInUser))
                 .map(tweet -> tweetMapper.updateTweet(request, tweet))
                 .map(tweet -> mediaUtil.updateMedia(tweet, files))
                 .map(tweetRepository::saveAndFlush)
@@ -106,10 +102,9 @@ public class TweetService {
     @CacheEvict(cacheNames = TWEETS_CACHE_NAME, key = "#p0")
     public Boolean deleteTweet(Long tweetId, String loggedInUser) {
         return tweetRepository.findById(tweetId)
-                .filter(tweet -> tweetUtil.isTweetOwnedByLoggedInUser(tweet, loggedInUser, profileServiceClient, messageSourceService))
+                .filter(tweet -> tweetUtil.isEntityOwnedByLoggedInUser(tweet, loggedInUser))
                 .map(tweet -> {
-                    TweetResponse response = tweetMapper.toResponse(tweet, loggedInUser, tweetUtil, profileServiceClient);
-                    tweetUtil.sendMessageWithTweet(response, DELETE);
+                    tweetUtil.sendMessageWithTweet(tweet, DELETE);
                     tweetRepository.delete(tweet);
                     return tweet;
                 })

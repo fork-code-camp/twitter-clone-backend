@@ -1,18 +1,13 @@
 package com.example.tweet.integration.controller;
 
-import com.example.tweet.client.ProfileServiceClient;
-import com.example.tweet.client.StorageServiceClient;
 import com.example.tweet.integration.IntegrationTestBase;
-import com.example.tweet.integration.mocks.ProfileClientMock;
 import com.example.tweet.repository.TweetRepository;
 import com.example.tweet.service.MessageSourceService;
 import com.example.tweet.service.RetweetService;
 import lombok.RequiredArgsConstructor;
 import org.hamcrest.core.IsNull;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
@@ -30,24 +25,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @RequiredArgsConstructor
 @Sql(value = "classpath:sql/data.sql")
-@SuppressWarnings("all")
+@SuppressWarnings("SameParameterValue")
 public class RetweetControllerTest extends IntegrationTestBase {
 
     private final MockMvc mockMvc;
     private final TweetRepository tweetRepository;
     private final MessageSourceService messageSourceService;
     private final RetweetService retweetService;
-
-    @MockBean
-    private final ProfileServiceClient profileServiceClient;
-
-    @MockBean
-    private final StorageServiceClient storageServiceClient;
-
-    @BeforeEach
-    public void setUp() {
-        ProfileClientMock.setupProfileClientResponse(profileServiceClient);
-    }
 
     @Test
     public void retweetTest() throws Exception {

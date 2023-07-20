@@ -42,7 +42,7 @@ services:
   profile-service:
     container_name: profile-service
     hostname: profile-service
-    image: twitterclone0/twitter-profile-service:2.0.2
+    image: twitterclone0/twitter-profile-service:2.0.4
     restart: unless-stopped
     pull_policy: missing
     environment:
@@ -70,7 +70,7 @@ services:
   tweet-service:
     container_name: tweet-service
     hostname: tweet-service
-    image: twitterclone0/twitter-tweet-service:2.0.2
+    image: twitterclone0/twitter-tweet-service:2.0.3
     restart: unless-stopped
     pull_policy: missing
     environment:
@@ -145,7 +145,7 @@ services:
   fanout-service:
     container_name: fanout-service
     hostname: fanout-service
-    image: twitterclone0/twitter-fanout-service:2.0.2
+    image: twitterclone0/twitter-fanout-service:2.0.3
     restart: unless-stopped
     pull_policy: missing
     environment:
