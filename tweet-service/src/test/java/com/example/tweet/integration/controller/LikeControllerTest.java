@@ -1,19 +1,14 @@
 package com.example.tweet.integration.controller;
 
 
-import com.example.tweet.client.ProfileServiceClient;
-import com.example.tweet.client.StorageServiceClient;
 import com.example.tweet.integration.IntegrationTestBase;
-import com.example.tweet.integration.mocks.ProfileClientMock;
 import com.example.tweet.repository.LikeRepository;
 import com.example.tweet.service.LikeService;
 import com.example.tweet.service.MessageSourceService;
 import com.example.tweet.service.TweetService;
 import lombok.RequiredArgsConstructor;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
@@ -33,7 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @RequiredArgsConstructor
 @Sql(value = "classpath:sql/data.sql")
-@SuppressWarnings("all")
+@SuppressWarnings("SameParameterValue")
 public class LikeControllerTest extends IntegrationTestBase {
 
     private final MockMvc mockMvc;
@@ -41,17 +36,6 @@ public class LikeControllerTest extends IntegrationTestBase {
     private final LikeRepository likeRepository;
     private final TweetService tweetService;
     private final LikeService likeService;
-
-    @MockBean
-    private final ProfileServiceClient profileServiceClient;
-
-    @MockBean
-    private final StorageServiceClient storageServiceClient;
-
-    @BeforeEach
-    public void setUp() {
-        ProfileClientMock.setupProfileClientResponse(profileServiceClient);
-    }
 
     @Test
     public void likeTweetTest() throws Exception {

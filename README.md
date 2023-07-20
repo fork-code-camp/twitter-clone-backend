@@ -72,12 +72,12 @@ Connects to Amazon blob storage, enabling users to store and retrieve media file
 ### Profile service
 
 Allows users to view and follow other users, update their profiles, and upload custom avatars and banners. The service
-utilizes caching to store popular user profiles for improved performance.
+utilizes caching to store user profiles for improved performance.
 
 ### Tweet service
 
 Allows users to create/update/delete tweets, as well as retweet/like/reply on them. Also, there is views
-system, so when user gets any tweet, views counter is incremented by 1, and cache system that will cache popular tweets.
+system, so when user gets any tweet, views counter is incremented by 1, and cache system that will cache tweets.
 When user creates new tweet, it will be added to user's user timeline and home timelines of his followers in cache, 
 however if user has a lot of followers, it will be added only to user timeline to reduce time and improve performance.
 

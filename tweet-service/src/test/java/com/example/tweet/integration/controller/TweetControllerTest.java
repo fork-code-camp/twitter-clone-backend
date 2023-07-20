@@ -1,20 +1,14 @@
 package com.example.tweet.integration.controller;
 
-import com.example.tweet.client.ProfileServiceClient;
-import com.example.tweet.client.StorageServiceClient;
 import com.example.tweet.dto.request.TweetCreateRequest;
 import com.example.tweet.integration.IntegrationTestBase;
-import com.example.tweet.integration.mocks.ProfileClientMock;
 import com.example.tweet.repository.TweetRepository;
-import com.example.tweet.repository.ViewRepository;
 import com.example.tweet.service.MessageSourceService;
 import com.example.tweet.service.TweetService;
 import lombok.RequiredArgsConstructor;
 import org.hamcrest.core.IsNull;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -23,7 +17,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
 import static com.example.tweet.integration.constants.GlobalConstants.*;
-import static com.example.tweet.integration.constants.UrlConstants.*;
+import static com.example.tweet.integration.constants.UrlConstants.TWEET_URL;
+import static com.example.tweet.integration.constants.UrlConstants.TWEET_URL_WITH_ID;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
@@ -34,25 +29,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @RequiredArgsConstructor
 @Sql(statements = "ALTER SEQUENCE tweets_id_seq RESTART WITH 1;")
-@SuppressWarnings("all")
+@SuppressWarnings("SameParameterValue")
 public class TweetControllerTest extends IntegrationTestBase {
 
     private final MockMvc mockMvc;
     private final MessageSourceService messageSourceService;
     private final TweetService tweetService;
     private final TweetRepository tweetRepository;
-    private final ViewRepository viewRepository;
-
-    @MockBean
-    private final ProfileServiceClient profileServiceClient;
-
-    @MockBean
-    private final StorageServiceClient storageServiceClient;
-
-    @BeforeEach
-    public void setUp() {
-        ProfileClientMock.setupProfileClientResponse(profileServiceClient);
-    }
 
     @Test
     public void createTweetTest() throws Exception {

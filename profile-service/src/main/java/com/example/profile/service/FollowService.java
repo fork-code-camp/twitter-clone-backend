@@ -9,12 +9,16 @@ import com.example.profile.repository.ProfileRepository;
 import com.example.profile.util.FollowsUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
+
+import static com.example.profile.constant.CacheName.*;
 
 @Slf4j
 @Service
@@ -25,6 +29,7 @@ public class FollowService {
     private final ProfileRepository profileRepository;
     private final ProfileMapper profileMapper;
     private final FollowsUtil followsUtil;
+    private final CacheManager cacheManager;
 
     public boolean follow(String followeeId, String loggedInUser) {
         return profileRepository.findByEmail(loggedInUser)
@@ -43,12 +48,16 @@ public class FollowService {
         return profileRepository.findByEmail(loggedInUser)
                 .map(Profile::getId)
                 .filter(followerId -> isFollowed(followeeId, loggedInUser))
-                .map(followerId ->
-                        followRepository.deleteByFollowerProfile_IdAndFolloweeProfile_Id(followerId, followeeId))
+                .map(followerId -> {
+                    Objects.requireNonNull(cacheManager.getCache(FOLLOWERS_CACHE)).evictIfPresent(followeeId);
+                    Objects.requireNonNull(cacheManager.getCache(FOLLOWEES_CACHE)).evictIfPresent(followerId);
+                    Objects.requireNonNull(cacheManager.getCache(FOLLOWEES_CELEBRITIES_CACHE)).evictIfPresent(followerId);
+                    return followRepository.deleteByFollowerProfile_IdAndFolloweeProfile_Id(followerId, followeeId);
+                })
                 .isPresent();
     }
 
-    @Cacheable(cacheNames = "followers", key = "#p0", unless = "#result.size() < 10000")
+    @Cacheable(cacheNames = FOLLOWERS_CACHE, key = "#p0")
     public List<ProfileResponse> getFollowers(String profileId) {
         return followRepository.findAllByFolloweeProfile_Id(profileId)
                 .stream()
@@ -57,7 +66,7 @@ public class FollowService {
                 .collect(Collectors.toList());
     }
 
-    @Cacheable(cacheNames = "followees", key = "#p0", unless = "#result.size() < 1000")
+    @Cacheable(cacheNames = FOLLOWEES_CACHE, key = "#p0")
     public List<ProfileResponse> getFollowees(String profileId) {
         return followRepository.findAllByFollowerProfile_Id(profileId)
                 .stream()
@@ -66,7 +75,7 @@ public class FollowService {
                 .collect(Collectors.toList());
     }
 
-    @Cacheable(cacheNames = "followees_celebrities", key = "#p0")
+    @Cacheable(cacheNames = FOLLOWEES_CELEBRITIES_CACHE, key = "#p0")
     public List<ProfileResponse> getFolloweesCelebrities(String profileId) {
         return getFollowees(profileId)
                 .stream()

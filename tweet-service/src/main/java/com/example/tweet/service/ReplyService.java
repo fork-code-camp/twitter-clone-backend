@@ -45,11 +45,11 @@ public class ReplyService {
                 .map(replyTo -> tweetMapper.toEntity(request, null, replyTo, profileServiceClient, loggedInUser))
                 .map(reply -> mediaUtil.addMedia(reply, files))
                 .map(tweetRepository::saveAndFlush)
-                .map(reply -> tweetMapper.toResponse(reply, loggedInUser, tweetUtil, profileServiceClient))
                 .map(reply -> {
                     tweetUtil.sendMessageWithReply(reply, ADD);
                     return reply;
                 })
+                .map(reply -> tweetMapper.toResponse(reply, loggedInUser, tweetUtil, profileServiceClient))
                 .orElseThrow(() -> new EntityNotFoundException(
                         messageSourceService.generateMessage("error.entity.not_found", replyToId)
                 ));
@@ -58,11 +58,11 @@ public class ReplyService {
     @CacheEvict(cacheNames = REPLIES_CACHE_NAME, key = "#p0")
     public boolean deleteReply(Long replyId, String loggedInUser) {
         tweetRepository.findById(replyId)
+                .filter(reply -> tweetUtil.isEntityOwnedByLoggedInUser(reply, loggedInUser))
                 .ifPresentOrElse(reply -> {
                     Objects.requireNonNull(cacheManager.getCache(REPLIES_FOR_TWEET_CACHE_NAME)).evictIfPresent(Long.toString(reply.getReplyTo().getId()));
                     tweetRepository.delete(reply);
-                    TweetResponse replyResponse = tweetMapper.toResponse(reply, loggedInUser, tweetUtil, profileServiceClient);
-                    tweetUtil.sendMessageWithReply(replyResponse, DELETE);
+                    tweetUtil.sendMessageWithReply(reply, DELETE);
                 }, () -> {
                     throw new EntityNotFoundException(
                             messageSourceService.generateMessage("error.entity.not_found", replyId)
@@ -74,26 +74,22 @@ public class ReplyService {
     @CachePut(cacheNames = REPLIES_CACHE_NAME, key = "#p0")
     public TweetResponse updateReply(Long replyId, TweetUpdateRequest request, String loggedInUser, MultipartFile[] files) {
         return tweetRepository.findById(replyId)
-                .filter(reply -> tweetUtil.isTweetOwnedByLoggedInUser(reply, loggedInUser, profileServiceClient, messageSourceService))
+                .filter(reply -> tweetUtil.isEntityOwnedByLoggedInUser(reply, loggedInUser))
                 .map(reply -> tweetMapper.updateTweet(request, reply))
                 .map(reply -> mediaUtil.updateMedia(reply, files))
                 .map(tweetRepository::saveAndFlush)
-                .map(reply -> tweetMapper.toResponse(reply, loggedInUser, tweetUtil, profileServiceClient))
                 .map(reply -> {
                     Objects.requireNonNull(cacheManager.getCache(REPLIES_FOR_TWEET_CACHE_NAME)).evictIfPresent(Long.toString(reply.getReplyTo().getId()));
                     return reply;
                 })
+                .map(reply -> tweetMapper.toResponse(reply, loggedInUser, tweetUtil, profileServiceClient))
                 .orElseThrow(() -> new EntityNotFoundException(
                         messageSourceService.generateMessage("error.entity.not_found", replyId)
                 ));
 
     }
 
-    @Cacheable(
-            cacheNames = REPLIES_CACHE_NAME,
-            key = "#p0",
-            unless = "#result.likes < 500 && #result.views < 2500 && #result.replies < 100 && #result.retweets < 100"
-    )
+    @Cacheable(cacheNames = REPLIES_CACHE_NAME, key = "#p0")
     public TweetResponse getReply(Long replyId, String loggedInUser) {
         return tweetRepository.findByIdAndReplyToIsNotNull(replyId)
                 .map(reply -> viewService.createViewEntity(reply, loggedInUser, profileServiceClient))
@@ -111,7 +107,7 @@ public class ReplyService {
                 .collect(Collectors.toList());
     }
 
-    @Cacheable(cacheNames = REPLIES_FOR_TWEET_CACHE_NAME, key = "#p0", unless = "#result.size() < 1000")
+    @Cacheable(cacheNames = REPLIES_FOR_TWEET_CACHE_NAME, key = "#p0", unless = "#result.size() < 100")
     public List<TweetResponse> getAllRepliesForTweet(Long replyToId, String loggedInUser) {
         return tweetRepository.findAllByReplyToIdOrderByCreationDateDesc(replyToId)
                 .stream()

@@ -10,7 +10,7 @@
     </parent>
 
     <artifactId>profile-service</artifactId>
-    <version>2.0.3</version>
+    <version>2.0.4</version>
     <name>profile-service</name>
     <description>profile-service</description>
 

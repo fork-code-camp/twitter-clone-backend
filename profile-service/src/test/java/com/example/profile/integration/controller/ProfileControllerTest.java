@@ -1,12 +1,10 @@
 package com.example.profile.integration.controller;
 
-import com.example.profile.client.StorageServiceClient;
 import com.example.profile.integration.IntegrationTestBase;
 import com.example.profile.service.MessageSourceService;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,14 +20,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @AutoConfigureMockMvc
 @RequiredArgsConstructor
-@SuppressWarnings("all")
 public class ProfileControllerTest extends IntegrationTestBase {
 
     private final MockMvc mockMvc;
     private final MessageSourceService messageService;
-
-    @MockBean
-    private final StorageServiceClient storageServiceClient;
 
     @Test
     public void createProfileTestSuccess() throws Exception {

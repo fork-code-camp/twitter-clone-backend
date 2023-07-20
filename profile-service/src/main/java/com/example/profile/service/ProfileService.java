@@ -21,6 +21,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Optional;
 
+import static com.example.profile.constant.CacheName.PROFILES_CACHE;
+
 @Service
 @RequiredArgsConstructor
 public class ProfileService {
@@ -41,7 +43,7 @@ public class ProfileService {
                 ));
     }
 
-    @Cacheable(cacheNames = "profiles", key = "#p0", unless = "#result.getFollowers() < 10000")
+    @Cacheable(cacheNames = PROFILES_CACHE, key = "#p0")
     public ProfileResponse getProfile(String id) {
         return profileRepository.findById(id)
                 .map(profile -> profileMapper.toResponse(profile, followsUtil))
@@ -50,7 +52,7 @@ public class ProfileService {
                 ));
     }
 
-    @CachePut(cacheNames = "profiles", key = "#p0")
+    @CachePut(cacheNames = PROFILES_CACHE, key = "#p0")
     public ProfileResponse updateProfile(String id, UpdateProfileRequest updateProfileRequest, String loggedInUser) {
         return profileRepository.findById(id)
                 .filter(profile -> checkUpdateAvailabilityForUser(profile.getEmail(), loggedInUser))
