@@ -1,7 +1,6 @@
 package com.example.profile.service;
 
 import com.example.profile.client.StorageServiceClient;
-import com.example.profile.dto.filter.ProfileFilter;
 import com.example.profile.dto.request.CreateProfileRequest;
 import com.example.profile.dto.request.UpdateProfileRequest;
 import com.example.profile.dto.response.ProfileResponse;
@@ -151,8 +150,8 @@ public class ProfileService {
                 ));
     }
 
-    public Page<ProfileResponse> findAllByUsername(ProfileFilter filter, Pageable pageable) {
-        return profileRepository.findByUsernameContaining(filter.username(), pageable)
+    public Page<ProfileResponse> findAllByUsername(String username, Pageable pageable) {
+        return profileRepository.findByUsernameContaining(username, pageable)
                 .map(profile -> profileMapper.toResponse(profile, followsUtil));
     }
 

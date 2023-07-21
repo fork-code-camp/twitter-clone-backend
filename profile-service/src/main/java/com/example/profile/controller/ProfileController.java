@@ -1,6 +1,5 @@
 package com.example.profile.controller;
 
-import com.example.profile.dto.filter.ProfileFilter;
 import com.example.profile.dto.request.CreateProfileRequest;
 import com.example.profile.dto.request.UpdateProfileRequest;
 import com.example.profile.dto.response.PageResponse;
@@ -39,10 +38,10 @@ public class ProfileController {
 
     @GetMapping("/")
     public ResponseEntity<PageResponse<ProfileResponse>> findAllByUsername(
-            @RequestBody ProfileFilter filter,
+            @RequestParam String username,
             Pageable pageable
     ) {
-        var response = PageResponse.of(profileService.findAllByUsername(filter, pageable));
+        var response = PageResponse.of(profileService.findAllByUsername(username, pageable));
         return ResponseEntity.ok(response);
     }
 
