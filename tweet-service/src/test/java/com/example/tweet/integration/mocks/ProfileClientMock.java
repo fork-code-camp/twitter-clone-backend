@@ -14,6 +14,7 @@ public class ProfileClientMock {
 
     public static void setupProfileClientResponse(ProfileServiceClient profileServiceClient) {
         ProfileResponse response = ProfileResponse.builder()
+                .profileId(ID.getConstant())
                 .username(USERNAME.getConstant())
                 .email(EMAIL.getConstant())
                 .joinDate(LocalDate.MIN)

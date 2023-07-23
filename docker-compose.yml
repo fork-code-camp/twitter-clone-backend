@@ -70,7 +70,7 @@ services:
   tweet-service:
     container_name: tweet-service
     hostname: tweet-service
-    image: twitterclone0/twitter-tweet-service:2.0.3
+    image: twitterclone0/twitter-tweet-service:2.0.4
     restart: unless-stopped
     pull_policy: missing
     environment:

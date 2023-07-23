@@ -41,7 +41,7 @@ public class TweetController {
 
     @GetMapping("/tweet/{tweetId}")
     public ResponseEntity<TweetResponse> getTweet(@PathVariable Long tweetId, @RequestHeader String loggedInUser) {
-        return ResponseEntity.ok(tweetService.getTweet(tweetId, loggedInUser));
+        return ResponseEntity.ok(tweetService.getTweetById(tweetId, loggedInUser));
     }
 
     @GetMapping("/tweets/user/{profileId}")
