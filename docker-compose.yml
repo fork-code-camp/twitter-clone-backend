@@ -42,7 +42,7 @@ services:
   profile-service:
     container_name: profile-service
     hostname: profile-service
-    image: twitterclone0/twitter-profile-service:2.0.4
+    image: twitterclone0/twitter-profile-service:2.0.5
     restart: unless-stopped
     pull_policy: missing
     environment:
@@ -70,7 +70,7 @@ services:
   tweet-service:
     container_name: tweet-service
     hostname: tweet-service
-    image: twitterclone0/twitter-tweet-service:2.0.3
+    image: twitterclone0/twitter-tweet-service:2.0.4
     restart: unless-stopped
     pull_policy: missing
     environment:

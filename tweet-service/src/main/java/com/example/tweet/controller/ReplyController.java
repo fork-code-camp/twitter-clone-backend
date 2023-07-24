@@ -46,7 +46,7 @@ public class ReplyController {
 
     @GetMapping("/reply/{replyId}")
     public ResponseEntity<TweetResponse> getReply(@PathVariable Long replyId, @RequestHeader String loggedInUser) {
-        return ResponseEntity.ok(replyService.getReply(replyId, loggedInUser));
+        return ResponseEntity.ok(replyService.getReplyById(replyId, loggedInUser));
     }
 
     @PatchMapping("/reply/{replyId}")

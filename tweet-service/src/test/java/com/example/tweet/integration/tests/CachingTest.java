@@ -22,9 +22,7 @@ import org.springframework.cache.CacheManager;
 import org.springframework.test.context.jdbc.Sql;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -56,8 +54,8 @@ public class CachingTest extends IntegrationTestBase {
     public void cacheTweetTest() {
         Tweet tweet = createStubForTweet(1L, false);
 
-        tweetService.getTweet(tweet.getId(), EMAIL.getConstant());
-        TweetResponse tweetResponse = tweetService.getTweet(tweet.getId(), EMAIL.getConstant());
+        tweetService.getTweetById(tweet.getId(), EMAIL.getConstant());
+        TweetResponse tweetResponse = tweetService.getTweetById(tweet.getId(), EMAIL.getConstant());
 
         verify(tweetRepository, times(1)).findById(tweet.getId());
 
@@ -69,10 +67,11 @@ public class CachingTest extends IntegrationTestBase {
     @Test
     public void updateTweetInCacheTest() {
         Tweet tweet = createStubForTweet(1L, false);
+        Tweet retweet = createStubForRetweet(tweet, 2L);
+        Tweet reply = createStubForReply(tweet, 3L);
 
-        tweetService.getTweet(tweet.getId(), EMAIL.getConstant());
-        TweetResponse tweetFromCache = getEntityFromCache(tweet.getId(), TWEETS_CACHE_NAME);
-        assertNotNull(tweetFromCache);
+        tweetService.getTweetById(tweet.getId(), EMAIL.getConstant());
+        assertNotNull(getEntityFromCache(tweet.getId(), TWEETS_CACHE_NAME));
 
         TweetResponse tweetResponse = tweetService.updateTweet(
                 tweet.getId(),
@@ -81,20 +80,39 @@ public class CachingTest extends IntegrationTestBase {
                 null
         );
         TweetResponse updatedTweetFromCache = getEntityFromCache(tweet.getId(), TWEETS_CACHE_NAME);
+        assertNotNull(updatedTweetFromCache);
         assertEquals(tweetResponse, updatedTweetFromCache);
+
+        retweetService.getRetweetById(retweet.getId(), EMAIL.getConstant());
+        TweetResponse retweetFromCache = getEntityFromCache(retweet.getId(), RETWEETS_CACHE_NAME);
+        assertNotNull(retweetFromCache);
+        assertEquals(updatedTweetFromCache, retweetFromCache.getRetweetTo());
+
+        replyService.getReplyById(reply.getId(), EMAIL.getConstant());
+        TweetResponse replyFromCache = getEntityFromCache(reply.getId(), REPLIES_CACHE_NAME);
+        assertNotNull(replyFromCache);
+        assertEquals(updatedTweetFromCache, replyFromCache.getReplyTo());
     }
 
     @Test
     public void deleteTweetFromCacheTest() {
-        Tweet tweet = createStubForTweet(1L, false);
+        Tweet tweet = createStubForTweet(1L, true);
+        Tweet retweet = createStubForRetweet(tweet, 2L);
+        Tweet reply = createStubForReply(tweet, 3L);
 
-        tweetService.getTweet(tweet.getId(), EMAIL.getConstant());
-        TweetResponse tweetFromCache = getEntityFromCache(tweet.getId(), TWEETS_CACHE_NAME);
-        assertNotNull(tweetFromCache);
+        tweetService.getTweetById(tweet.getId(), EMAIL.getConstant());
+        assertNotNull(getEntityFromCache(tweet.getId(), TWEETS_CACHE_NAME));
+
+        retweetService.getRetweetById(retweet.getId(), EMAIL.getConstant());
+        assertNotNull(getEntityFromCache(retweet.getId(), RETWEETS_CACHE_NAME));
+
+        replyService.getReplyById(reply.getId(), EMAIL.getConstant());
+        assertNotNull(getEntityFromCache(reply.getId(), REPLIES_CACHE_NAME));
 
         tweetService.deleteTweet(tweet.getId(), EMAIL.getConstant());
-        TweetResponse deletedTweetFromCache = getEntityFromCache(tweet.getId(), TWEETS_CACHE_NAME);
-        assertNull(deletedTweetFromCache);
+        assertNull(getEntityFromCache(tweet.getId(), TWEETS_CACHE_NAME));
+        assertNull(getEntityFromCache(retweet.getId(), RETWEETS_CACHE_NAME));
+        assertNull(getEntityFromCache(reply.getId(), REPLIES_CACHE_NAME));
     }
 
     @Test
@@ -109,9 +127,10 @@ public class CachingTest extends IntegrationTestBase {
 
     @Test
     public void cacheReplyTest() {
-        Tweet reply = createStubForReply(1L, 2L);
+        Tweet tweet = createStubForTweet(1L, false);
+        Tweet reply = createStubForReply(tweet, 2L);
 
-        TweetResponse replyResponse = replyService.getReply(reply.getId(), EMAIL.getConstant());
+        TweetResponse replyResponse = replyService.getReplyById(reply.getId(), EMAIL.getConstant());
         TweetResponse replyFromCache = getEntityFromCache(reply.getId(), REPLIES_CACHE_NAME);
         assertNotNull(replyFromCache);
         assertEquals(replyResponse, replyFromCache);
@@ -119,8 +138,10 @@ public class CachingTest extends IntegrationTestBase {
 
     @Test
     public void updateReplyInCacheTest() {
-        Tweet reply = createStubForReply(1L, 2L);
-        replyService.getReply(reply.getId(), EMAIL.getConstant());
+        Tweet tweet = createStubForTweet(1L, false);
+        Tweet reply = createStubForReply(tweet, 2L);
+
+        replyService.getReplyById(reply.getId(), EMAIL.getConstant());
         assertNotNull(getEntityFromCache(reply.getId(), REPLIES_CACHE_NAME));
 
         TweetResponse replyResponse = replyService.updateReply(
@@ -135,21 +156,21 @@ public class CachingTest extends IntegrationTestBase {
 
     @Test
     public void deleteReplyFromCacheTest() {
-        Tweet tweetWithReplies = createStubForTweetWithReplies(1L, 100);
-        Tweet reply = createStubForReply(tweetWithReplies.getId(), 2L);
-        replyService.getAllRepliesForTweet(tweetWithReplies.getId(), EMAIL.getConstant());
-        replyService.getReply(reply.getId(), EMAIL.getConstant());
+        Tweet tweet = createStubForTweetWithReplies(1L, 100);
+        Tweet reply = createStubForReply(tweet, 2L);
+        replyService.getAllRepliesForTweet(tweet.getId(), EMAIL.getConstant());
+        replyService.getReplyById(reply.getId(), EMAIL.getConstant());
 
         replyService.deleteReply(reply.getId(), EMAIL.getConstant());
-        List<TweetResponse> repliesFromCache = getEntitiesFromCache(tweetWithReplies.getId(), REPLIES_FOR_TWEET_CACHE_NAME);
-        TweetResponse replyFromCache = getEntityFromCache(reply.getId(), REPLIES_CACHE_NAME);
-        assertNull(repliesFromCache);
-        assertNull(replyFromCache);
+        assertNull(getEntitiesFromCache(tweet.getId(), REPLIES_FOR_TWEET_CACHE_NAME));
+        assertNull(getEntityFromCache(reply.getId(), REPLIES_CACHE_NAME));
+        assertNull(getEntityFromCache(tweet.getId(), TWEETS_CACHE_NAME));
     }
 
     @Test
     public void cacheRetweetTest() {
-        Tweet retweet = createStubForRetweet(1L, 2L);
+        Tweet tweet = createStubForTweet(1L, true);
+        Tweet retweet = createStubForRetweet(tweet, 2L);
 
         retweetService.getRetweetById(retweet.getId(), EMAIL.getConstant());
         TweetResponse retweetResponse = retweetService.getRetweetById(retweet.getId(), EMAIL.getConstant());
@@ -163,15 +184,14 @@ public class CachingTest extends IntegrationTestBase {
 
     @Test
     public void deleteRetweetFromCache() {
-        Tweet retweet = createStubForRetweet(1L, 2L);
+        Tweet tweet = createStubForTweet(1L, true);
+        Tweet retweet = createStubForRetweet(tweet, 2L);
 
         retweetService.getRetweetById(retweet.getId(), EMAIL.getConstant());
-        TweetResponse retweetFromCache = getEntityFromCache(retweet.getId(), RETWEETS_CACHE_NAME);
-        assertNotNull(retweetFromCache);
+        assertNotNull(getEntityFromCache(retweet.getId(), RETWEETS_CACHE_NAME));
 
-        retweetService.undoRetweet(retweet.getRetweetTo().getId(), EMAIL.getConstant());
-        TweetResponse deletedRetweetFromCache = getEntityFromCache(retweet.getId(), RETWEETS_CACHE_NAME);
-        assertNull(deletedRetweetFromCache);
+        retweetService.undoRetweet(tweet.getId(), EMAIL.getConstant());
+        assertNull(getEntityFromCache(retweet.getId(), RETWEETS_CACHE_NAME));
     }
 
     @SuppressWarnings({"unchecked", "DataFlowIssue"})
@@ -200,9 +220,9 @@ public class CachingTest extends IntegrationTestBase {
         return parentTweet;
     }
 
-    private Tweet createStubForReply(long replyToId, long replyId) {
-        Tweet replyTo = createStubForTweet(replyToId, false);
+    private Tweet createStubForReply(Tweet replyTo, long replyId) {
         Tweet reply = buildDefaultReply(replyId, replyTo);
+        replyTo.getReplies().add(reply);
 
         when(tweetRepository.findByIdAndReplyToIsNotNull(replyId))
                 .thenReturn(Optional.of(reply));
@@ -215,14 +235,14 @@ public class CachingTest extends IntegrationTestBase {
         return reply;
     }
 
-    private Tweet createStubForRetweet(long retweetToId, long retweetId) {
-        Tweet retweetTo = createStubForTweet(retweetToId, true);
+    private Tweet createStubForRetweet(Tweet retweetTo, long retweetId) {
         Tweet retweet = buildDefaultRetweet(retweetId, retweetTo);
+        retweetTo.getRetweets().add(retweet);
 
         when(tweetRepository.findByIdAndRetweetToIsNotNull(retweetId))
                 .thenReturn(Optional.of(retweet));
 
-        when(tweetRepository.findByRetweetToIdAndProfileId(retweetToId, ID.getConstant()))
+        when(tweetRepository.findByRetweetToIdAndProfileId(retweetTo.getId(), ID.getConstant()))
                 .thenReturn(Optional.of(retweet));
 
         doNothing()
@@ -258,6 +278,9 @@ public class CachingTest extends IntegrationTestBase {
 
         doNothing()
                 .when(tweetUtil).sendMessageToKafka(anyString(), any(Tweet.class), any(EntityName.class), any(Operation.class));
+
+        when(tweetRepository.findAllByQuoteToId(entityId))
+                .thenReturn(Collections.emptyList());
     }
 
     @Nullable
@@ -279,6 +302,8 @@ public class CachingTest extends IntegrationTestBase {
                 .replyTo(replyTo)
                 .creationDate(LocalDateTime.MAX)
                 .profileId(ID.getConstant())
+                .retweets(new HashSet<>())
+                .replies(new HashSet<>())
                 .build();
     }
 
@@ -297,6 +322,8 @@ public class CachingTest extends IntegrationTestBase {
                 .text(DEFAULT_TWEET_TEXT.getConstant())
                 .creationDate(LocalDateTime.MAX)
                 .profileId(ID.getConstant())
+                .retweets(new HashSet<>())
+                .replies(new HashSet<>())
                 .build();
     }
 }

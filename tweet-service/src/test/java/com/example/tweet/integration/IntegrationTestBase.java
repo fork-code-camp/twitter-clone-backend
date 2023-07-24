@@ -29,6 +29,7 @@ import org.testcontainers.utility.DockerImageName;
 
 import java.util.concurrent.CountDownLatch;
 
+import static com.example.tweet.constant.CacheName.*;
 import static com.example.tweet.constant.TopicName.USER_TIMELINE_TOPIC;
 import static com.example.tweet.integration.constants.JsonConstants.REQUEST_PATTERN;
 
@@ -66,10 +67,10 @@ public class IntegrationTestBase {
     @SuppressWarnings("DataFlowIssue")
     public void setUp() {
         ProfileClientMock.setupProfileClientResponse(profileServiceClient);
-        cacheManager.getCache("tweets").clear();
-        cacheManager.getCache("retweets").clear();
-        cacheManager.getCache("replies").clear();
-        cacheManager.getCache("repliesForTweet").clear();
+        cacheManager.getCache(TWEETS_CACHE_NAME).clear();
+        cacheManager.getCache(RETWEETS_CACHE_NAME).clear();
+        cacheManager.getCache(REPLIES_CACHE_NAME).clear();
+        cacheManager.getCache(REPLIES_FOR_TWEET_CACHE_NAME).clear();
     }
 
     @DynamicPropertySource
